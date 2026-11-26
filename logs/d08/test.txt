@@ -1,0 +1,266 @@
+# D08 test log (2026-11-26T07:57Z) — headless Chromium (Playwright) + SwiftShader (--use-angle=swiftshader --enable-unsafe-swiftshader), python3 -m http.server (root site/), autotest speed x3
+== 1024x768 http://localhost:8128/games/d08/index.html?autotest&q=low
+__ready=true after 3407ms
+t=3.7s state=TAKEOFF jump=0 done=0 stage=0 cycle=0 q=low fps=60.0 target=50.0%,60.0% earth=c(50.0%,16.7%) top=9.2% bottom=24.3% sides=44.4..55.6% diam/short=14.0%
+t=3.9s state=FLIGHT jump=0 done=0 stage=0 cycle=0 q=low fps=60.0 target=50.0%,68.2% earth=c(50.0%,24.2%) top=16.6% bottom=31.7% sides=44.4..55.6% diam/short=14.0%
+t=6.2s state=LAND jump=0 done=1 stage=0 cycle=0 q=low fps=10.0 target=50.0%,545.2% earth=c(50.0%,17.8%) top=9.3% bottom=26.2% sides=43.7..56.3% diam/short=15.7%
+t=6.9s state=APPROACH jump=1 done=1 stage=0 cycle=0 q=low fps=10.0 target=50.0%,58.8% earth=c(50.0%,20.5%) top=12.1% bottom=28.9% sides=43.7..56.3% diam/short=15.7%
+t=8.0s state=WAIT jump=1 done=1 stage=0 cycle=0 q=low fps=10.0 target=50.0%,61.3% earth=c(50.0%,16.7%) top=8.3% bottom=25.1% sides=43.7..56.3% diam/short=15.7%
+t=8.7s state=TAKEOFF jump=1 done=1 stage=0 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,16.6%) top=8.2% bottom=25.0% sides=43.7..56.3% diam/short=15.7%
+t=8.9s state=FLIGHT jump=1 done=1 stage=0 cycle=0 q=low fps=10.0 target=50.0%,68.7% earth=c(50.0%,24.3%) top=15.9% bottom=32.7% sides=43.7..56.3% diam/short=15.7%
+t=11.1s state=LAND jump=1 done=2 stage=0 cycle=0 q=low fps=10.0 target=50.0%,804.2% earth=c(50.0%,18.6%) top=9.2% bottom=27.9% sides=43.0..57.0% diam/short=17.3%
+t=11.7s state=APPROACH jump=2 done=2 stage=0 cycle=0 q=low fps=10.0 target=50.0%,58.7% earth=c(50.0%,21.5%) top=12.2% bottom=30.8% sides=43.0..57.0% diam/short=17.3%
+t=12.9s state=TAKEOFF jump=2 done=2 stage=0 cycle=0 q=low fps=10.0 target=50.0%,61.4% earth=c(50.0%,17.5%) top=8.2% bottom=26.8% sides=43.0..57.0% diam/short=17.3%
+t=13.3s state=FLIGHT jump=2 done=2 stage=0 cycle=0 q=low fps=10.0 target=50.0%,68.7% earth=c(50.0%,24.3%) top=15.0% bottom=33.6% sides=43.0..57.0% diam/short=17.3%
+  shot early
+t=15.8s state=LAND jump=2 done=3 stage=0 cycle=0 q=low fps=10.0 target=50.0%,-1224.4% earth=c(50.0%,20.6%) top=10.4% bottom=30.8% sides=42.3..57.7% diam/short=19.0%
+t=16.4s state=APPROACH jump=3 done=3 stage=0 cycle=0 q=low fps=10.0 target=50.0%,58.9% earth=c(50.0%,22.9%) top=12.7% bottom=33.1% sides=42.3..57.7% diam/short=19.0%
+t=17.7s state=WAIT jump=3 done=3 stage=0 cycle=0 q=low fps=10.0 target=50.0%,61.3% earth=c(50.0%,18.8%) top=8.6% bottom=29.0% sides=42.3..57.7% diam/short=19.0%
+t=18.3s state=TAKEOFF jump=3 done=3 stage=0 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,18.4%) top=8.2% bottom=28.6% sides=42.3..57.7% diam/short=19.0%
+t=18.6s state=FLIGHT jump=3 done=3 stage=0 cycle=0 q=low fps=10.0 target=50.0%,69.0% earth=c(50.0%,26.3%) top=16.1% bottom=36.5% sides=42.3..57.7% diam/short=19.0%
+t=21.0s state=LAND jump=3 done=4 stage=0 cycle=0 q=low fps=10.0 target=50.0%,-596.5% earth=c(50.0%,21.5%) top=10.4% bottom=32.6% sides=41.7..58.3% diam/short=20.7%
+t=21.6s state=APPROACH jump=4 done=4 stage=0 cycle=0 q=low fps=10.0 target=50.0%,58.7% earth=c(50.0%,24.1%) top=13.0% bottom=35.2% sides=41.7..58.3% diam/short=20.7%
+t=22.9s state=WAIT jump=4 done=4 stage=0 cycle=0 q=low fps=10.0 target=50.0%,61.4% earth=c(50.0%,19.4%) top=8.3% bottom=30.5% sides=41.7..58.3% diam/short=20.7%
+t=23.5s state=TAKEOFF jump=4 done=4 stage=0 cycle=0 q=low fps=10.0 target=50.0%,60.5% earth=c(50.0%,19.3%) top=8.2% bottom=30.4% sides=41.7..58.3% diam/short=20.7%
+t=23.7s state=FLIGHT jump=4 done=4 stage=0 cycle=0 q=low fps=10.0 target=50.0%,69.2% earth=c(50.0%,27.2%) top=16.1% bottom=38.3% sides=41.7..58.3% diam/short=20.7%
+t=26.2s state=LAND jump=4 done=5 stage=0 cycle=0 q=low fps=10.0 target=50.0%,-471.6% earth=c(50.0%,22.0%) top=10.0% bottom=34.0% sides=41.0..59.0% diam/short=22.3%
+t=26.9s state=APPROACH jump=5 done=5 stage=0 cycle=0 q=low fps=10.0 target=50.0%,58.7% earth=c(50.0%,24.6%) top=12.6% bottom=36.6% sides=41.0..59.0% diam/short=22.3%
+t=28.2s state=WAIT jump=5 done=5 stage=0 cycle=0 q=low fps=10.0 target=50.0%,61.5% earth=c(50.0%,20.2%) top=8.2% bottom=32.2% sides=41.0..59.0% diam/short=22.3%
+t=28.9s state=TAKEOFF jump=5 done=5 stage=0 cycle=0 q=low fps=10.0 target=50.0%,60.5% earth=c(50.0%,20.2%) top=8.2% bottom=32.2% sides=41.0..59.0% diam/short=22.3%
+t=29.2s state=FLIGHT jump=5 done=5 stage=0 cycle=0 q=low fps=10.0 target=50.0%,69.3% earth=c(50.0%,28.1%) top=16.1% bottom=40.1% sides=41.0..59.0% diam/short=22.3%
+t=31.7s state=LAND jump=5 done=6 stage=0 cycle=0 q=low fps=10.0 target=50.0%,-381.5% earth=c(50.0%,22.6%) top=9.7% bottom=35.5% sides=40.3..59.7% diam/short=24.0%
+t=32.6s state=STAGE jump=5 done=6 stage=0 cycle=0 q=low fps=10.0 target=50.0%,-139.7% earth=c(50.0%,25.5%) top=12.6% bottom=38.4% sides=40.3..59.7% diam/short=24.0%
+t=33.6s state=APPROACH jump=6 done=6 stage=1 cycle=0 q=low fps=10.0 target=50.0%,59.8% earth=c(50.0%,24.7%) top=11.8% bottom=37.6% sides=40.3..59.7% diam/short=24.0%
+t=34.8s state=TAKEOFF jump=6 done=6 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.6% earth=c(50.0%,21.1%) top=8.2% bottom=34.0% sides=40.3..59.7% diam/short=24.0%
+t=35.2s state=FLIGHT jump=6 done=6 stage=1 cycle=0 q=low fps=10.0 target=50.0%,70.1% earth=c(50.0%,29.0%) top=16.1% bottom=41.9% sides=40.3..59.7% diam/short=24.0%
+t=38.3s state=LAND jump=6 done=7 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-114.0% earth=c(50.0%,26.7%) top=12.5% bottom=40.8% sides=39.4..60.6% diam/short=26.3%
+t=39.0s state=APPROACH jump=7 done=7 stage=1 cycle=0 q=low fps=10.0 target=50.0%,58.1% earth=c(50.0%,30.1%) top=15.9% bottom=44.3% sides=39.4..60.6% diam/short=26.3%
+t=40.4s state=WAIT jump=7 done=7 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.3% earth=c(50.0%,23.6%) top=9.4% bottom=37.7% sides=39.4..60.6% diam/short=26.3%
+t=41.0s state=TAKEOFF jump=7 done=7 stage=1 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,22.4%) top=8.2% bottom=36.5% sides=39.4..60.6% diam/short=26.3%
+t=41.2s state=FLIGHT jump=7 done=7 stage=1 cycle=0 q=low fps=10.0 target=50.0%,69.0% earth=c(50.0%,30.2%) top=16.0% bottom=44.3% sides=39.4..60.6% diam/short=26.3%
+t=44.3s state=LAND jump=7 done=8 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-95.5% earth=c(50.0%,27.5%) top=12.1% bottom=42.9% sides=38.4..61.6% diam/short=28.7%
+t=44.9s state=APPROACH jump=8 done=8 stage=1 cycle=0 q=low fps=10.0 target=50.0%,58.0% earth=c(50.0%,31.2%) top=15.8% bottom=46.6% sides=38.4..61.6% diam/short=28.7%
+t=46.4s state=WAIT jump=8 done=8 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.4% earth=c(50.0%,24.6%) top=9.2% bottom=40.1% sides=38.4..61.6% diam/short=28.7%
+t=47.0s state=TAKEOFF jump=8 done=8 stage=1 cycle=0 q=low fps=10.0 target=50.0%,60.5% earth=c(50.0%,23.6%) top=8.2% bottom=39.0% sides=38.4..61.6% diam/short=28.7%
+t=47.2s state=FLIGHT jump=8 done=8 stage=1 cycle=0 q=low fps=10.0 target=50.0%,68.9% earth=c(50.0%,31.4%) top=16.0% bottom=46.8% sides=38.4..61.6% diam/short=28.7%
+t=50.6s state=LAND jump=8 done=9 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-94.7% earth=c(50.0%,28.0%) top=11.3% bottom=44.7% sides=37.5..62.5% diam/short=31.0%
+t=51.3s state=APPROACH jump=9 done=9 stage=1 cycle=0 q=low fps=10.0 target=50.0%,58.0% earth=c(50.0%,32.0%) top=15.3% bottom=48.6% sides=37.5..62.5% diam/short=31.0%
+t=52.8s state=WAIT jump=9 done=9 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.3% earth=c(50.0%,26.0%) top=9.4% bottom=42.7% sides=37.5..62.5% diam/short=31.0%
+t=53.5s state=TAKEOFF jump=9 done=9 stage=1 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,24.9%) top=8.2% bottom=41.5% sides=37.5..62.5% diam/short=31.0%
+t=53.7s state=FLIGHT jump=9 done=9 stage=1 cycle=0 q=low fps=10.0 target=50.0%,68.9% earth=c(50.0%,32.6%) top=16.0% bottom=49.3% sides=37.5..62.5% diam/short=31.0%
+t=57.1s state=LAND jump=9 done=10 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-51.2% earth=c(50.0%,31.1%) top=13.2% bottom=49.0% sides=36.6..63.4% diam/short=33.3%
+t=57.8s state=APPROACH jump=10 done=10 stage=1 cycle=0 q=low fps=10.0 target=50.0%,58.3% earth=c(50.0%,33.9%) top=16.0% bottom=51.8% sides=36.6..63.4% diam/short=33.3%
+t=59.4s state=TAKEOFF jump=10 done=10 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.4% earth=c(50.0%,27.0%) top=9.1% bottom=45.0% sides=36.6..63.4% diam/short=33.3%
+t=59.8s state=FLIGHT jump=10 done=10 stage=1 cycle=0 q=low fps=10.0 target=50.0%,69.7% earth=c(50.0%,34.0%) top=16.1% bottom=51.9% sides=36.6..63.4% diam/short=33.3%
+t=63.3s state=LAND jump=10 done=11 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-48.0% earth=c(50.0%,31.7%) top=12.5% bottom=50.9% sides=35.6..64.4% diam/short=35.7%
+t=64.0s state=APPROACH jump=11 done=11 stage=1 cycle=0 q=low fps=10.0 target=50.0%,58.2% earth=c(50.0%,35.0%) top=15.8% bottom=54.2% sides=35.6..64.4% diam/short=35.7%
+t=65.5s state=WAIT jump=11 done=11 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.3% earth=c(50.0%,28.6%) top=9.4% bottom=47.8% sides=35.6..64.4% diam/short=35.7%
+t=66.1s state=TAKEOFF jump=11 done=11 stage=1 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,27.4%) top=8.2% bottom=46.5% sides=35.6..64.4% diam/short=35.7%
+t=66.3s state=FLIGHT jump=11 done=11 stage=1 cycle=0 q=low fps=10.0 target=50.0%,69.1% earth=c(50.0%,35.1%) top=15.9% bottom=54.2% sides=35.6..64.4% diam/short=35.7%
+t=70.0s state=LAND jump=11 done=12 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-47.4% earth=c(50.0%,32.6%) top=12.2% bottom=53.0% sides=34.7..65.3% diam/short=38.0%
+t=70.9s state=STAGE jump=11 done=12 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-15.1% earth=c(50.0%,36.3%) top=15.9% bottom=56.7% sides=34.7..65.3% diam/short=38.0%
+t=72.0s state=APPROACH jump=12 done=12 stage=2 cycle=0 q=low fps=10.0 target=50.0%,59.7% earth=c(50.0%,34.3%) top=13.9% bottom=54.7% sides=34.7..65.3% diam/short=38.0%
+t=73.4s state=WAIT jump=12 done=12 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.6% earth=c(50.0%,28.6%) top=8.2% bottom=49.1% sides=34.7..65.3% diam/short=38.0%
+t=74.1s state=TAKEOFF jump=12 done=12 stage=2 cycle=0 q=low fps=10.0 target=50.0%,60.5% earth=c(50.0%,28.6%) top=8.2% bottom=49.0% sides=34.7..65.3% diam/short=38.0%
+t=74.3s state=FLIGHT jump=12 done=12 stage=2 cycle=0 q=low fps=10.0 target=50.0%,69.1% earth=c(50.0%,36.3%) top=15.9% bottom=56.7% sides=34.7..65.3% diam/short=38.0%
+t=78.1s state=LAND jump=12 done=13 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-37.3% earth=c(50.0%,35.5%) top=13.5% bottom=57.4% sides=33.5..66.5% diam/short=40.8%
+t=78.8s state=APPROACH jump=13 done=13 stage=2 cycle=0 q=low fps=10.0 target=50.0%,57.2% earth=c(50.0%,40.6%) top=18.6% bottom=62.5% sides=33.5..66.5% diam/short=40.8%
+t=80.6s state=WAIT jump=13 done=13 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.4% earth=c(50.0%,31.7%) top=9.7% bottom=53.6% sides=33.5..66.5% diam/short=40.8%
+t=81.3s state=TAKEOFF jump=13 done=13 stage=2 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,30.2%) top=8.2% bottom=52.1% sides=33.5..66.5% diam/short=40.8%
+t=81.5s state=FLIGHT jump=13 done=13 stage=2 cycle=0 q=low fps=10.0 target=50.0%,69.1% earth=c(50.0%,37.8%) top=15.9% bottom=59.8% sides=33.5..66.5% diam/short=40.8%
+  shot mid
+t=85.7s state=LAND jump=13 done=14 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-22.5% earth=c(50.0%,38.6%) top=15.1% bottom=62.0% sides=32.4..67.6% diam/short=43.7%
+t=86.3s state=APPROACH jump=14 done=14 stage=2 cycle=0 q=low fps=10.0 target=50.0%,57.8% earth=c(50.0%,42.0%) top=18.6% bottom=65.5% sides=32.4..67.6% diam/short=43.7%
+t=88.0s state=TAKEOFF jump=14 done=14 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.4% earth=c(50.0%,32.6%) top=9.1% bottom=56.0% sides=32.4..67.6% diam/short=43.7%
+t=88.4s state=FLIGHT jump=14 done=14 stage=2 cycle=0 q=low fps=10.0 target=50.0%,69.9% earth=c(50.0%,39.4%) top=16.0% bottom=62.9% sides=32.4..67.6% diam/short=43.7%
+t=92.5s state=LAND jump=14 done=15 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-21.4% earth=c(50.0%,39.3%) top=14.3% bottom=64.3% sides=31.3..68.7% diam/short=46.5%
+t=93.2s state=APPROACH jump=15 done=15 stage=2 cycle=0 q=low fps=10.0 target=50.0%,57.5% earth=c(50.0%,43.4%) top=18.4% bottom=68.4% sides=31.3..68.7% diam/short=46.5%
+t=94.9s state=WAIT jump=15 done=15 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.3% earth=c(50.0%,34.5%) top=9.5% bottom=59.5% sides=31.3..68.7% diam/short=46.5%
+t=95.5s state=TAKEOFF jump=15 done=15 stage=2 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,33.2%) top=8.2% bottom=58.2% sides=31.3..68.7% diam/short=46.5%
+t=95.7s state=FLIGHT jump=15 done=15 stage=2 cycle=0 q=low fps=10.0 target=50.0%,69.0% earth=c(50.0%,40.8%) top=15.8% bottom=65.8% sides=31.3..68.7% diam/short=46.5%
+t=99.8s state=LAND jump=15 done=16 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-27.0% earth=c(50.0%,40.0%) top=13.4% bottom=66.5% sides=30.1..69.9% diam/short=49.3%
+t=100.4s state=APPROACH jump=16 done=16 stage=2 cycle=0 q=low fps=10.0 target=50.0%,57.4% earth=c(50.0%,44.5%) top=18.0% bottom=71.0% sides=30.1..69.9% diam/short=49.3%
+t=102.1s state=WAIT jump=16 done=16 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.4% earth=c(50.0%,35.5%) top=9.0% bottom=62.0% sides=30.1..69.9% diam/short=49.3%
+t=102.7s state=TAKEOFF jump=16 done=16 stage=2 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,34.7%) top=8.2% bottom=61.2% sides=30.1..69.9% diam/short=49.3%
+t=103.0s state=FLIGHT jump=16 done=16 stage=2 cycle=0 q=low fps=10.0 target=50.0%,69.0% earth=c(50.0%,42.3%) top=15.8% bottom=68.8% sides=30.1..69.9% diam/short=49.3%
+t=107.2s state=LAND jump=16 done=17 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-28.6% earth=c(50.0%,40.7%) top=12.7% bottom=68.7% sides=29.0..71.0% diam/short=52.2%
+t=107.8s state=APPROACH jump=17 done=17 stage=2 cycle=0 q=low fps=10.0 target=50.0%,57.3% earth=c(50.0%,45.6%) top=17.6% bottom=73.6% sides=29.0..71.0% diam/short=52.2%
+t=109.6s state=WAIT jump=17 done=17 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.5% earth=c(50.0%,36.9%) top=8.9% bottom=65.0% sides=29.0..71.0% diam/short=52.2%
+t=110.3s state=TAKEOFF jump=17 done=17 stage=2 cycle=0 q=low fps=10.0 target=50.0%,60.5% earth=c(50.0%,36.2%) top=8.2% bottom=64.3% sides=29.0..71.0% diam/short=52.2%
+t=110.5s state=FLIGHT jump=17 done=17 stage=2 cycle=0 q=low fps=10.0 target=50.0%,69.0% earth=c(50.0%,43.8%) top=15.7% bottom=71.8% sides=29.0..71.0% diam/short=52.2%
+t=115.0s state=LAND jump=17 done=18 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-13.4% earth=c(50.0%,44.1%) top=14.6% bottom=73.7% sides=27.8..72.2% diam/short=55.0%
+t=116.0s state=STAGE jump=17 done=18 stage=2 cycle=0 q=low fps=10.0 target=50.0%,5.7% earth=c(50.0%,47.6%) top=18.0% bottom=77.1% sides=27.8..72.2% diam/short=55.0%
+t=117.1s state=APPROACH jump=18 done=18 stage=3 cycle=0 q=low fps=10.0 target=50.0%,59.7% earth=c(50.0%,44.6%) top=15.1% bottom=74.2% sides=27.8..72.2% diam/short=55.0%
+t=119.0s state=TAKEOFF jump=18 done=18 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.5% earth=c(50.0%,37.8%) top=8.2% bottom=67.3% sides=27.8..72.2% diam/short=55.0%
+t=119.4s state=FLIGHT jump=18 done=18 stage=3 cycle=0 q=low fps=10.0 target=50.0%,69.9% earth=c(50.0%,45.3%) top=15.7% bottom=74.8% sides=27.8..72.2% diam/short=55.0%
+t=123.9s state=LAND jump=18 done=19 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-20.3% earth=c(50.0%,45.3%) top=14.4% bottom=76.2% sides=26.8..73.2% diam/short=57.5%
+t=124.6s state=APPROACH jump=19 done=19 stage=3 cycle=0 q=low fps=10.0 target=50.0%,56.9% earth=c(50.0%,50.7%) top=19.8% bottom=81.6% sides=26.8..73.2% diam/short=57.5%
+t=126.3s state=WAIT jump=19 done=19 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.7% earth=c(50.0%,40.9%) top=10.0% bottom=71.8% sides=26.8..73.2% diam/short=57.5%
+t=126.9s state=TAKEOFF jump=19 done=19 stage=3 cycle=0 q=low fps=10.0 target=50.0%,60.6% earth=c(50.0%,39.1%) top=8.2% bottom=70.0% sides=26.8..73.2% diam/short=57.5%
+t=127.2s state=FLIGHT jump=19 done=19 stage=3 cycle=0 q=low fps=10.0 target=50.0%,69.1% earth=c(50.0%,46.6%) top=15.7% bottom=77.5% sides=26.8..73.2% diam/short=57.5%
+t=132.1s state=LAND jump=19 done=20 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-11.4% earth=c(50.0%,48.0%) top=15.8% bottom=80.3% sides=25.8..74.2% diam/short=60.0%
+t=132.8s state=APPROACH jump=20 done=20 stage=3 cycle=0 q=low fps=10.0 target=50.0%,57.4% earth=c(50.0%,52.0%) top=19.7% bottom=84.2% sides=25.8..74.2% diam/short=60.0%
+t=134.6s state=WAIT jump=20 done=20 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.7% earth=c(50.0%,42.0%) top=9.7% bottom=74.2% sides=25.8..74.2% diam/short=60.0%
+t=135.3s state=TAKEOFF jump=20 done=20 stage=3 cycle=0 q=low fps=10.0 target=50.0%,60.6% earth=c(50.0%,40.4%) top=8.2% bottom=72.7% sides=25.8..74.2% diam/short=60.0%
+t=135.5s state=FLIGHT jump=20 done=20 stage=3 cycle=0 q=low fps=10.0 target=50.0%,69.3% earth=c(50.0%,47.9%) top=15.7% bottom=80.2% sides=25.8..74.2% diam/short=60.0%
+t=140.3s state=LAND jump=20 done=21 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-15.5% earth=c(50.0%,48.4%) top=14.8% bottom=82.0% sides=24.8..75.2% diam/short=62.5%
+t=141.0s state=APPROACH jump=21 done=21 stage=3 cycle=0 q=low fps=10.0 target=50.0%,57.2% earth=c(50.0%,53.0%) top=19.4% bottom=86.6% sides=24.8..75.2% diam/short=62.5%
+t=142.8s state=WAIT jump=21 done=21 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.8% earth=c(50.0%,43.0%) top=9.4% bottom=76.6% sides=24.8..75.2% diam/short=62.5%
+t=143.4s state=TAKEOFF jump=21 done=21 stage=3 cycle=0 q=low fps=10.0 target=50.0%,60.6% earth=c(50.0%,41.8%) top=8.2% bottom=75.4% sides=24.8..75.2% diam/short=62.5%
+t=143.6s state=FLIGHT jump=21 done=21 stage=3 cycle=0 q=low fps=10.0 target=50.0%,69.3% earth=c(50.0%,49.3%) top=15.7% bottom=82.9% sides=24.8..75.2% diam/short=62.5%
+t=148.5s state=LAND jump=21 done=22 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-12.6% earth=c(50.0%,49.3%) top=14.3% bottom=84.2% sides=23.8..76.2% diam/short=65.0%
+t=149.1s state=APPROACH jump=22 done=22 stage=3 cycle=0 q=low fps=10.0 target=50.0%,56.8% earth=c(50.0%,54.7%) top=19.8% bottom=89.6% sides=23.8..76.2% diam/short=65.0%
+t=150.7s state=TAKEOFF jump=22 done=22 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.8% earth=c(50.0%,44.8%) top=9.9% bottom=79.7% sides=23.8..76.2% diam/short=65.0%
+t=151.1s state=FLIGHT jump=22 done=22 stage=3 cycle=0 q=low fps=10.0 target=50.0%,70.4% earth=c(50.0%,51.1%) top=16.2% bottom=86.1% sides=23.8..76.2% diam/short=65.0%
+t=156.1s state=LAND jump=22 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-3.2% earth=c(50.0%,52.2%) top=15.9% bottom=88.5% sides=22.8..77.2% diam/short=67.5%
+t=156.8s state=APPROACH jump=23 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,57.4% earth=c(50.0%,56.0%) top=19.8% bottom=92.3% sides=22.8..77.2% diam/short=67.5%
+t=158.7s state=WAIT jump=23 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.5% earth=c(50.0%,46.6%) top=10.3% bottom=82.9% sides=22.8..77.2% diam/short=67.5%
+t=159.4s state=FINAL jump=23 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,65.1% earth=c(50.0%,48.2%) top=11.9% bottom=84.5% sides=22.8..77.2% diam/short=67.5%
+  shot climax
+t=168.4s state=AFTER jump=23 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-414.6% earth=c(50.0%,50.0%) top=7.2% bottom=92.8% sides=17.9..82.1% diam/short=79.6%
+t=176.2s state=RETURN jump=23 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-433.9% earth=c(50.0%,50.0%) top=7.2% bottom=92.8% sides=17.9..82.1% diam/short=79.6%
+t=177.5s state=RETURN jump=0 done=0 stage=0 cycle=1 q=low fps=10.0 target=50.0%,86.0% earth=c(50.0%,44.0%) top=36.5% bottom=51.5% sides=44.4..55.6% diam/short=14.0%
+t=179.2s state=WAIT jump=0 done=0 stage=0 cycle=1 q=low fps=10.0 target=50.0%,60.3% earth=c(50.0%,15.7%) top=8.2% bottom=23.3% sides=44.4..55.6% diam/short=14.0%
+t=180.1s state=TAKEOFF jump=0 done=0 stage=0 cycle=1 q=low fps=10.0 target=50.0%,60.1% earth=c(50.0%,15.9%) top=8.4% bottom=23.4% sides=44.4..55.6% diam/short=14.0%
+states visited: TAKEOFF,FLIGHT,LAND,APPROACH,WAIT,STAGE,FINAL,AFTER,RETURN
+target |x-50%| max over 221 samples: 0.00% ; samples with y outside 45-65%: 0
+earth |x-50%| max: 0.00% ; min top edge (with atmosphere): 7.2% ; samples breaking 7% side/top margin: 0/812
+climax/afterglow earth samples outside 7% margins (all 4 sides): 0/85 ; max bottom 93.0%
+LAND transitions: 23 ; FINAL reached: true ; replay started after RETURN: true
+__ready=true __errors=[] consoleErrors=0
+RESULT: PASS
+== 768x1024 http://localhost:8128/games/d08/index.html?autotest&q=low
+__ready=true after 3656ms
+t=4.0s state=TAKEOFF jump=0 done=0 stage=0 cycle=0 q=low fps=60.0 target=50.0%,60.0% earth=c(50.0%,14.8%) top=9.2% bottom=20.5% sides=42.5..57.5% diam/short=14.0%
+t=4.3s state=FLIGHT jump=0 done=0 stage=0 cycle=0 q=low fps=60.0 target=50.0%,66.9% earth=c(50.0%,21.3%) top=15.6% bottom=26.9% sides=42.5..57.5% diam/short=14.0%
+t=6.6s state=LAND jump=0 done=1 stage=0 cycle=0 q=low fps=10.0 target=50.0%,269.1% earth=c(50.0%,15.6%) top=9.3% bottom=21.9% sides=41.6..58.4% diam/short=15.7%
+t=7.3s state=APPROACH jump=1 done=1 stage=0 cycle=0 q=low fps=10.0 target=50.0%,58.9% earth=c(50.0%,18.1%) top=11.8% bottom=24.4% sides=41.6..58.4% diam/short=15.7%
+t=8.6s state=WAIT jump=1 done=1 stage=0 cycle=0 q=low fps=10.0 target=50.0%,61.1% earth=c(50.0%,14.8%) top=8.5% bottom=21.1% sides=41.6..58.4% diam/short=15.7%
+t=9.2s state=TAKEOFF jump=1 done=1 stage=0 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,14.5%) top=8.2% bottom=20.8% sides=41.6..58.4% diam/short=15.7%
+t=9.4s state=FLIGHT jump=1 done=1 stage=0 cycle=0 q=low fps=10.0 target=50.0%,67.4% earth=c(50.0%,21.2%) top=14.9% bottom=27.5% sides=41.6..58.4% diam/short=15.7%
+t=11.9s state=LAND jump=1 done=2 stage=0 cycle=0 q=low fps=10.0 target=50.0%,320.6% earth=c(50.0%,16.2%) top=9.2% bottom=23.2% sides=40.7..59.3% diam/short=17.3%
+t=12.6s state=APPROACH jump=2 done=2 stage=0 cycle=0 q=low fps=10.0 target=50.0%,58.9% earth=c(50.0%,18.8%) top=11.8% bottom=25.8% sides=40.7..59.3% diam/short=17.3%
+t=13.9s state=TAKEOFF jump=2 done=2 stage=0 cycle=0 q=low fps=10.0 target=50.0%,61.1% earth=c(50.0%,15.4%) top=8.4% bottom=22.4% sides=40.7..59.3% diam/short=17.3%
+t=14.3s state=FLIGHT jump=2 done=2 stage=0 cycle=0 q=low fps=10.0 target=50.0%,67.3% earth=c(50.0%,21.1%) top=14.1% bottom=28.1% sides=40.7..59.3% diam/short=17.3%
+  shot early
+t=16.9s state=LAND jump=2 done=3 stage=0 cycle=0 q=low fps=10.0 target=50.0%,689.8% earth=c(50.0%,17.8%) top=10.2% bottom=25.5% sides=39.8..60.2% diam/short=19.0%
+t=17.5s state=APPROACH jump=3 done=3 stage=0 cycle=0 q=low fps=10.0 target=50.0%,59.0% earth=c(50.0%,19.9%) top=12.3% bottom=27.6% sides=39.8..60.2% diam/short=19.0%
+t=18.8s state=WAIT jump=3 done=3 stage=0 cycle=0 q=low fps=10.0 target=50.0%,61.0% earth=c(50.0%,16.4%) top=8.7% bottom=24.1% sides=39.8..60.2% diam/short=19.0%
+t=19.4s state=TAKEOFF jump=3 done=3 stage=0 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,15.9%) top=8.2% bottom=23.5% sides=39.8..60.2% diam/short=19.0%
+t=19.7s state=FLIGHT jump=3 done=3 stage=0 cycle=0 q=low fps=10.0 target=50.0%,67.6% earth=c(50.0%,22.7%) top=15.1% bottom=30.4% sides=39.8..60.2% diam/short=19.0%
+t=22.3s state=LAND jump=3 done=4 stage=0 cycle=0 q=low fps=10.0 target=50.0%,1660.3% earth=c(50.0%,18.5%) top=10.2% bottom=26.9% sides=38.9..61.1% diam/short=20.7%
+t=23.0s state=APPROACH jump=4 done=4 stage=0 cycle=0 q=low fps=10.0 target=50.0%,58.9% earth=c(50.0%,20.8%) top=12.5% bottom=29.2% sides=38.9..61.1% diam/short=20.7%
+t=24.3s state=WAIT jump=4 done=4 stage=0 cycle=0 q=low fps=10.0 target=50.0%,61.2% earth=c(50.0%,16.9%) top=8.5% bottom=25.2% sides=38.9..61.1% diam/short=20.7%
+t=25.0s state=TAKEOFF jump=4 done=4 stage=0 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,16.5%) top=8.2% bottom=24.9% sides=38.9..61.1% diam/short=20.7%
+t=25.2s state=FLIGHT jump=4 done=4 stage=0 cycle=0 q=low fps=10.0 target=50.0%,68.1% earth=c(50.0%,23.7%) top=15.4% bottom=32.0% sides=38.9..61.1% diam/short=20.7%
+t=28.2s state=LAND jump=4 done=5 stage=0 cycle=0 q=low fps=10.0 target=50.0%,-44820.6% earth=c(50.0%,18.8%) top=9.8% bottom=27.8% sides=38.0..62.0% diam/short=22.3%
+t=29.0s state=APPROACH jump=5 done=5 stage=0 cycle=0 q=low fps=10.0 target=50.0%,58.9% earth=c(50.0%,21.2%) top=12.2% bottom=30.2% sides=38.0..62.0% diam/short=22.3%
+t=30.2s state=WAIT jump=5 done=5 stage=0 cycle=0 q=low fps=10.0 target=50.0%,61.2% earth=c(50.0%,17.3%) top=8.3% bottom=26.3% sides=38.0..62.0% diam/short=22.3%
+t=30.8s state=TAKEOFF jump=5 done=5 stage=0 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,17.2%) top=8.2% bottom=26.2% sides=38.0..62.0% diam/short=22.3%
+t=31.1s state=FLIGHT jump=5 done=5 stage=0 cycle=0 q=low fps=10.0 target=50.0%,68.4% earth=c(50.0%,24.6%) top=15.5% bottom=33.6% sides=38.0..62.0% diam/short=22.3%
+t=33.5s state=LAND jump=5 done=6 stage=0 cycle=0 q=low fps=10.0 target=50.0%,-1618.1% earth=c(50.0%,19.3%) top=9.6% bottom=29.0% sides=37.1..62.9% diam/short=24.0%
+t=34.4s state=STAGE jump=5 done=6 stage=0 cycle=0 q=low fps=10.0 target=50.0%,-235.9% earth=c(50.0%,21.8%) top=12.2% bottom=31.5% sides=37.1..62.9% diam/short=24.0%
+t=35.5s state=APPROACH jump=6 done=6 stage=1 cycle=0 q=low fps=10.0 target=50.0%,59.8% earth=c(50.0%,21.2%) top=11.5% bottom=30.8% sides=37.1..62.9% diam/short=24.0%
+t=36.9s state=TAKEOFF jump=6 done=6 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.4% earth=c(50.0%,17.9%) top=8.2% bottom=27.5% sides=37.1..62.9% diam/short=24.0%
+t=37.3s state=FLIGHT jump=6 done=6 stage=1 cycle=0 q=low fps=10.0 target=50.0%,68.9% earth=c(50.0%,25.1%) top=15.4% bottom=34.8% sides=37.1..62.9% diam/short=24.0%
+t=40.4s state=LAND jump=6 done=7 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-145.2% earth=c(50.0%,22.7%) top=12.1% bottom=33.4% sides=35.8..64.2% diam/short=26.3%
+t=41.0s state=APPROACH jump=7 done=7 stage=1 cycle=0 q=low fps=10.0 target=50.0%,58.4% earth=c(50.0%,25.8%) top=15.2% bottom=36.4% sides=35.8..64.2% diam/short=26.3%
+t=42.6s state=WAIT jump=7 done=7 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.1% earth=c(50.0%,20.1%) top=9.5% bottom=30.7% sides=35.8..64.2% diam/short=26.3%
+t=43.2s state=TAKEOFF jump=7 done=7 stage=1 cycle=0 q=low fps=10.0 target=50.0%,60.3% earth=c(50.0%,18.9%) top=8.3% bottom=29.5% sides=35.8..64.2% diam/short=26.3%
+t=43.4s state=FLIGHT jump=7 done=7 stage=1 cycle=0 q=low fps=10.0 target=50.0%,68.1% earth=c(50.0%,26.2%) top=15.6% bottom=36.8% sides=35.8..64.2% diam/short=26.3%
+t=46.4s state=LAND jump=7 done=8 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-113.8% earth=c(50.0%,23.3%) top=11.8% bottom=34.9% sides=34.6..65.4% diam/short=28.7%
+t=47.1s state=APPROACH jump=8 done=8 stage=1 cycle=0 q=low fps=10.0 target=50.0%,58.3% earth=c(50.0%,26.6%) top=15.1% bottom=38.2% sides=34.6..65.4% diam/short=28.7%
+t=48.5s state=WAIT jump=8 done=8 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.2% earth=c(50.0%,20.9%) top=9.4% bottom=32.5% sides=34.6..65.4% diam/short=28.7%
+t=49.2s state=TAKEOFF jump=8 done=8 stage=1 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,19.8%) top=8.2% bottom=31.3% sides=34.6..65.4% diam/short=28.7%
+t=49.4s state=FLIGHT jump=8 done=8 stage=1 cycle=0 q=low fps=10.0 target=50.0%,68.0% earth=c(50.0%,27.0%) top=15.5% bottom=38.6% sides=34.6..65.4% diam/short=28.7%
+t=52.4s state=LAND jump=8 done=9 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-107.3% earth=c(50.0%,23.6%) top=11.1% bottom=36.1% sides=33.3..66.7% diam/short=31.0%
+t=53.0s state=APPROACH jump=9 done=9 stage=1 cycle=0 q=low fps=10.0 target=50.0%,58.3% earth=c(50.0%,27.1%) top=14.6% bottom=39.6% sides=33.3..66.7% diam/short=31.0%
+t=54.4s state=WAIT jump=9 done=9 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.1% earth=c(50.0%,22.0%) top=9.5% bottom=34.5% sides=33.3..66.7% diam/short=31.0%
+t=55.1s state=TAKEOFF jump=9 done=9 stage=1 cycle=0 q=low fps=10.0 target=50.0%,60.3% earth=c(50.0%,20.8%) top=8.3% bottom=33.3% sides=33.3..66.7% diam/short=31.0%
+t=55.3s state=FLIGHT jump=9 done=9 stage=1 cycle=0 q=low fps=10.0 target=50.0%,68.0% earth=c(50.0%,28.0%) top=15.5% bottom=40.5% sides=33.3..66.7% diam/short=31.0%
+t=59.0s state=LAND jump=9 done=10 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-54.3% earth=c(50.0%,26.2%) top=12.7% bottom=39.6% sides=32.1..67.9% diam/short=33.3%
+t=59.7s state=APPROACH jump=10 done=10 stage=1 cycle=0 q=low fps=10.0 target=50.0%,58.5% earth=c(50.0%,28.7%) top=15.2% bottom=42.1% sides=32.1..67.9% diam/short=33.3%
+t=61.3s state=TAKEOFF jump=10 done=10 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.1% earth=c(50.0%,22.7%) top=9.3% bottom=36.1% sides=32.1..67.9% diam/short=33.3%
+t=61.7s state=FLIGHT jump=10 done=10 stage=1 cycle=0 q=low fps=10.0 target=50.0%,68.7% earth=c(50.0%,29.2%) top=15.7% bottom=42.6% sides=32.1..67.9% diam/short=33.3%
+t=65.0s state=LAND jump=10 done=11 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-49.1% earth=c(50.0%,26.6%) top=12.2% bottom=40.9% sides=30.8..69.2% diam/short=35.7%
+t=65.8s state=APPROACH jump=11 done=11 stage=1 cycle=0 q=low fps=10.0 target=50.0%,58.4% earth=c(50.0%,29.4%) top=15.1% bottom=43.8% sides=30.8..69.2% diam/short=35.7%
+t=67.2s state=WAIT jump=11 done=11 stage=1 cycle=0 q=low fps=10.0 target=50.0%,61.1% earth=c(50.0%,23.9%) top=9.5% bottom=38.3% sides=30.8..69.2% diam/short=35.7%
+t=67.9s state=TAKEOFF jump=11 done=11 stage=1 cycle=0 q=low fps=10.0 target=50.0%,60.3% earth=c(50.0%,22.7%) top=8.4% bottom=37.1% sides=30.8..69.2% diam/short=35.7%
+t=68.1s state=FLIGHT jump=11 done=11 stage=1 cycle=0 q=low fps=10.0 target=50.0%,68.2% earth=c(50.0%,29.9%) top=15.5% bottom=44.2% sides=30.8..69.2% diam/short=35.7%
+t=71.6s state=LAND jump=11 done=12 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-47.3% earth=c(50.0%,27.2%) top=11.9% bottom=42.5% sides=29.6..70.4% diam/short=38.0%
+t=72.4s state=STAGE jump=11 done=12 stage=1 cycle=0 q=low fps=10.0 target=50.0%,-14.5% earth=c(50.0%,30.4%) top=15.1% bottom=45.7% sides=29.6..70.4% diam/short=38.0%
+t=73.6s state=APPROACH jump=12 done=12 stage=2 cycle=0 q=low fps=10.0 target=50.0%,59.8% earth=c(50.0%,28.6%) top=13.3% bottom=44.0% sides=29.6..70.4% diam/short=38.0%
+t=75.1s state=WAIT jump=12 done=12 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.3% earth=c(50.0%,23.5%) top=8.2% bottom=38.8% sides=29.6..70.4% diam/short=38.0%
+t=75.7s state=TAKEOFF jump=12 done=12 stage=2 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,23.5%) top=8.2% bottom=38.8% sides=29.6..70.4% diam/short=38.0%
+t=75.9s state=FLIGHT jump=12 done=12 stage=2 cycle=0 q=low fps=10.0 target=50.0%,68.2% earth=c(50.0%,30.6%) top=15.3% bottom=46.0% sides=29.6..70.4% diam/short=38.0%
+t=79.7s state=LAND jump=12 done=13 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-33.7% earth=c(50.0%,29.6%) top=13.1% bottom=46.0% sides=28.1..71.9% diam/short=40.8%
+t=80.4s state=APPROACH jump=13 done=13 stage=2 cycle=0 q=low fps=10.0 target=50.0%,57.6% earth=c(50.0%,34.0%) top=17.6% bottom=50.5% sides=28.1..71.9% diam/short=40.8%
+t=82.2s state=WAIT jump=13 done=13 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.1% earth=c(50.0%,26.3%) top=9.8% bottom=42.7% sides=28.1..71.9% diam/short=40.8%
+t=82.8s state=TAKEOFF jump=13 done=13 stage=2 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,25.0%) top=8.5% bottom=41.4% sides=28.1..71.9% diam/short=40.8%
+t=83.0s state=FLIGHT jump=13 done=13 stage=2 cycle=0 q=low fps=10.0 target=50.0%,68.2% earth=c(50.0%,32.0%) top=15.5% bottom=48.5% sides=28.1..71.9% diam/short=40.8%
+  shot mid
+t=87.3s state=LAND jump=13 done=14 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-18.6% earth=c(50.0%,32.1%) top=14.5% bottom=49.7% sides=26.5..73.5% diam/short=43.7%
+t=88.0s state=APPROACH jump=14 done=14 stage=2 cycle=0 q=low fps=10.0 target=50.0%,58.1% earth=c(50.0%,35.1%) top=17.5% bottom=52.7% sides=26.5..73.5% diam/short=43.7%
+t=89.8s state=TAKEOFF jump=14 done=14 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.2% earth=c(50.0%,26.9%) top=9.3% bottom=44.5% sides=26.5..73.5% diam/short=43.7%
+t=90.3s state=FLIGHT jump=14 done=14 stage=2 cycle=0 q=low fps=10.0 target=50.0%,68.8% earth=c(50.0%,33.2%) top=15.6% bottom=50.8% sides=26.5..73.5% diam/short=43.7%
+t=94.5s state=LAND jump=14 done=15 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-16.8% earth=c(50.0%,32.5%) top=13.8% bottom=51.3% sides=25.0..75.0% diam/short=46.5%
+t=95.2s state=APPROACH jump=15 done=15 stage=2 cycle=0 q=low fps=10.0 target=50.0%,57.9% earth=c(50.0%,36.1%) top=17.3% bottom=54.8% sides=25.0..75.0% diam/short=46.5%
+t=96.9s state=WAIT jump=15 done=15 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.1% earth=c(50.0%,28.4%) top=9.6% bottom=47.1% sides=25.0..75.0% diam/short=46.5%
+t=97.6s state=TAKEOFF jump=15 done=15 stage=2 cycle=0 q=low fps=10.0 target=50.0%,60.3% earth=c(50.0%,27.2%) top=8.4% bottom=45.9% sides=25.0..75.0% diam/short=46.5%
+t=97.8s state=FLIGHT jump=15 done=15 stage=2 cycle=0 q=low fps=10.0 target=50.0%,68.1% earth=c(50.0%,34.2%) top=15.4% bottom=52.9% sides=25.0..75.0% diam/short=46.5%
+t=102.2s state=LAND jump=15 done=16 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-21.9% earth=c(50.0%,32.9%) top=13.0% bottom=52.8% sides=23.5..76.5% diam/short=49.3%
+t=102.9s state=APPROACH jump=16 done=16 stage=2 cycle=0 q=low fps=10.0 target=50.0%,57.8% earth=c(50.0%,36.9%) top=17.0% bottom=56.8% sides=23.5..76.5% diam/short=49.3%
+t=104.6s state=WAIT jump=16 done=16 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.2% earth=c(50.0%,29.1%) top=9.2% bottom=48.9% sides=23.5..76.5% diam/short=49.3%
+t=105.2s state=TAKEOFF jump=16 done=16 stage=2 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,28.1%) top=8.2% bottom=48.0% sides=23.5..76.5% diam/short=49.3%
+t=105.5s state=FLIGHT jump=16 done=16 stage=2 cycle=0 q=low fps=10.0 target=50.0%,68.1% earth=c(50.0%,35.1%) top=15.2% bottom=55.0% sides=23.5..76.5% diam/short=49.3%
+t=109.8s state=LAND jump=16 done=17 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-22.8% earth=c(50.0%,33.3%) top=12.3% bottom=54.4% sides=22.0..78.0% diam/short=52.2%
+t=110.5s state=APPROACH jump=17 done=17 stage=2 cycle=0 q=low fps=10.0 target=50.0%,57.7% earth=c(50.0%,37.6%) top=16.6% bottom=58.6% sides=22.0..78.0% diam/short=52.2%
+t=112.2s state=WAIT jump=17 done=17 stage=2 cycle=0 q=low fps=10.0 target=50.0%,61.2% earth=c(50.0%,30.1%) top=9.1% bottom=51.2% sides=22.0..78.0% diam/short=52.2%
+t=112.9s state=TAKEOFF jump=17 done=17 stage=2 cycle=0 q=low fps=10.0 target=50.0%,60.4% earth=c(50.0%,29.2%) top=8.2% bottom=50.3% sides=22.0..78.0% diam/short=52.2%
+t=113.1s state=FLIGHT jump=17 done=17 stage=2 cycle=0 q=low fps=10.0 target=50.0%,68.1% earth=c(50.0%,36.2%) top=15.2% bottom=57.2% sides=22.0..78.0% diam/short=52.2%
+t=117.6s state=LAND jump=17 done=18 stage=2 cycle=0 q=low fps=10.0 target=50.0%,-8.2% earth=c(50.0%,36.2%) top=14.0% bottom=58.3% sides=20.4..79.6% diam/short=55.0%
+t=118.6s state=STAGE jump=17 done=18 stage=2 cycle=0 q=low fps=10.0 target=50.0%,9.1% earth=c(50.0%,39.1%) top=17.0% bottom=61.3% sides=20.4..79.6% diam/short=55.0%
+t=119.8s state=APPROACH jump=18 done=18 stage=3 cycle=0 q=low fps=10.0 target=50.0%,59.8% earth=c(50.0%,36.5%) top=14.4% bottom=58.7% sides=20.4..79.6% diam/short=55.0%
+t=121.6s state=TAKEOFF jump=18 done=18 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.3% earth=c(50.0%,30.4%) top=8.2% bottom=52.5% sides=20.4..79.6% diam/short=55.0%
+t=122.1s state=FLIGHT jump=18 done=18 stage=3 cycle=0 q=low fps=10.0 target=50.0%,68.8% earth=c(50.0%,37.3%) top=15.1% bottom=59.5% sides=20.4..79.6% diam/short=55.0%
+t=127.0s state=LAND jump=18 done=19 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-14.2% earth=c(50.0%,37.0%) top=13.8% bottom=60.2% sides=19.1..80.9% diam/short=57.5%
+t=127.7s state=APPROACH jump=19 done=19 stage=3 cycle=0 q=low fps=10.0 target=50.0%,57.3% earth=c(50.0%,41.7%) top=18.5% bottom=64.9% sides=19.1..80.9% diam/short=57.5%
+t=129.3s state=WAIT jump=19 done=19 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.4% earth=c(50.0%,33.3%) top=10.1% bottom=56.5% sides=19.1..80.9% diam/short=57.5%
+t=130.0s state=TAKEOFF jump=19 done=19 stage=3 cycle=0 q=low fps=10.0 target=50.0%,60.5% earth=c(50.0%,31.5%) top=8.4% bottom=54.7% sides=19.1..80.9% diam/short=57.5%
+t=130.3s state=FLIGHT jump=19 done=19 stage=3 cycle=0 q=low fps=10.0 target=50.0%,68.2% earth=c(50.0%,38.4%) top=15.2% bottom=61.6% sides=19.1..80.9% diam/short=57.5%
+t=135.4s state=LAND jump=19 done=20 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-5.7% earth=c(50.0%,39.3%) top=15.1% bottom=63.5% sides=17.8..82.2% diam/short=60.0%
+t=136.2s state=APPROACH jump=20 done=20 stage=3 cycle=0 q=low fps=10.0 target=50.0%,57.8% earth=c(50.0%,42.6%) top=18.5% bottom=66.8% sides=17.8..82.2% diam/short=60.0%
+t=137.9s state=WAIT jump=20 done=20 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.4% earth=c(50.0%,34.0%) top=9.9% bottom=58.2% sides=17.8..82.2% diam/short=60.0%
+t=138.6s state=TAKEOFF jump=20 done=20 stage=3 cycle=0 q=low fps=10.0 target=50.0%,60.5% earth=c(50.0%,32.4%) top=8.2% bottom=56.6% sides=17.8..82.2% diam/short=60.0%
+t=138.8s state=FLIGHT jump=20 done=20 stage=3 cycle=0 q=low fps=10.0 target=50.0%,68.4% earth=c(50.0%,39.3%) top=15.1% bottom=63.5% sides=17.8..82.2% diam/short=60.0%
+t=143.9s state=LAND jump=20 done=21 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-9.3% earth=c(50.0%,39.4%) top=14.2% bottom=64.6% sides=16.4..83.6% diam/short=62.5%
+t=144.6s state=APPROACH jump=21 done=21 stage=3 cycle=0 q=low fps=10.0 target=50.0%,57.6% earth=c(50.0%,43.4%) top=18.2% bottom=68.6% sides=16.4..83.6% diam/short=62.5%
+t=146.3s state=WAIT jump=21 done=21 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.5% earth=c(50.0%,34.8%) top=9.6% bottom=60.0% sides=16.4..83.6% diam/short=62.5%
+t=147.1s state=TAKEOFF jump=21 done=21 stage=3 cycle=0 q=low fps=10.0 target=50.0%,60.5% earth=c(50.0%,33.4%) top=8.2% bottom=58.6% sides=16.4..83.6% diam/short=62.5%
+t=147.4s state=FLIGHT jump=21 done=21 stage=3 cycle=0 q=low fps=10.0 target=50.0%,68.3% earth=c(50.0%,40.3%) top=15.1% bottom=65.5% sides=16.4..83.6% diam/short=62.5%
+t=152.6s state=LAND jump=21 done=22 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-6.3% earth=c(50.0%,40.0%) top=13.8% bottom=66.2% sides=15.1..84.9% diam/short=65.0%
+t=153.3s state=APPROACH jump=22 done=22 stage=3 cycle=0 q=low fps=10.0 target=50.0%,57.3% earth=c(50.0%,44.7%) top=18.5% bottom=70.9% sides=15.1..84.9% diam/short=65.0%
+t=155.1s state=TAKEOFF jump=22 done=22 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.5% earth=c(50.0%,36.2%) top=10.0% bottom=62.4% sides=15.1..84.9% diam/short=65.0%
+t=155.6s state=FLIGHT jump=22 done=22 stage=3 cycle=0 q=low fps=10.0 target=50.0%,69.2% earth=c(50.0%,42.0%) top=15.8% bottom=68.2% sides=15.1..84.9% diam/short=65.0%
+t=160.7s state=LAND jump=22 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,2.7% earth=c(50.0%,42.4%) top=15.2% bottom=69.7% sides=13.7..86.3% diam/short=67.5%
+t=161.4s state=APPROACH jump=23 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,57.8% earth=c(50.0%,45.7%) top=18.5% bottom=72.9% sides=13.7..86.3% diam/short=67.5%
+t=163.6s state=WAIT jump=23 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,61.2% earth=c(50.0%,37.6%) top=10.4% bottom=64.8% sides=13.7..86.3% diam/short=67.5%
+t=164.2s state=FINAL jump=23 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,63.7% earth=c(50.0%,38.4%) top=11.2% bottom=65.6% sides=13.7..86.3% diam/short=67.5%
+  shot climax
+t=173.7s state=AFTER jump=23 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-379.5% earth=c(50.0%,44.0%) top=11.9% bottom=76.1% sides=7.2..92.8% diam/short=79.6%
+t=182.2s state=RETURN jump=23 done=23 stage=3 cycle=0 q=low fps=10.0 target=50.0%,-396.6% earth=c(50.0%,44.0%) top=11.9% bottom=76.1% sides=7.2..92.8% diam/short=79.6%
+t=183.5s state=RETURN jump=0 done=0 stage=0 cycle=1 q=low fps=10.0 target=50.0%,81.7% earth=c(50.0%,44.0%) top=38.4% bottom=49.6% sides=42.5..57.5% diam/short=14.0%
+t=185.4s state=WAIT jump=0 done=0 stage=0 cycle=1 q=low fps=10.0 target=50.0%,60.3% earth=c(50.0%,13.8%) top=8.2% bottom=19.5% sides=42.5..57.5% diam/short=14.0%
+t=186.3s state=TAKEOFF jump=0 done=0 stage=0 cycle=1 q=low fps=10.0 target=50.0%,60.0% earth=c(50.0%,14.0%) top=8.4% bottom=19.7% sides=42.5..57.5% diam/short=14.0%
+states visited: TAKEOFF,FLIGHT,LAND,APPROACH,WAIT,STAGE,FINAL,AFTER,RETURN
+target |x-50%| max over 221 samples: 0.00% ; samples with y outside 45-65%: 0
+earth |x-50%| max: 0.00% ; min top edge (with atmosphere): 8.2% ; samples breaking 7% side/top margin: 0/813
+climax/afterglow earth samples outside 7% margins (all 4 sides): 0/85 ; max bottom 76.1%
+LAND transitions: 23 ; FINAL reached: true ; replay started after RETURN: true
+__ready=true __errors=[] consoleErrors=0
+RESULT: PASS
+== real pointer input checks
+1024x768 q=high mouse: target=(50.0%,60.0%) earthBox top=9.2% L/R=44.4/55.6% | miss-tap -> WAIT | tap -> TAKEOFF (then FLIGHT) | __errors=[] consoleErrors=0
+834x1194 q=mid touch: target=(50.0%,60.0%) earthBox top=9.2% L/R=42.5/57.5% | miss-tap -> WAIT | tap -> TAKEOFF (then FLIGHT) | __errors=[] consoleErrors=0
+390x844 q=mid touch: target=(50.0%,60.0%) earthBox top=9.2% L/R=42.5/57.5% | miss-tap -> WAIT | tap -> TAKEOFF (then FLIGHT) | __errors=[] consoleErrors=0
+1194x834 q=low mouse: target=(50.0%,60.0%) earthBox top=9.2% L/R=44.7/55.3% | miss-tap -> WAIT | tap -> TAKEOFF (then FLIGHT) | __errors=[] consoleErrors=0
