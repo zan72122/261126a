@@ -15,7 +15,7 @@ import { CloudWorld } from './world/clouds.js';
 import { Locomotive } from './world/locomotive.js';
 import { Girl } from './chars/girl.js';
 import { MountainDog } from './chars/puppy.js';
-import { CueRing, FloatMotes, GuideStream, SteamPool } from './fx/particles.js';
+import { CueRing, FloatMotes, GuideStream, SkyTrackPool, SteamPool } from './fx/particles.js';
 import { Director } from './story/director.js';
 
 function detectQuality(params) {
@@ -135,6 +135,9 @@ export class Game {
     this.steam = new SteamPool(this.q.steam);
     this.scene.add(this.steam.mesh);
 
+    this.skyTrack = new SkyTrackPool(this.q.low ? 72 : 150);
+    this.scene.add(this.skyTrack.mesh);
+
     this.floatMotes = new FloatMotes(this.q.low ? 16 : 28);
     this.scene.add(this.floatMotes.points);
 
@@ -228,6 +231,7 @@ export class Game {
     this.stations.update(dt, this.time, this.director.summitArrived);
     this.clouds.update(this.time);
     this.steam.update(dt, this.camera.quaternion);
+    this.skyTrack.update(dt, this.camera.quaternion);
 
     const focus = this.director.state === 'ride' ? this.loco.pos : this.girl.pos;
     this.sun.target.position.copy(focus);

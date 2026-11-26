@@ -1,14 +1,16 @@
+import * as THREE from '../../lib/three.module.js';
+
 /**
  * Automated playthrough driver for ?autotest verification.
- * Exercises every required action and holds key compositions >= 1.5s:
- * 1. home (>= 1.85s) -> tap puppy/ticket -> lead to station
- * 2. board (>= 1.65s) -> board locomotive -> depart
- * 3. village (bridge & alpine village)
- * 4. sidetrack (Switch 1 -> Flower & Lumber Siding + whistle/valve steam play)
- * 5. lake (Lake Station, dismount & walk toward pier >= 2.15s, re-board)
- * 6. climb (mountain climb & stone gallery) -> viaduct -> aerial umbrella dismount -> float (>= 1.5s centered on girl) -> walk (>= 1.55s) -> re-board
- * 7. climb viaduct above cloud sea -> arrive at Cloud Summit Station -> summit (>= 2.8s)
- * Sets window.__autodone = true well within 120s.
+ * Demonstrates the free 3D agency controls end-to-end while holding key compositions >= 1.5s:
+ * 1. home (>= 1.6s) -> tap garden sky/ground to walk freely -> tap puppy/ticket to lead to station
+ * 2. board (>= 1.6s) -> board locomotive -> depart
+ * 3. ride: steer LEFT off rail across valley (>= 2.2s) -> climb into sky (>= 2.2s)
+ *          -> steer RIGHT & descend toward alpine lake/meadow (>= 2.2s) -> whistle/valve
+ *          -> climb high & aerial umbrella dismount -> float centered on girl (>= 1.8s)
+ * 4. walk: free tap-to-walk on landing (>= 1.8s) -> call/reboard locomotive
+ * 5. release controls for Golden Steam Wind goal assist -> arrive at Cloud Summit Station (>= 2.6s)
+ * Sets window.__autodone = true within 120s.
  */
 export class AutoTest {
   constructor(game) {
@@ -16,13 +18,15 @@ export class AutoTest {
     this.elapsed = 0;
     this.lastMoment = '';
 
+    this.homeWalkDone = false;
     this.didLead = false;
     this.didBoard = false;
-    this.didSidetrackWhistle = false;
-    this.didLakeWalk = false;
-    this.didLakeReboard = false;
+
+    this.ridePhase = 'leftDetour';
+    this.ridePhaseT = 0;
     this.didFloat = false;
     this.didPostFloatReboard = false;
+    this.walkTapDone = false;
     this.summitHold = 0;
 
     window.__autolog = [];
@@ -34,9 +38,9 @@ export class AutoTest {
       t: Number(this.elapsed.toFixed(2)),
       moment: window.__moment,
       state: this.g.director.state,
-      seg: this.g.director.segId,
-      s: Number(this.g.director.segS.toFixed(2)),
+      x: Number(this.g.loco.pos.x.toFixed(1)),
       y: Number(this.g.girl.pos.y.toFixed(1)),
+      z: Number(this.g.loco.pos.z.toFixed(1)),
       evt,
     });
   }
@@ -51,17 +55,25 @@ export class AutoTest {
       this._log('moment_change');
     }
 
-    // 1. HOME (hold >= 1.85s)
+    // 1. HOME: hold opening composition >= 1.6s, test garden free walk, then lead to station
     if (D.state === 'home') {
-      if (D.phase === 'waitPuppy' && !this.didLead && D.stateT >= 1.85) {
-        this.didLead = true;
-        this._log('tap_puppy_ticket');
-        D.triggerHomeLead();
+      this.g.input.setSyntheticDrag(0, 0, false);
+      if (D.phase === 'waitPuppy') {
+        if (!this.homeWalkDone && D.stateT >= 1.65) {
+          this.homeWalkDone = true;
+          this._log('home_tap_sky_walk');
+          D._handleTap(new THREE.Vector2(-0.65, 0.55));
+        } else if (this.homeWalkDone && !this.didLead && D.stateT >= 3.2) {
+          this.didLead = true;
+          this._log('tap_puppy_ticket');
+          D.triggerHomeLead();
+        }
       }
     }
 
-    // 2. BOARD (hold >= 1.65s)
+    // 2. BOARD (>= 1.6s)
     else if (D.state === 'board') {
+      this.g.input.setSyntheticDrag(0, 0, false);
       if (!this.didBoard && D.stateT >= 1.65) {
         this.didBoard = true;
         this._log('board_locomotive');
@@ -69,83 +81,81 @@ export class AutoTest {
       }
     }
 
-    // 3..6. RIDE
+    // 3. RIDE: demonstrate real 3D steering (left, ascend, right+descend, off-rail flight, dismount, assist)
     else if (D.state === 'ride') {
-      if (D.segId === 'seg0_home_village') {
-        D.targetSpeed = D.segS > 0.45 ? 14.0 : 12.5;
-        D.speed = Math.max(D.speed, 10.0);
-        this.g.tracks.setSwitch('sw1', 1);
-      } else if (D.segId === 'seg1_flower') {
-        D.targetSpeed = 14.0;
-        if (!this.didSidetrackWhistle && D.segS > 0.35) {
-          this.didSidetrackWhistle = true;
-          this._log('sidetrack_whistle_valve');
-          D.triggerWhistle(0.6);
+      this.ridePhaseT += dt;
+
+      if (this.ridePhase === 'leftDetour') {
+        this.g.input.setSyntheticDrag(-0.82, -0.18, true);
+        if (this.ridePhaseT >= 2.8) {
+          this._log('left_detour_off_rail');
+          this.ridePhase = 'skyClimb';
+          this.ridePhaseT = 0;
+        }
+      } else if (this.ridePhase === 'skyClimb') {
+        this.g.input.setSyntheticDrag(0.12, -0.88, true);
+        if (this.ridePhaseT >= 2.6) {
+          this._log('sky_climb_off_rail');
+          D.triggerWhistle(0.55);
           D.triggerValveSteam();
+          this.ridePhase = 'rightDescend';
+          this.ridePhaseT = 0;
         }
-      } else if (D.segId === 'seg2_lake') {
-        this.g.tracks.setSwitch('sw2', 0);
-        if (!this.didLakeWalk && D.segS >= 0.45) {
-          this.didLakeWalk = true;
-          this._log('lake_dismount_walk');
-          D.triggerDismount();
-        } else {
-          D.targetSpeed = 14.0;
+      } else if (this.ridePhase === 'rightDescend') {
+        this.g.input.setSyntheticDrag(0.78, 0.85, true);
+        if (this.ridePhaseT >= 2.8) {
+          this._log('right_descend_valley');
+          this.ridePhase = 'climbForFloat';
+          this.ridePhaseT = 0;
         }
-      } else if (D.segId === 'seg3_climb') {
-        this.g.tracks.setSwitch('sw3', 0);
-        D.targetSpeed = 15.5;
-      } else if (D.segId === 'seg4_main') {
-        D.targetSpeed = 15.5;
-      } else if (D.segId === 'seg5_viaduct') {
-        D.targetSpeed = 16.0;
-        if (!this.didFloat && D.segS >= 0.16) {
+      } else if (this.ridePhase === 'climbForFloat') {
+        this.g.input.setSyntheticDrag(-0.15, -0.92, true);
+        if (!this.didFloat && this.ridePhaseT >= 2.6 && this.g.loco.pos.y > 14.0) {
           this.didFloat = true;
+          this.g.input.setSyntheticDrag(0, 0, false);
           this._log('aerial_umbrella_dismount');
           D.triggerDismount();
+          this.ridePhase = 'assistToSummit';
+          this.ridePhaseT = 0;
         }
+      } else if (this.ridePhase === 'assistToSummit') {
+        // Release finger so Golden Steam Wind carries locomotive to Cloud Summit Station
+        this.g.input.setSyntheticDrag(0, 0, false);
       }
     }
 
-    // WALK
-    else if (D.state === 'walk') {
-      if (!this.didLakeReboard) {
-        if (D.stateT < 0.25) {
-          D.walkTarget = this.g.girl.pos.clone().add({ x: -5.5, y: 0, z: -1.5 });
-        }
-        if (D.stateT >= 2.15) {
-          this.didLakeReboard = true;
-          this._log('lake_reboard');
-          D.triggerBoard();
-        }
-      } else if (this.didFloat && !this.didPostFloatReboard) {
-        if (D.stateT < 0.25) {
-          D.walkTarget = this.g.girl.pos.clone().add({ x: 2.2, y: 0, z: 1.5 });
-        }
-        if (D.stateT >= 1.55) {
-          this.didPostFloatReboard = true;
-          this._log('post_float_reboard');
-          D.triggerBoard();
-          D.targetSpeed = 16.5;
-        }
-      }
-    }
-
-    // FLOAT
+    // 4. FLOAT: hold slow umbrella descent centered on girl
     else if (D.state === 'float') {
-      // Wait naturally for slow descent & landing
+      this.g.input.setSyntheticDrag(0, 0, false);
     }
 
-    // SUMMIT
+    // 5. WALK: tap ground/direction to walk freely >= 1.8s, then call & reboard
+    else if (D.state === 'walk') {
+      this.g.input.setSyntheticDrag(0, 0, false);
+      if (!this.walkTapDone && D.stateT >= 0.2) {
+        this.walkTapDone = true;
+        this._log('walk_tap_free');
+        D._handleTap(new THREE.Vector2(0.45, -0.15));
+      }
+      if (!this.didPostFloatReboard && D.stateT >= 2.0) {
+        this.didPostFloatReboard = true;
+        this._log('post_float_call_reboard');
+        D.callOrBoardLocomotive();
+      }
+    }
+
+    // 6. SUMMIT (>= 2.6s)
     else if (D.state === 'summit') {
+      this.g.input.setSyntheticDrag(0, 0, false);
       this.summitHold += dt;
-      if (this.summitHold >= 2.8) {
+      if (this.summitHold >= 2.6) {
         this._log('autotest_complete');
         window.__autodone = true;
       }
     }
 
     if (this.elapsed > 110 && !window.__autodone) {
+      this.g.input.setSyntheticDrag(0, 0, false);
       D.go('summit');
       this._log('safety_summit');
       window.__autodone = true;

@@ -1,6 +1,6 @@
 import { clamp } from './math.js';
 
-// Single-finger pointer tap & drag controller.
+// Single-finger pointer tap, drag & hold controller.
 export class InputController {
   constructor(canvas) {
     this.canvas = canvas;
@@ -10,16 +10,24 @@ export class InputController {
     this.startY = 0;
     this.curX = 0;
     this.curY = 0;
+    this.curNx = 0;
+    this.curNy = 0;
     this.dragX = 0;
     this.dragY = 0;
     this.moved = false;
     this.onTap = null;
+    this.onDown = null;
     this.holdTime = 0;
 
     canvas.addEventListener('pointerdown', (e) => this._down(e), { passive: false });
     window.addEventListener('pointermove', (e) => this._move(e), { passive: false });
     window.addEventListener('pointerup', (e) => this._up(e), { passive: false });
     window.addEventListener('pointercancel', (e) => this._up(e), { passive: false });
+  }
+
+  _updateNorm(clientX, clientY) {
+    this.curNx = (clientX / Math.max(1, window.innerWidth)) * 2 - 1;
+    this.curNy = -(clientY / Math.max(1, window.innerHeight)) * 2 + 1;
   }
 
   _down(e) {
@@ -29,16 +37,21 @@ export class InputController {
     this.pointerId = e.pointerId;
     this.startX = this.curX = e.clientX;
     this.startY = this.curY = e.clientY;
+    this._updateNorm(e.clientX, e.clientY);
     this.dragX = 0;
     this.dragY = 0;
     this.moved = false;
     this.holdTime = 0;
+    if (this.onDown) {
+      this.onDown({ nx: this.curNx, ny: this.curNy, clientX: e.clientX, clientY: e.clientY });
+    }
   }
 
   _move(e) {
     if (!this.active || e.pointerId !== this.pointerId) return;
     this.curX = e.clientX;
     this.curY = e.clientY;
+    this._updateNorm(e.clientX, e.clientY);
     const dx = this.curX - this.startX;
     const dy = this.curY - this.startY;
     if (Math.hypot(dx, dy) > 10) this.moved = true;

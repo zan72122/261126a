@@ -193,15 +193,85 @@ export class GuideStream {
     if (!this.points.visible) return;
 
     const attr = this.points.geometry.attributes.position;
+    const dx = toPos.x - fromPos.x;
+    const dz = toPos.z - fromPos.z;
+    const len = Math.max(1, Math.hypot(dx, dz));
+    const perpX = -dz / len;
+    const perpZ = dx / len;
     for (let i = 0; i < this.count; i++) {
-      const f = ((i / this.count) + time * 0.22) % 1;
-      const arc = Math.sin(f * Math.PI) * 5.5;
-      const x = fromPos.x + (toPos.x - fromPos.x) * f + Math.sin(time * 2 + i) * 0.9;
-      const y = fromPos.y + (toPos.y - fromPos.y) * f + arc + 1.8;
-      const z = fromPos.z + (toPos.z - fromPos.z) * f;
+      const f = ((i / this.count) + time * 0.26) % 1;
+      const arc = Math.sin(f * Math.PI) * 6.5;
+      const swirl = Math.sin(f * Math.PI * 3.0 - time * 2.4 + i * 0.2) * 1.8 * Math.sin(f * Math.PI);
+      const x = fromPos.x + dx * f + perpX * swirl;
+      const y = fromPos.y + (toPos.y - fromPos.y) * f + arc + 1.6;
+      const z = fromPos.z + dz * f + perpZ * swirl;
       attr.setXYZ(i, x, y, z);
     }
     attr.needsUpdate = true;
+  }
+}
+
+/**
+ * Luminous golden-cream steam rails emitted beneath the locomotive wheels while flying through the sky.
+ */
+export class SkyTrackPool {
+  constructor(maxPuffs = 140) {
+    this.max = maxPuffs;
+    this.items = [];
+    const geo = new THREE.PlaneGeometry(1, 1);
+    const mat = new THREE.MeshBasicMaterial({
+      map: makeSoftPuffTexture(),
+      color: '#ffe9a8',
+      transparent: true,
+      opacity: 0.78,
+      depthWrite: false,
+    });
+    this.mesh = new THREE.InstancedMesh(geo, mat, maxPuffs);
+    this.mesh.frustumCulled = false;
+
+    this._m = new THREE.Matrix4();
+    this._q = new THREE.Quaternion();
+    this._s = new THREE.Vector3();
+
+    for (let i = 0; i < maxPuffs; i++) {
+      this.items.push({ active: false, pos: new THREE.Vector3(), age: 0, life: 1.6, scale: 0.9 });
+      this._m.makeScale(0, 0, 0);
+      this.mesh.setMatrixAt(i, this._m);
+    }
+    this.cursor = 0;
+  }
+
+  emit(pos, scale = 0.95, life = 1.8) {
+    const p = this.items[this.cursor];
+    this.cursor = (this.cursor + 1) % this.max;
+    p.active = true;
+    p.pos.copy(pos);
+    p.age = 0;
+    p.life = life;
+    p.scale = scale;
+  }
+
+  update(dt, camQuat) {
+    for (let i = 0; i < this.max; i++) {
+      const p = this.items[i];
+      if (!p.active) continue;
+      p.age += dt;
+      if (p.age >= p.life) {
+        p.active = false;
+        this._m.makeScale(0, 0, 0);
+        this.mesh.setMatrixAt(i, this._m);
+        continue;
+      }
+      const t = p.age / p.life;
+      p.pos.y -= dt * 0.18;
+      const sc = p.scale * (0.65 + t * 0.65) * (1 - t * 0.55);
+      if (camQuat) this._q.copy(camQuat);
+      else this._q.identity();
+      this._s.set(sc * 1.35, sc * 0.65, sc);
+      this._m.compose(p.pos, this._q, this._s);
+      this.mesh.setMatrixAt(i, this._m);
+    }
+    this.mesh.instanceMatrix.needsUpdate = true;
   }
 }
 

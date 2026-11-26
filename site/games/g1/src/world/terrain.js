@@ -152,13 +152,20 @@ function baseHeightAt(x, z) {
         if (h > maxAllowed) {
           h = lerp(h, maxAllowed, w);
         }
-      } else if (bestU >= 0.84 && bestD < 8.5) {
-        const w = 1 - smoothstep(2.4, 8.5, bestD);
-        h = lerp(h, bestY - 0.14, w * 0.94);
+      } else if (bestU >= 0.84 && bestD < 9.5) {
+        const w = 1 - smoothstep(2.8, 9.5, bestD);
+        h = lerp(h, bestY - 0.20, w);
+        if (bestD < 3.6 && h > bestY - 0.18) {
+          h = bestY - 0.18;
+        }
       }
-    } else if (!bestIsBridge && bestD < 8.5) {
-      const w = 1 - smoothstep(2.4, 8.5, bestD);
-      h = lerp(h, bestY - 0.14, w * 0.94);
+    } else if (!bestIsBridge && bestD < 10.5) {
+      // Full ballast-bed blend so uphill mountain slopes never poke through sleepers/rails
+      const w = 1 - smoothstep(3.2, 10.5, bestD);
+      h = lerp(h, bestY - 0.22, w);
+      if (bestD < 4.2 && h > bestY - 0.19) {
+        h = bestY - 0.19;
+      }
     }
   }
 

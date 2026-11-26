@@ -201,6 +201,9 @@ export function resolveBoatPhysics(boat, dt, t, steerX = 0) {
   const hullOffsets = [-2.05, 0.0, 2.05];
   const hullR = 1.15;
   const ignoreBoat = new Set(['plaza', 'stair', 'curb', 'flagstone', 'foliage']);
+  const ignoreAirBoat = new Set(['plaza', 'stair', 'curb', 'flagstone', 'foliage', 'deck']);
+  const glideAlt = Math.max(0, boat.glideAlt || 0);
+  const lowFly = glideAlt < 2.4;
 
   let hitNormalX = 0;
   let hitNormalZ = 0;
@@ -215,104 +218,127 @@ export function resolveBoatPhysics(boat, dt, t, steerX = 0) {
       const cx = boat.pos.x + sy * off;
       const cz = boat.pos.z + cy * off;
 
-      // 1. Registered solid marine obstacles (quay, wings, jetty, breakwater, island piers, fishing boats)
-      const res = resolveCircleObstacles(cx, cz, hullR, -0.5, 2.5, { boatOnly: true, ignoreTags: ignoreBoat });
-      if (res.hit) {
-        boat.pos.x += res.x - cx;
-        boat.pos.z += res.z - cz;
-        hitNormalX = res.nx;
-        hitNormalZ = res.nz;
+      if (lowFly) {
+        // 1. Registered solid marine obstacles (quay, wings, jetty, breakwater, island piers, fishing boats)
+        const res = resolveCircleObstacles(cx, cz, hullR, -0.5, 2.5, { boatOnly: true, ignoreTags: ignoreBoat });
+        if (res.hit) {
+          boat.pos.x += res.x - cx;
+          boat.pos.z += res.z - cz;
+          hitNormalX = res.nx;
+          hitNormalZ = res.nz;
+          collided = true;
+          anyMoved = true;
+        }
+      }
+
+      // Check tall structures / trees / houses at the boat's current altitude (prevents burying on descent)
+      const airRes = resolveCircleObstacles(
+        boat.pos.x + sy * off,
+        boat.pos.z + cy * off,
+        hullR,
+        Math.max(-0.5, boat.pos.y - 0.35),
+        boat.pos.y + 3.0,
+        { boatOnly: false, ignoreTags: ignoreAirBoat }
+      );
+      if (airRes.hit) {
+        boat.pos.x += airRes.x - (boat.pos.x + sy * off);
+        boat.pos.z += airRes.z - (boat.pos.z + cy * off);
+        hitNormalX = airRes.nx;
+        hitNormalZ = airRes.nz;
         collided = true;
         anyMoved = true;
       }
 
-      // 2. Harbor quay & wing solid footplates (prevent hull ever entering quay/wings)
-      const cxNow = boat.pos.x + sy * off;
-      const czNow = boat.pos.z + cy * off;
-      for (const dk of HARBOR_DECKS) {
-        const boxRes = pushCircleOutOfBox(cxNow, czNow, hullR, {
-          x: dk.x,
-          z: dk.z,
-          hx: dk.w * 0.5,
-          hz: dk.d * 0.5,
+      if (lowFly) {
+        // 2. Harbor quay & wing solid footplates (prevent hull ever entering quay/wings)
+        const cxNow = boat.pos.x + sy * off;
+        const czNow = boat.pos.z + cy * off;
+        for (const dk of HARBOR_DECKS) {
+          const boxRes = pushCircleOutOfBox(cxNow, czNow, hullR, {
+            x: dk.x,
+            z: dk.z,
+            hx: dk.w * 0.5,
+            hz: dk.d * 0.5,
+            cos: 1,
+            sin: 0,
+            cosW: 1,
+            sinW: 0,
+          });
+          if (boxRes) {
+            boat.pos.x += boxRes.dx;
+            boat.pos.z += boxRes.dz;
+            hitNormalX = boxRes.nx;
+            hitNormalZ = boxRes.nz;
+            collided = true;
+            anyMoved = true;
+          }
+        }
+
+        // 3. Pavilion terrace & landing jetty
+        const pCx = boat.pos.x + sy * off;
+        const pCz = boat.pos.z + cy * off;
+        const pavTerr = pushCircleOutOfCircle(
+          pCx,
+          pCz,
+          hullR,
+          PAVILION_TERRACE.x,
+          PAVILION_TERRACE.z,
+          PAVILION_TERRACE.r + 0.15
+        );
+        if (pavTerr) {
+          boat.pos.x += pavTerr.dx;
+          boat.pos.z += pavTerr.dz;
+          hitNormalX = pavTerr.nx;
+          hitNormalZ = pavTerr.nz;
+          collided = true;
+          anyMoved = true;
+        }
+        const pavJetty = pushCircleOutOfBox(pCx, pCz, hullR, {
+          x: PAVILION_JETTY.x,
+          z: PAVILION_JETTY.z,
+          hx: PAVILION_JETTY.w * 0.5,
+          hz: PAVILION_JETTY.d * 0.5,
           cos: 1,
           sin: 0,
           cosW: 1,
           sinW: 0,
         });
-        if (boxRes) {
-          boat.pos.x += boxRes.dx;
-          boat.pos.z += boxRes.dz;
-          hitNormalX = boxRes.nx;
-          hitNormalZ = boxRes.nz;
+        if (pavJetty) {
+          boat.pos.x += pavJetty.dx;
+          boat.pos.z += pavJetty.dz;
+          hitNormalX = pavJetty.nx;
+          hitNormalZ = pavJetty.nz;
           collided = true;
           anyMoved = true;
         }
-      }
 
-      // 3. Pavilion terrace & landing jetty
-      const pCx = boat.pos.x + sy * off;
-      const pCz = boat.pos.z + cy * off;
-      const pavTerr = pushCircleOutOfCircle(
-        pCx,
-        pCz,
-        hullR,
-        PAVILION_TERRACE.x,
-        PAVILION_TERRACE.z,
-        PAVILION_TERRACE.r + 0.15
-      );
-      if (pavTerr) {
-        boat.pos.x += pavTerr.dx;
-        boat.pos.z += pavTerr.dz;
-        hitNormalX = pavTerr.nx;
-        hitNormalZ = pavTerr.nz;
-        collided = true;
-        anyMoved = true;
-      }
-      const pavJetty = pushCircleOutOfBox(pCx, pCz, hullR, {
-        x: PAVILION_JETTY.x,
-        z: PAVILION_JETTY.z,
-        hx: PAVILION_JETTY.w * 0.5,
-        hz: PAVILION_JETTY.d * 0.5,
-        cos: 1,
-        sin: 0,
-        cosW: 1,
-        sinW: 0,
-      });
-      if (pavJetty) {
-        boat.pos.x += pavJetty.dx;
-        boat.pos.z += pavJetty.dz;
-        hitNormalX = pavJetty.nx;
-        hitNormalZ = pavJetty.nz;
-        collided = true;
-        anyMoved = true;
-      }
-
-      // 4. Sea reefs
-      for (const rf of REEFS) {
-        const rfRes = pushCircleOutOfCircle(
-          boat.pos.x + sy * off,
-          boat.pos.z + cy * off,
-          hullR,
-          rf.x,
-          rf.z,
-          rf.r + 0.45
-        );
-        if (rfRes) {
-          boat.pos.x += rfRes.dx;
-          boat.pos.z += rfRes.dz;
-          hitNormalX = rfRes.nx;
-          hitNormalZ = rfRes.nz;
-          collided = true;
-          anyMoved = true;
+        // 4. Sea reefs
+        for (const rf of REEFS) {
+          const rfRes = pushCircleOutOfCircle(
+            boat.pos.x + sy * off,
+            boat.pos.z + cy * off,
+            hullR,
+            rf.x,
+            rf.z,
+            rf.r + 0.45
+          );
+          if (rfRes) {
+            boat.pos.x += rfRes.dx;
+            boat.pos.z += rfRes.dz;
+            hitNormalX = rfRes.nx;
+            hitNormalZ = rfRes.nz;
+            collided = true;
+            anyMoved = true;
+          }
         }
       }
 
-      // 5. Island & coastal terrain heightfield shoreline (y > -0.22)
+      // 5. Island & coastal terrain heightfield shoreline (active on water, and prevents descending into hills when gliding)
       const sxNow = boat.pos.x + sy * off;
       const szNow = boat.pos.z + cy * off;
       const info = getLandInfo(sxNow, szNow);
-      if (info.y > -0.22) {
+      const terrainBlockY = lowFly ? -0.22 : Math.max(-0.22, boat.pos.y - 0.55);
+      if (info.y > terrainBlockY) {
         const g = terrainGrad(sxNow, szNow);
         let nx = -g.gx;
         let nz = -g.gz;
@@ -352,31 +378,39 @@ export function resolveBoatPhysics(boat, dt, t, steerX = 0) {
     if (!anyMoved) break;
   }
 
-  // Smooth tangential deflection when sailing into an obstacle
-  if (collided && boat.speed > 0.3 && Math.hypot(hitNormalX, hitNormalZ) > 0.1) {
-    const vx = Math.sin(boat.yaw);
-    const vz = Math.cos(boat.yaw);
+  // Smooth tangential deflection when sailing (forward or reverse) into an obstacle
+  if (collided && Math.abs(boat.speed) > 0.3 && Math.hypot(hitNormalX, hitNormalZ) > 0.1) {
+    const dirSign = boat.speed >= 0 ? 1 : -1;
+    const vx = Math.sin(boat.yaw) * dirSign;
+    const vz = Math.cos(boat.yaw) * dirSign;
     const into = vx * hitNormalX + vz * hitNormalZ;
     if (into < -0.05) {
-      // Slide heading smoothly along tangent without violent bounce
-      const tx = vx - into * hitNormalX;
-      const tz = vz - into * hitNormalZ;
-      if (Math.hypot(tx, tz) > 0.05) {
-        const tangYaw = Math.atan2(tx, tz);
-        boat.yaw = wrapAngle(boat.yaw + wrapAngle(tangYaw - boat.yaw) * Math.min(1, dt * 3.8));
+      if (dirSign > 0) {
+        // Slide heading smoothly along tangent without violent bounce
+        const tx = vx - into * hitNormalX;
+        const tz = vz - into * hitNormalZ;
+        if (Math.hypot(tx, tz) > 0.05) {
+          const tangYaw = Math.atan2(tx, tz);
+          boat.yaw = wrapAngle(boat.yaw + wrapAngle(tangYaw - boat.yaw) * Math.min(1, dt * 3.8));
+        }
       }
       boat.speed *= 1 - Math.min(0.45, -into * 0.45);
     }
   }
 
-  // Buoyancy on sea wave surface; never sink below local ground height
+  // Buoyancy on sea wave surface + glide altitude; never sink below local ground height
   const waveY = getSeaWaveHeight(boat.pos.x, boat.pos.z, t);
-  const groundY = getGroundY(boat.pos.x, boat.pos.z);
-  boat.pos.y = groundY > -0.32 ? Math.max(waveY, groundY + 0.32) : waveY;
-
-  // Physical wave pitch and roll from 4 hull waterline samples
   const sy = Math.sin(boat.yaw);
   const cy = Math.cos(boat.yaw);
+  const groundY = Math.max(
+    getGroundY(boat.pos.x, boat.pos.z),
+    getGroundY(boat.pos.x + sy * 2.05, boat.pos.z + cy * 2.05),
+    getGroundY(boat.pos.x - sy * 2.05, boat.pos.z - cy * 2.05)
+  );
+  const baseFloorY = groundY > -0.32 ? Math.max(waveY, groundY + 0.34) : waveY;
+  boat.pos.y = baseFloorY + glideAlt;
+
+  // Physical wave pitch and roll from 4 hull waterline samples
   const hBow = getSeaWaveHeight(boat.pos.x + sy * 2.2, boat.pos.z + cy * 2.2, t);
   const hStern = getSeaWaveHeight(boat.pos.x - sy * 2.2, boat.pos.z - cy * 2.2, t);
   const hStbd = getSeaWaveHeight(boat.pos.x - cy * 0.85, boat.pos.z + sy * 0.85, t);

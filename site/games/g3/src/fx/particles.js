@@ -97,9 +97,55 @@ export class ParticleFX {
     this.streaks = new THREE.LineSegments(stGeo, this.streakMat);
     this.streaks.frustumCulled = false;
     this.group.add(this.streaks);
+
+    // 5. Luminous aerial wind-path ribbon beneath the boat when gliding above the sea
+    this.windPathSegs = 22;
+    this.windTrail = [];
+    const wpGeo = new THREE.BufferGeometry();
+    const wpVerts = new Float32Array(this.windPathSegs * 2 * 3);
+    const wpIndices = [];
+    for (let i = 0; i < this.windPathSegs - 1; i++) {
+      const a = i * 2;
+      const b = a + 1;
+      const c = a + 2;
+      const d = a + 3;
+      wpIndices.push(a, c, b, b, c, d);
+    }
+    wpGeo.setAttribute('position', new THREE.BufferAttribute(wpVerts, 3));
+    wpGeo.setIndex(wpIndices);
+    this.windPathMat = new THREE.MeshBasicMaterial({
+      color: 0xffdf9b,
+      transparent: true,
+      opacity: 0,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    this.windPathMesh = new THREE.Mesh(wpGeo, this.windPathMat);
+    this.windPathMesh.frustumCulled = false;
+    this.windPathMesh.visible = false;
+    this.group.add(this.windPathMesh);
+
+    // 6. Goal-assist moonlit tailwind path motes guiding back toward Starlit Cove Pavilion
+    this.assistCount = lowQuality ? 10 : 16;
+    const asGeo = new THREE.BufferGeometry();
+    this.assistPos = new Float32Array(this.assistCount * 3);
+    asGeo.setAttribute('position', new THREE.BufferAttribute(this.assistPos, 3));
+    this.assistMat = new THREE.PointsMaterial({
+      map: glowTex,
+      color: 0xdceaff,
+      size: 0.95,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    this.assistPoints = new THREE.Points(asGeo, this.assistMat);
+    this.assistPoints.frustumCulled = false;
+    this.group.add(this.assistPoints);
   }
 
-  update(t, girlPos, isFloating, nightLevel, boat = null, breezeBoost = 0) {
+  update(t, girlPos, isFloating, nightLevel, boat = null, breezeBoost = 0, assistStrength = 0, assistTarget = null) {
     this.mat.opacity = 0.28 + nightLevel * 0.58;
     const pos = this.points.geometry.attributes.position;
     for (let i = 0; i < this.count; i++) {
@@ -166,6 +212,91 @@ export class ParticleFX {
           st.setXYZ(i * 2 + 1, hx - sinY * len, hy, hz - cosY * len);
         }
         st.needsUpdate = true;
+      }
+
+      // 5. Luminous wind-path ribbon when gliding above the sea
+      const glideAlt = Math.max(0, boat.glideAlt || 0);
+      const targetWindOp = glideAlt > 0.25 ? Math.min(0.42, glideAlt * 0.08) : 0;
+      this.windPathMat.opacity += (targetWindOp - this.windPathMat.opacity) * 0.12;
+      if (this.windPathMat.opacity > 0.015) {
+        this.windPathMesh.visible = true;
+        this.windPathMat.color.setHex(0xffe09c).lerp(new THREE.Color(0xcce0ff), nightLevel * 0.55);
+        const last = this.windTrail[0];
+        if (!last || Math.hypot(boat.pos.x - last.x, boat.pos.z - last.z) > 1.2 || Math.abs(boat.pos.y - last.y) > 0.4) {
+          this.windTrail.unshift({
+            x: boat.pos.x,
+            y: boat.pos.y - 0.14,
+            z: boat.pos.z,
+            rx: rightX,
+            rz: rightZ,
+          });
+          if (this.windTrail.length > this.windPathSegs - 3) {
+            this.windTrail.length = this.windPathSegs - 3;
+          }
+        }
+        const wp = this.windPathMesh.geometry.attributes.position;
+        const aheadSteps = 3;
+        for (let i = 0; i < this.windPathSegs; i++) {
+          let cx, cy, cz, rx, rz, halfW;
+          if (i < aheadSteps) {
+            const d = (aheadSteps - i) * 1.9;
+            cx = boat.pos.x + sinY * d;
+            cy = boat.pos.y - 0.12 + Math.sin(t * 2.5 - i * 0.4) * 0.08;
+            cz = boat.pos.z + cosY * d;
+            rx = rightX;
+            rz = rightZ;
+            halfW = 0.85 * (1 - (aheadSteps - i) / (aheadSteps + 1));
+          } else {
+            const idx = Math.min(this.windTrail.length - 1, i - aheadSteps);
+            const pt = this.windTrail[Math.max(0, idx)] || {
+              x: boat.pos.x,
+              y: boat.pos.y - 0.14,
+              z: boat.pos.z,
+              rx: rightX,
+              rz: rightZ,
+            };
+            const fade = 1 - (i - aheadSteps) / Math.max(1, this.windPathSegs - aheadSteps);
+            cx = pt.x;
+            cy = pt.y + Math.sin(t * 2.2 + i * 0.45) * 0.09;
+            cz = pt.z;
+            rx = pt.rx;
+            rz = pt.rz;
+            halfW = 1.05 * Math.max(0.08, fade);
+          }
+          wp.setXYZ(i * 2, cx - rx * halfW, cy, cz - rz * halfW);
+          wp.setXYZ(i * 2 + 1, cx + rx * halfW, cy, cz + rz * halfW);
+        }
+        wp.needsUpdate = true;
+      } else {
+        this.windPathMesh.visible = false;
+        this.windTrail.length = 0;
+      }
+
+      // 6. Goal-assist moonlit tailwind path stretching ahead toward Starlit Cove Pavilion
+      const targetAssistOp = assistStrength > 0.08 && assistTarget ? Math.min(0.76, assistStrength * 0.85) : 0;
+      this.assistMat.opacity += (targetAssistOp - this.assistMat.opacity) * 0.1;
+      if (this.assistMat.opacity > 0.02 && assistTarget) {
+        const ap = this.assistPoints.geometry.attributes.position;
+        const dx = assistTarget.x - boat.pos.x;
+        const dz = assistTarget.z - boat.pos.z;
+        const len = Math.max(1, Math.hypot(dx, dz));
+        const ux = dx / len;
+        const uz = dz / len;
+        const px = -uz;
+        const pz = ux;
+        for (let i = 0; i < this.assistCount; i++) {
+          const u = ((i / this.assistCount) + (t * 0.24)) % 1.0;
+          const dist = 4.0 + u * Math.min(34.0, len);
+          const sway = Math.sin(u * Math.PI * 2 + t * 1.4 + i) * 0.85;
+          const arcY = Math.max(0.32, boat.pos.y * (1 - u * 0.65) + 0.35) + Math.sin(u * Math.PI) * 0.55;
+          ap.setXYZ(
+            i,
+            boat.pos.x + ux * dist + px * sway,
+            arcY,
+            boat.pos.z + uz * dist + pz * sway
+          );
+        }
+        ap.needsUpdate = true;
       }
     }
   }

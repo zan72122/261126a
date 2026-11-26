@@ -18,6 +18,7 @@ export class Input {
     this.totalMove = 0;
     this.downTime = 0;
     this.onTap = null;
+    this.syntheticDrag = null;
 
     this.ndc = new THREE.Vector2();
     this.ray = new THREE.Raycaster();
@@ -72,12 +73,33 @@ export class Input {
     }
   }
 
+  setSyntheticDrag(x = 0, y = 0, active = false) {
+    this.syntheticDrag = active ? { x, y, active: true } : null;
+  }
+
   dragNormalized() {
+    if (this.syntheticDrag && this.syntheticDrag.active) {
+      return {
+        x: Math.max(-1, Math.min(1, this.syntheticDrag.x)),
+        y: Math.max(-1, Math.min(1, this.syntheticDrag.y)),
+        active: true,
+      };
+    }
     if (!this.down) return { x: 0, y: 0, active: false };
-    const span = Math.min(window.innerWidth, window.innerHeight) * 0.24;
+    const span = Math.max(36, Math.min(window.innerWidth, window.innerHeight) * 0.17);
+    let nx = Math.max(-1, Math.min(1, this.dx / span));
+    let ny = Math.max(-1, Math.min(1, this.dy / span));
+    const heldMs = performance.now() - this.downTime;
+    if (this.totalMove < 12 && heldMs > 220) {
+      const rect = this.dom.getBoundingClientRect();
+      const ex = ((this.x - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+      const ey = ((this.y - rect.top) / Math.max(1, rect.height)) * 2 - 1;
+      if (Math.abs(ex) > 0.25) nx = ex;
+      if (Math.abs(ey) > 0.25) ny = ey;
+    }
     return {
-      x: Math.max(-1, Math.min(1, this.dx / Math.max(40, span))),
-      y: Math.max(-1, Math.min(1, this.dy / Math.max(40, span))),
+      x: nx,
+      y: ny,
       active: true,
     };
   }

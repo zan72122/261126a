@@ -291,4 +291,93 @@ export class PhysicsWorld {
 
     return floorY;
   }
+
+  /**
+   * Resolves 3D locomotive movement against terrain, walkable decks, lake surface,
+   * viaduct undersides, buildings, trees, rocks, and bridge piers.
+   */
+  resolveLocomotive(pos, vel, yaw, { railSupportY = -Infinity } = {}) {
+    const fwdX = Math.sin(yaw);
+    const fwdZ = Math.cos(yaw);
+    const locoR = 0.92;
+    const locoH = 2.6;
+
+    const offsets = [1.3, -1.2];
+    const tmp = { x: 0, y: 0, z: 0 };
+
+    for (let iter = 0; iter < 3; iter++) {
+      let moved = false;
+      for (let oi = 0; oi < offsets.length; oi++) {
+        const off = offsets[oi];
+        tmp.x = pos.x + fwdX * off;
+        tmp.y = pos.y;
+        tmp.z = pos.z + fwdZ * off;
+        const bx = tmp.x;
+        const bz = tmp.z;
+
+        for (let i = 0; i < this.obbs.length; i++) {
+          const b = this.obbs[i];
+          if (b.kind === 'fence' && pos.y >= b.maxY - 0.15) continue;
+          if (this._pushFromOBB(tmp, vel, locoR, locoH, b, false)) moved = true;
+        }
+        for (let i = 0; i < this.cylinders.length; i++) {
+          if (this._pushFromCylinder(tmp, vel, locoR, locoH, this.cylinders[i], false)) moved = true;
+        }
+
+        pos.x += tmp.x - bx;
+        pos.z += tmp.z - bz;
+      }
+      if (!moved) break;
+    }
+
+    pos.x = clamp(pos.x, -152, 162);
+    pos.z = clamp(pos.z, -408, 42);
+
+    // Prevent passing upward through elevated bridge/viaduct deck slabs from underneath
+    for (let i = 0; i < this.decks.length; i++) {
+      const dk = this.decks[i];
+      if (dk.type === 'circle') continue;
+      if (Math.abs(pos.x - dk.x) > dk.boundR + 1.2 || Math.abs(pos.z - dk.z) > dk.boundR + 1.2) continue;
+      const dx = pos.x - dk.x;
+      const dz = pos.z - dk.z;
+      const lx = dx * dk.cos - dz * dk.sin;
+      const lz = dx * dk.sin + dz * dk.cos;
+      if (Math.abs(lx) <= dk.hw + 0.5 && Math.abs(lz) <= dk.hd + 0.5) {
+        const dkY = dk.type === 'ramp'
+          ? dk.yStart + (dk.yEnd - dk.yStart) * clamp((lz + dk.hd) / Math.max(0.01, dk.hd * 2), 0, 1)
+          : dk.topY;
+        if (pos.y < dkY - 0.85 && pos.y + locoH > dkY - 0.45) {
+          pos.y = dkY - 0.45 - locoH;
+          if (vel && vel.y > 0) vel.y = 0;
+        }
+      }
+    }
+
+    const fx = pos.x + fwdX * 1.6;
+    const fz = pos.z + fwdZ * 1.6;
+    const rx = pos.x - fwdX * 1.6;
+    const rz = pos.z - fwdZ * 1.6;
+
+    const surfAt = (px, pz) => {
+      const g = heightAt(px, pz);
+      const d = this.deckHeightAt(px, pz, pos.y + 0.5);
+      const s = Math.max(g, d);
+      return Math.max(s, LAKE_WATER_Y + 0.08);
+    };
+
+    const sC = surfAt(pos.x, pos.z);
+    const sF = surfAt(fx, fz);
+    const sR = surfAt(rx, rz);
+    const supportY = Math.max(sC, (sF + sR) * 0.5, railSupportY);
+
+    if (pos.y < supportY) {
+      pos.y = supportY;
+      if (vel && vel.y < 0) vel.y = 0;
+    }
+    pos.y = clamp(pos.y, LAKE_WATER_Y + 0.08, 118);
+
+    const grounded = pos.y <= supportY + 0.18;
+    const slopePitch = -Math.atan2(sF - sR, 3.2);
+    return { supportY, grounded, slopePitch };
+  }
 }

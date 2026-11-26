@@ -98,6 +98,59 @@ export class ThermalSystem {
         oz: (Math.random() - 0.5) * 16,
       });
     }
+
+    // Gentle morning breeze motes & tower sunlight beacon for 15-20s goal assist
+    this.assistGroup = new THREE.Group();
+    this.assistGroup.visible = false;
+    this.assistAlpha = 0;
+
+    this.assistMotes = [];
+    const assistCount = lowQuality ? 12 : 20;
+    for (let i = 0; i < assistCount; i++) {
+      const mat = new THREE.SpriteMaterial({
+        map: dotTex,
+        color: i % 3 === 0 ? PALETTE.cream : PALETTE.apricotSoft,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false,
+      });
+      const sp = new THREE.Sprite(mat);
+      sp.scale.setScalar(0.55 + (i % 3) * 0.22);
+      this.assistGroup.add(sp);
+      this.assistMotes.push({
+        sp,
+        mat,
+        phase: i / assistCount,
+        side: ((i % 5) - 2) * 1.15,
+        yOff: ((i % 4) - 1.2) * 0.9,
+      });
+    }
+
+    const beaconGeo = new THREE.CylinderGeometry(3.2, 5.2, 46, 16, 1, true);
+    this.towerBeaconMat = new THREE.MeshBasicMaterial({
+      color: PALETTE.apricotSoft,
+      transparent: true,
+      opacity: 0.0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    this.towerBeacon = new THREE.Mesh(beaconGeo, this.towerBeaconMat);
+    this.assistGroup.add(this.towerBeacon);
+
+    this.towerHaloMat = new THREE.SpriteMaterial({
+      map: dotTex,
+      color: PALETTE.cream,
+      transparent: true,
+      opacity: 0.0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    this.towerHalo = new THREE.Sprite(this.towerHaloMat);
+    this.towerHalo.scale.set(18, 18, 1);
+    this.assistGroup.add(this.towerHalo);
+
+    this.group.add(this.assistGroup);
   }
 
   checkTrigger(balloonCenter) {
@@ -126,7 +179,7 @@ export class ThermalSystem {
     return best;
   }
 
-  update(dt, time, balloonPos, balloonYaw, airSpeed, climbRate, turnRate, activeFlying) {
+  update(dt, time, balloonPos, balloonYaw, airSpeed, climbRate, turnRate, activeFlying, assistFactor = 0, towerCenter = null) {
     for (const r of this.rings) {
       if (r.cooldown > 0) r.cooldown = Math.max(0, r.cooldown - dt);
       const pulse = 1.0 + Math.sin(time * 2.2 + r.pos.z * 0.05) * 0.05;
@@ -164,6 +217,41 @@ export class ThermalSystem {
       );
       s.mesh.rotation.y = balloonYaw;
       s.mat.opacity = 0.28 * (1 - Math.abs(s.oz) / 8.5);
+    }
+
+    // Visible morning wind stream & light beacon guiding back to Clock Tower Square when assist is active
+    const blend = 1 - Math.exp(-3.0 * dt);
+    this.assistAlpha += ((activeFlying && assistFactor > 0.5 ? 1 : 0) - this.assistAlpha) * blend;
+    this.assistGroup.visible = this.assistAlpha > 0.02 && !!towerCenter;
+    if (this.assistGroup.visible && towerCenter) {
+      const dx = towerCenter.x - balloonPos.x;
+      const dz = towerCenter.z - balloonPos.z;
+      const dist = Math.hypot(dx, dz) || 1;
+      const dirX = dx / dist;
+      const dirZ = dz / dist;
+      const perpX = -dirZ;
+      const perpZ = dirX;
+      const span = Math.min(54, Math.max(14, dist - 2));
+
+      for (const m of this.assistMotes) {
+        const prog = (m.phase + time * 0.34) % 1;
+        const along = 6 + prog * span;
+        const sway = Math.sin(time * 2.2 + m.phase * 12) * 1.1;
+        const yTarget = balloonPos.y + 3.4 + (towerCenter.y + 4.5 - (balloonPos.y + 3.4)) * (along / Math.max(dist, 12));
+        m.sp.position.set(
+          balloonPos.x + dirX * along + perpX * (m.side + sway),
+          yTarget + m.yOff + Math.cos(time * 1.9 + m.phase * 9) * 0.45,
+          balloonPos.z + dirZ * along + perpZ * (m.side + sway)
+        );
+        const fade = Math.sin(prog * Math.PI);
+        m.mat.opacity = 0.72 * fade * this.assistAlpha;
+      }
+
+      const pulse = 0.85 + 0.15 * Math.sin(time * 2.4);
+      this.towerBeacon.position.set(towerCenter.x, towerCenter.y + 22, towerCenter.z);
+      this.towerBeaconMat.opacity = 0.14 * pulse * this.assistAlpha;
+      this.towerHalo.position.set(towerCenter.x, towerCenter.y + 8, towerCenter.z);
+      this.towerHaloMat.opacity = 0.42 * pulse * this.assistAlpha;
     }
   }
 }

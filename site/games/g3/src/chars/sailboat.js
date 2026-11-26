@@ -10,6 +10,9 @@ export class Sailboat {
     this.pos = new THREE.Vector3();
     this.yaw = 0;
     this.speed = 0;
+    this.glideAlt = 0;
+    this.glideVelY = 0;
+    this.glidePitch = 0;
     this.heel = 0;
     this.pitch = 0;
     this.waveRoll = 0;
@@ -321,12 +324,16 @@ export class Sailboat {
     this.group.position.copy(this.pos);
     this.group.rotation.y = this.yaw;
 
+    const airFade = Math.max(0, 1 - this.glideAlt * 0.45);
     const targetHeel = this.waveRoll !== 0 || this.wavePitch !== 0
-      ? this.waveRoll + breezeBoost * 0.04
+      ? this.waveRoll * airFade - steerX * 0.14 * (1 - airFade) + breezeBoost * 0.04
       : (-steerX * 0.15 + Math.sin(t * 1.4) * 0.028 + breezeBoost * 0.05);
-    const targetPitch = this.wavePitch !== 0
-      ? this.wavePitch - Math.min(0.08, this.speed * 0.005)
-      : (Math.cos(t * 1.1) * 0.024 - Math.min(0.09, this.speed * 0.006));
+    const speedPitch = this.speed >= 0
+      ? -Math.min(0.09, this.speed * 0.006)
+      : Math.min(0.06, -this.speed * 0.014);
+    const targetPitch = (this.wavePitch !== 0
+      ? this.wavePitch * airFade + speedPitch
+      : (Math.cos(t * 1.1) * 0.024 + speedPitch)) + this.glidePitch;
     this.heel += (targetHeel - this.heel) * Math.min(1, dt * 4);
     this.pitch += (targetPitch - this.pitch) * Math.min(1, dt * 4);
 
@@ -337,15 +344,15 @@ export class Sailboat {
     this.sailAngle += (targetSail - this.sailAngle) * Math.min(1, dt * 3.5);
     this.sailPivot.rotation.y = this.sailAngle;
 
-    const targetBillow = sailYawOverride !== null ? 0.06 : (0.16 + Math.min(0.44, this.speed * 0.025 + breezeBoost * 0.24));
+    const targetBillow = sailYawOverride !== null ? 0.06 : (0.14 + Math.min(0.46, Math.max(0, this.speed) * 0.025 + breezeBoost * 0.24 + Math.min(0.18, this.glideAlt * 0.03)));
     this.billow += (targetBillow - this.billow) * Math.min(1, dt * 4.5);
     this._updateSailBillow(this.billow, t);
 
     this.tiller.rotation.y = steerX * 0.42;
-    this.pennant.rotation.y = Math.sin(t * (4.5 + this.speed * 0.45)) * 0.28 + steerX * 0.3;
+    this.pennant.rotation.y = Math.sin(t * (4.5 + Math.abs(this.speed) * 0.45)) * 0.28 + steerX * 0.3;
 
-    this.wakeMat.opacity = Math.min(0.62, Math.max(0, (this.speed - 0.8) * 0.048 + breezeBoost * 0.18));
-    const ws = 1 + Math.min(1.1, this.speed * 0.055);
+    this.wakeMat.opacity = this.glideAlt > 0.4 ? 0 : Math.min(0.62, Math.max(0, (Math.abs(this.speed) - 0.8) * 0.048 + breezeBoost * 0.18));
+    const ws = 1 + Math.min(1.1, Math.abs(this.speed) * 0.055);
     this.wakeGroup.scale.set(1 + breezeBoost * 0.25, 1, ws);
 
     this.boardRing.visible = showRing;

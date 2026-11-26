@@ -403,6 +403,40 @@ export class HarborTown {
     );
     this.shellRing.position.y = 0.04;
     this.shellPedestal.add(this.shellRing);
+
+    // Wordless floating sparkle motes above the shell pedestal to draw a child's gaze gently
+    this.shellMotes = [];
+    const moteGeo = new THREE.SphereGeometry(0.045, 6, 5);
+    this.shellMoteMat = new THREE.MeshBasicMaterial({
+      color: 0xffdf9a,
+      transparent: true,
+      opacity: 0.75,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    for (let i = 0; i < 6; i++) {
+      const m = new THREE.Mesh(moteGeo, this.shellMoteMat);
+      this.shellPedestal.add(m);
+      this.shellMotes.push(m);
+    }
+
+    // Wordless warm stepping-light dots along the stone jetty leading to the sailboat
+    this.jettyGuideDots = [];
+    this.jettyGuideMat = new THREE.MeshBasicMaterial({
+      color: 0xffd584,
+      transparent: true,
+      opacity: 0.25,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const dotGeo = new THREE.CircleGeometry(0.18, 16).rotateX(-Math.PI / 2);
+    for (let i = 0; i < 4; i++) {
+      const dot = new THREE.Mesh(dotGeo, this.jettyGuideMat);
+      dot.position.set(3.8, 1.06, -114.2 + i * 1.9);
+      this.group.add(dot);
+      this.jettyGuideDots.push(dot);
+    }
+
     this.group.add(this.shellPedestal);
     addCircleObstacle(SHELL_MAP_POS.x, SHELL_MAP_POS.z, 0.85, 1.04, 2.2, 'pedestal');
 
@@ -452,9 +486,10 @@ export class HarborTown {
   hideShellMapOnPedestal() {
     this.shellMap.visible = false;
     this.shellRing.visible = false;
+    for (const m of this.shellMotes) m.visible = false;
   }
 
-  update(t, lanternLevel) {
+  update(t, lanternLevel, showJettyGuide = false) {
     for (const lm of this.lanternMats) {
       lm.emissiveIntensity = 0.5 + lanternLevel * 1.65;
     }
@@ -469,6 +504,21 @@ export class HarborTown {
       this.shellMap.rotation.y = Math.sin(t * 0.9) * 0.22;
       const pulse = 1.0 + 0.12 * Math.sin(t * 3.0);
       this.shellRing.scale.set(pulse, 1, pulse);
+      for (let i = 0; i < this.shellMotes.length; i++) {
+        const u = (t * 0.45 + i / this.shellMotes.length) % 1;
+        const a = t * 1.4 + i * 1.05;
+        const rad = 0.28 + Math.sin(u * Math.PI) * 0.18;
+        this.shellMotes[i].position.set(Math.cos(a) * rad, 0.95 + u * 0.95, Math.sin(a) * rad);
+        this.shellMotes[i].scale.setScalar(Math.sin(u * Math.PI) * 1.1);
+      }
+    }
+    if (this.jettyGuideMat) {
+      const targetOp = showJettyGuide ? 0.52 : 0.16;
+      this.jettyGuideMat.opacity += (targetOp - this.jettyGuideMat.opacity) * 0.08;
+      for (let i = 0; i < this.jettyGuideDots.length; i++) {
+        const wave = 0.82 + 0.28 * Math.sin(t * 2.8 - i * 0.85);
+        this.jettyGuideDots[i].scale.setScalar(wave);
+      }
     }
   }
 }

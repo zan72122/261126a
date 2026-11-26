@@ -139,9 +139,13 @@ export class Girl {
     const band = new THREE.Mesh(new THREE.BoxGeometry(0.122, 0.022, 0.018), mats.mustard);
     const bell = new THREE.Mesh(new THREE.SphereGeometry(0.028, 10, 8), mats.brass);
     bell.position.set(0.05, -0.04, 0);
+    cloth.userData.interact = 'ticket';
+    band.userData.interact = 'ticket';
+    bell.userData.interact = 'ticket';
     this.ticketProp.add(cloth, band, bell);
     this.ticketProp.position.set(0, -0.19, 0.05);
     this.armR.forearm.add(this.ticketProp);
+    this.interactables.push(cloth, band, bell);
 
     // Cobalt & Mustard Umbrella (with ribs & backlit translucent sheen during float)
     this.umbrella = new THREE.Group();

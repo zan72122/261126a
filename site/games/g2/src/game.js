@@ -68,8 +68,13 @@ export class Game {
     this.towerPhase = 0;
     this.bellSwing = 0;
 
-    // 20-second gentle assist timer
+    // 15-20 second gentle assist timers
     this.progressTimer = 0;
+    this.noProgressTimer = 0;
+    this.idleTimer = 0;
+    this.walkTimer = 0;
+    this.walkNoProgressTimer = 0;
+    this.assistActive = false;
     this.bestTowerDist = 9999;
 
     // Pointer / 1-finger drag state
@@ -271,6 +276,22 @@ export class Game {
     });
   }
 
+  _updateSteerFromPointer() {
+    if (!this.pointerDown || (this.state !== 'fly' && this.state !== 'float' && this.state !== 'board')) {
+      this.steerInput.active = false;
+      this.steerInput.turn = 0;
+      this.steerInput.climb = 0;
+      return;
+    }
+    const spanX = clamp(window.innerWidth * 0.13, 68, 120);
+    const spanY = clamp(window.innerHeight * 0.14, 68, 120);
+    const dx = this.pointerCurr.x - this.pointerStart.x;
+    const dy = this.pointerStart.y - this.pointerCurr.y;
+    this.steerInput.turn = Math.abs(dx) < 4 ? 0 : clamp(-dx / spanX, -1, 1);
+    this.steerInput.climb = Math.abs(dy) < 4 ? 0 : clamp(dy / spanY, -1, 1);
+    this.steerInput.active = Math.abs(this.steerInput.turn) > 0.02 || Math.abs(this.steerInput.climb) > 0.02;
+  }
+
   _setupInput(canvas) {
     const raycaster = new THREE.Raycaster();
     const ndc = new THREE.Vector2();
@@ -283,6 +304,7 @@ export class Game {
         this._startFloatDismount();
       } else if (this.state === 'walk') {
         this._callBalloonToGirl();
+        this._walkToBoardBalloon();
       }
     });
 
@@ -295,7 +317,9 @@ export class Game {
       this.pointerCurr.x = e.clientX;
       this.pointerCurr.y = e.clientY;
       this.pointerMoved = 0;
-      this.progressTimer = 0;
+      if (this.state === 'garden') {
+        this.progressTimer = 0;
+      }
     });
 
     window.addEventListener('pointermove', (e) => {
@@ -305,14 +329,7 @@ export class Game {
       this.pointerMoved += Math.hypot(dx, dy);
       this.pointerCurr.x = e.clientX;
       this.pointerCurr.y = e.clientY;
-
-      if (this.state === 'fly' || this.state === 'float') {
-        const totalDx = (this.pointerCurr.x - this.pointerStart.x) / Math.max(220, window.innerWidth * 0.25);
-        const totalDy = (this.pointerStart.y - this.pointerCurr.y) / Math.max(180, window.innerHeight * 0.25);
-        this.steerInput.turn = clamp(-totalDx, -1, 1);
-        this.steerInput.climb = clamp(totalDy, -1, 1);
-        this.steerInput.active = true;
-      }
+      this._updateSteerFromPointer();
     });
 
     window.addEventListener('pointerup', (e) => {
@@ -350,15 +367,15 @@ export class Game {
         return;
       }
       const dir = raycaster.ray.direction;
-      if (Math.abs(dir.y) > 0.05) {
-        const targetYaw = Math.atan2(-dir.x, -dir.z);
-        this.balloonYaw = wrapAngle(this.balloonYaw + clamp(angleDiff(this.balloonYaw, targetYaw), -0.45, 0.45));
-      }
+      const targetYaw = Math.atan2(-dir.x, -dir.z);
+      this.balloonYaw = wrapAngle(this.balloonYaw + clamp(angleDiff(this.balloonYaw, targetYaw), -0.45, 0.45));
+      const groundHere = terrainHeight(this.balloonPos.x, this.balloonPos.z);
       if (dir.y > 0.12) {
         this.balloonTargetAlt = Math.min(74, this.balloonTargetAlt + 5.5);
         this.burnerBoost = 0.85;
       } else if (dir.y < -0.15) {
-        this.balloonTargetAlt = Math.max(terrainHeight(this.balloonPos.x, this.balloonPos.z) + 0.5, this.balloonTargetAlt - 5.5);
+        const minTapAlt = (this.balloonPos.y - groundHere > 6.5) ? groundHere + 2.5 : groundHere + 0.3;
+        this.balloonTargetAlt = Math.max(minTapAlt, this.balloonTargetAlt - 4.0);
       }
       return;
     }
@@ -399,13 +416,21 @@ export class Game {
     if (this.state === 'walk') {
       const hitBalloon = raycaster.intersectObject(this.balloon.group, true);
       if (hitBalloon.length > 0) {
+        if (!this.balloonGrounded && !this.balloonSummoning) {
+          this.balloonSummoning = true;
+          this.balloonSummonTarget = new THREE.Vector3(this.balloonPos.x, terrainHeight(this.balloonPos.x, this.balloonPos.z), this.balloonPos.z);
+        }
         this._walkToBoardBalloon();
         return;
       }
       const hitGround = raycaster.intersectObject(this.terrainMesh, false);
       if (hitGround.length > 0) {
         const pt = hitGround[0].point;
-        if (pt.distanceTo(this.balloonPos) < 4.5) {
+        if (Math.hypot(pt.x - this.balloonPos.x, pt.z - this.balloonPos.z) < 4.8) {
+          if (!this.balloonGrounded && !this.balloonSummoning) {
+            this.balloonSummoning = true;
+            this.balloonSummonTarget = new THREE.Vector3(this.balloonPos.x, terrainHeight(this.balloonPos.x, this.balloonPos.z), this.balloonPos.z);
+          }
           this._walkToBoardBalloon();
         } else {
           this.girlWalkTarget = pt.clone();
@@ -521,6 +546,9 @@ export class Game {
   }
 
   _updateWorld(dt) {
+    if (this.pointerDown && !this.autotest) {
+      this._updateSteerFromPointer();
+    }
     const focusPos = this.state === 'fly' ? this.balloonPos : this.girlPos;
     this.sky.update(this.time, focusPos.y);
     this.clouds.update(dt, this.time, this.camera.position);
@@ -530,11 +558,12 @@ export class Game {
     this.recipient.update(this.time, this.state !== 'tower' || this.towerPhase < 1);
     this.bellSwing = Math.max(0, this.bellSwing - dt * 0.28);
 
+    const girlBalloonDistXZ = Math.hypot(this.girlPos.x - this.balloonPos.x, this.girlPos.z - this.balloonPos.z);
     if (this.state === 'fly' && !this.autotest) {
       this.actionBtn.classList.add('visible');
       this.iconDandelion.style.display = 'block';
       this.iconBalloon.style.display = 'none';
-    } else if (this.state === 'walk' && !this.autotest && this.girlPos.distanceTo(this.balloonPos) > 10) {
+    } else if (this.state === 'walk' && !this.autotest && (girlBalloonDistXZ > 3.2 || !this.balloonGrounded)) {
       this.actionBtn.classList.add('visible');
       this.iconDandelion.style.display = 'none';
       this.iconBalloon.style.display = 'block';
@@ -555,16 +584,22 @@ export class Game {
     let airSpeed = 0;
     let climbRate = 0;
     let turnRate = 0;
+    const towerCenter = this.village.landingCenter;
 
     if (this.state === 'garden' || this.state === 'walk') {
+      if (this.state === 'walk') {
+        this.walkTimer += dt;
+      }
       if (!this.balloonGrounded) {
         const summon = this.balloonSummoning && this.balloonSummonTarget ? this.balloonSummonTarget : this.balloonPos;
         const targetX = summon.x;
         const targetZ = summon.z;
-        this.balloonPos.x = damp(this.balloonPos.x, targetX, 1.8, dt);
-        this.balloonPos.z = damp(this.balloonPos.z, targetZ, 1.8, dt);
+        const xzRate = this.balloonSummoning ? 2.6 : 1.8;
+        const yRate = this.balloonSummoning ? 2.8 : 2.2;
+        this.balloonPos.x = damp(this.balloonPos.x, targetX, xzRate, dt);
+        this.balloonPos.z = damp(this.balloonPos.z, targetZ, xzRate, dt);
         const gY = Math.max(WATER_Y + 0.14, terrainHeight(this.balloonPos.x, this.balloonPos.z));
-        this.balloonPos.y = damp(this.balloonPos.y, gY, 2.2, dt);
+        this.balloonPos.y = damp(this.balloonPos.y, gY, yRate, dt);
         this.colliders.resolveBalloon(this.balloonPos, this.balloonVel, {
           inFlight: true,
           terrainHeight,
@@ -573,7 +608,7 @@ export class Game {
           waterY: WATER_Y,
         });
         const settledY = Math.max(WATER_Y + 0.14, terrainHeight(this.balloonPos.x, this.balloonPos.z));
-        if (Math.abs(this.balloonPos.y - settledY) < 0.15 && Math.hypot(this.balloonPos.x - targetX, this.balloonPos.z - targetZ) < 0.8) {
+        if (Math.abs(this.balloonPos.y - settledY) < 0.35 && Math.hypot(this.balloonPos.x - targetX, this.balloonPos.z - targetZ) < 1.1) {
           this.balloonPos.y = settledY;
           this.balloonGrounded = true;
           this.balloonSummoning = false;
@@ -596,7 +631,7 @@ export class Game {
         const dx = this.girlWalkTarget.x - this.girlPos.x;
         const dz = this.girlWalkTarget.z - this.girlPos.z;
         const dist = Math.hypot(dx, dz);
-        const stopDist = (this.pendingBoardAfterWalk && !this.pendingPickAfterWalk) ? 1.35 : 0.35;
+        const stopDist = (this.pendingBoardAfterWalk && !this.pendingPickAfterWalk) ? 1.65 : 0.35;
         if (dist > stopDist) {
           walking = true;
           const step = Math.min(dist, 3.6 * dt);
@@ -618,7 +653,7 @@ export class Game {
         }
       } else if (this.state === 'garden' && !this.autotest) {
         this.progressTimer += dt;
-        if (this.progressTimer > 18.0) {
+        if (this.progressTimer > 18.0 && !this.pointerDown) {
           this.progressTimer = 0;
           if (!this.girlHoldingLetter && !this.letterInBasket) {
             this._walkToPickLetter(true);
@@ -626,10 +661,12 @@ export class Game {
             this._walkToBoardBalloon();
           }
         }
-      } else if (this.state === 'walk' && !this.autotest) {
-        this.progressTimer += dt;
-        if (this.progressTimer > 20.0) {
-          this.progressTimer = 0;
+      }
+
+      if (this.state === 'walk' && !this.autotest) {
+        this.walkNoProgressTimer += dt;
+        if (this.walkNoProgressTimer > 12.0 && !this.pointerDown && !this.pendingBoardAfterWalk) {
+          this.walkNoProgressTimer = 0;
           this._callBalloonToGirl();
           this._walkToBoardBalloon();
         }
@@ -646,6 +683,21 @@ export class Game {
         isOnDeck: isOnBridgeOrPier,
         waterY: WATER_Y,
       });
+
+      // Walking right up to letter or balloon in garden / walk picks or boards naturally
+      if (this.state === 'garden' && walking) {
+        if (!this.girlHoldingLetter && !this.letterInBasket && Math.hypot(this.girlPos.x - this.tableLetter.position.x, this.girlPos.z - this.tableLetter.position.z) < 1.6) {
+          this.girlHoldingLetter = true;
+          this.pendingPickAfterWalk = false;
+          this.sound.playPickup();
+        } else if ((this.girlHoldingLetter || this.letterInBasket) && Math.hypot(this.girlPos.x - this.balloonPos.x, this.girlPos.z - this.balloonPos.z) < 2.2) {
+          this._startBoarding();
+        }
+      } else if (this.state === 'walk' && this.walkTimer > 0.8 && (walking || this.pendingBoardAfterWalk)) {
+        if (Math.hypot(this.girlPos.x - this.balloonPos.x, this.girlPos.z - this.balloonPos.z) < 2.25 && Math.abs(this.girlPos.y - this.balloonPos.y) < 2.8) {
+          this._startBoarding();
+        }
+      }
 
       this.girl.setPose({
         mode: walking ? 'walk' : 'idle',
@@ -674,6 +726,13 @@ export class Game {
       if (this.boardTimer > 1.0) {
         this.state = 'fly';
         this.riseTimer = 0;
+        this.noProgressTimer = 0;
+        this.idleTimer = 0;
+        this.assistActive = false;
+        this.bestTowerDist = Math.min(
+          this.bestTowerDist,
+          Math.hypot(this.balloonPos.x - towerCenter.x, this.balloonPos.z - towerCenter.z)
+        );
         const groundY = terrainHeight(this.balloonPos.x, this.balloonPos.z);
         this.balloonTargetAlt = Math.max(this.balloonPos.y + 16, groundY + 18);
         this.burnerBoost = 1.0;
@@ -685,25 +744,31 @@ export class Game {
       this.thermalLiftTimer = Math.max(0, this.thermalLiftTimer - dt);
 
       const steer = this.autotest ? this.autoSteer : this.steerInput;
+      const playerDragging = !this.autotest && this.pointerDown && (this.pointerMoved >= 10 || Math.abs(steer.turn) > 0.04 || Math.abs(steer.climb) > 0.04);
       const groundHere = Math.max(WATER_Y + 0.14, terrainHeight(this.balloonPos.x, this.balloonPos.z));
 
-      const towerCenter = this.village.landingCenter;
       const distToTower = Math.hypot(this.balloonPos.x - towerCenter.x, this.balloonPos.z - towerCenter.z);
-      if (distToTower < this.bestTowerDist - 2.0) {
+      if (distToTower < this.bestTowerDist - 8.0) {
         this.bestTowerDist = distToTower;
-        this.progressTimer = 0;
+        this.noProgressTimer = 0;
       } else if (!this.autotest) {
-        this.progressTimer += dt;
+        this.noProgressTimer += dt;
+      }
+      if (!this.autotest) {
+        this.idleTimer = playerDragging ? 0 : this.idleTimer + dt;
       }
 
-      const assistActive = !this.autotest && this.progressTimer > 20.0;
-      turnRate = steer.turn * 1.15;
-      if (assistActive) {
+      const assistWanted = !this.autotest && (this.noProgressTimer > 15.0 || this.idleTimer > 16.0);
+      this.assistActive = assistWanted && !playerDragging;
+
+      turnRate = steer.turn * 0.44;
+      if (this.assistActive) {
         const toTowerYaw = Math.atan2(-(towerCenter.x - this.balloonPos.x), -(towerCenter.z - this.balloonPos.z));
-        turnRate += clamp(angleDiff(this.balloonYaw, toTowerYaw), -1, 1) * 0.85;
-        const desiredCruiseAlt = distToTower < 45 ? towerCenter.y + 2.5 : Math.max(groundHere + 22, 48);
-        this.balloonTargetAlt = damp(this.balloonTargetAlt, desiredCruiseAlt, 0.9, dt);
-      } else if (this.thermalLiftTimer > 0) {
+        const yawErr = angleDiff(this.balloonYaw, toTowerYaw);
+        turnRate = clamp(yawErr * 1.35, -1.05, 1.05);
+        const desiredCruiseAlt = distToTower < 52 ? towerCenter.y + 1.8 : Math.max(groundHere + 20, 48);
+        this.balloonTargetAlt = damp(this.balloonTargetAlt, desiredCruiseAlt, 1.35, dt);
+      } else if (this.thermalLiftTimer > 0 && (!playerDragging || steer.climb >= -0.15)) {
         this.balloonTargetAlt = clamp(this.balloonTargetAlt + 15.0 * dt, groundHere - 0.15, 74);
       } else {
         this.balloonTargetAlt = clamp(this.balloonTargetAlt + steer.climb * 15.0 * dt, groundHere - 0.15, 78);
@@ -712,13 +777,20 @@ export class Game {
       this.balloonYaw = wrapAngle(this.balloonYaw + turnRate * dt);
 
       const altRatio = clamp((this.balloonPos.y - 12) / 52, 0, 1);
-      const cruiseSpeed = (8.6 + altRatio * 5.6) * (this.autotest ? 1.25 : 1.0);
+      const assistSpeedMul = this.assistActive ? 1.24 : 1.0;
+      const cruiseSpeed = (10.0 + altRatio * 5.2) * (this.autotest ? 1.2 : 1.0) * assistSpeedMul;
       // Gentle morning valley breeze increasing smoothly above ground (consistent with thermal air flow)
       const windMask = smoothstep(groundHere + 2.5, groundHere + 14.0, this.balloonPos.y);
       const windX = 0.22 * windMask;
       const windZ = -0.48 * windMask;
-      const vx = -Math.sin(this.balloonYaw) * cruiseSpeed + windX;
-      const vz = -Math.cos(this.balloonYaw) * cruiseSpeed + windZ;
+      // Responsive lateral carve when turning left/right so horizontal heading responds immediately
+      const fwdX = -Math.sin(this.balloonYaw);
+      const fwdZ = -Math.cos(this.balloonYaw);
+      const rightX = Math.cos(this.balloonYaw);
+      const rightZ = -Math.sin(this.balloonYaw);
+      const bankSlide = this.assistActive ? 0 : -steer.turn * 2.2;
+      const vx = fwdX * cruiseSpeed + rightX * bankSlide + windX;
+      const vz = fwdZ * cruiseSpeed + rightZ * bankSlide + windZ;
 
       this.balloonPos.x = clamp(this.balloonPos.x + vx * dt, -200, 200);
       this.balloonPos.z = clamp(this.balloonPos.z + vz * dt, -385, 65);
@@ -756,7 +828,7 @@ export class Game {
         this._setMoment('soar');
       }
 
-      if (Math.abs(turnRate) > 0.42 && Math.abs(climbRate) < 2.2 && this.riseTimer > 2.2) {
+      if (Math.abs(turnRate) > 0.32 && Math.abs(climbRate) < 2.2 && this.riseTimer > 2.2) {
         this.circlingAccum += dt;
         if (this.circlingAccum > 1.1) {
           this._setMoment('circle');
@@ -781,15 +853,16 @@ export class Game {
         burnerLevel,
         showBeacon: false,
         tiltX: -0.04,
-        tiltZ: turnRate * 0.06,
+        tiltZ: turnRate * 0.11,
       });
       this.dandelion.update(this.time, false);
 
       // Arrival check at Clock Tower Square
       const distPlaza = Math.hypot(this.balloonPos.x - towerCenter.x, this.balloonPos.z - towerCenter.z);
-      if (distPlaza < 15.0 && (this.balloonPos.y - towerCenter.y < 8.5 || assistActive)) {
+      if (distPlaza < 15.0 && (this.balloonPos.y - towerCenter.y < 8.5 || this.assistActive)) {
         this.state = 'tower';
         this.towerPhase = 0;
+        this.assistActive = false;
         this.balloonGrounded = true;
         this.sound.playTowerBell();
         this.bellSwing = 1.6;
@@ -807,10 +880,17 @@ export class Game {
           this.balloonPos.y = landGround;
           this.balloonVel.set(0, 0, 0);
           this.balloonGrounded = true;
+          this.assistActive = false;
           this.state = 'walk';
+          this.walkTimer = 0;
+          this.walkNoProgressTimer = 0;
           let bestPos = new THREE.Vector3(this.balloonPos.x + 2.0, landGround, this.balloonPos.z + 1.85);
           let bestScore = -1e9;
-          for (const [ox, oz] of [[2.0, 1.85], [-2.0, 1.85], [0, 2.3], [2.1, 0.2], [-2.1, 0.2]]) {
+          const offsets = [
+            [2.0, 1.85], [-2.0, 1.85], [0, 2.3], [2.1, 0.2],
+            [-2.1, 0.2], [1.6, -1.9], [-1.6, -1.9], [0, -2.3],
+          ];
+          for (const [ox, oz] of offsets) {
             const cand = new THREE.Vector3(this.balloonPos.x + ox, terrainHeight(this.balloonPos.x + ox, this.balloonPos.z + oz), this.balloonPos.z + oz);
             this.colliders.resolveWalker(cand, {
               radius: 0.36,
@@ -828,6 +908,16 @@ export class Game {
               bestPos = cand;
             }
           }
+          this.colliders.resolveWalker(bestPos, {
+            radius: 0.36,
+            height: 1.32,
+            terrainHeight,
+            isOverRiver,
+            riverCenterZ,
+            riverHalfWidth,
+            isOnDeck: isOnBridgeOrPier,
+            waterY: WATER_Y,
+          });
           this.girlPos.copy(bestPos);
           this.girlYaw = 0.25;
           this._setMoment('land');
@@ -860,6 +950,8 @@ export class Game {
       if (this.girlPos.y <= groundY + 0.06) {
         this.girlPos.y = groundY;
         this.state = 'walk';
+        this.walkTimer = 0;
+        this.walkNoProgressTimer = 0;
         this.colliders.resolveWalker(this.girlPos, {
           radius: 0.36,
           height: 1.32,
@@ -915,6 +1007,15 @@ export class Game {
     } else if (this.state === 'tower') {
       const pad = this.village.landingCenter;
       this.balloonPos.lerp(pad, Math.min(1, dt * 2.8));
+      if (this.balloonPos.distanceTo(pad) > 1.8) {
+        this.colliders.resolveBalloon(this.balloonPos, this.balloonVel, {
+          inFlight: true,
+          terrainHeight,
+          isOverRiver,
+          isOnDeck: isOnBridgeOrPier,
+          waterY: WATER_Y,
+        });
+      }
       this.balloonYaw = wrapAngle(this.balloonYaw + angleDiff(this.balloonYaw, 0.25) * Math.min(1, dt * 3));
       this.balloon.update(this.time, { burnerLevel: 0, showBeacon: false });
       this.dandelion.update(this.time, false);
@@ -956,7 +1057,18 @@ export class Game {
 
     this.balloon.group.position.copy(this.balloonPos);
     this.balloon.group.rotation.y = this.balloonYaw;
-    this.thermals.update(dt, this.time, this.balloonPos, this.balloonYaw, airSpeed, climbRate, turnRate, this.state === 'fly');
+    this.thermals.update(
+      dt,
+      this.time,
+      this.balloonPos,
+      this.balloonYaw,
+      airSpeed,
+      climbRate,
+      turnRate,
+      this.state === 'fly',
+      this.assistActive ? 1 : 0,
+      towerCenter
+    );
     this.sound.update(dt, airSpeed, this.balloonPos.y, burnerLevel > 0.4, walking);
   }
 
@@ -975,20 +1087,40 @@ export class Game {
       this._logAuto('action', 'pick_letter_and_board');
     } else if (this.autoStep === 1) {
       if (this.state === 'fly' && this.riseTimer > 0.7) {
+        this.autoStep = 10;
+        this.autoBranchEnd = this.autoTimer + 1.8;
+        this._logAuto('action', 'steer_left_valley');
+      }
+    } else if (this.autoStep === 10) {
+      // Clear left valley divergence while climbing
+      this.autoSteer.turn = 0.92;
+      this.autoSteer.climb = 0.22;
+      if (this.autoTimer >= this.autoBranchEnd) {
+        this.autoStep = 11;
+        this.autoBranchEnd = this.autoTimer + 2.6;
+        this._logAuto('action', 'steer_right_valley');
+      }
+    } else if (this.autoStep === 11) {
+      // Clear right valley divergence while climbing
+      this.autoSteer.turn = -0.92;
+      this.autoSteer.climb = 0.22;
+      if (this.autoTimer >= this.autoBranchEnd) {
         this.autoStep = 2;
         this._logAuto('action', 'steer_through_thermal_and_climb_above_clouds');
       }
     } else if (this.autoStep === 2) {
-      // Steer through Ring 1 (y=21, z=-70), then climb cleanly above y=60 above the cloud layer
+      // Steer through nearest thermal ring ahead (Ring 1 or Ring 2), then climb above y=54 cloud stratum
       const ring1 = this.thermals.rings[0];
-      if (ring1.cooldown > 0) {
+      const ring2 = this.thermals.rings[1];
+      const activeRing = (this.balloonPos.z > -62 && ring1.cooldown === 0) ? ring1 : ring2;
+      if (ring1.cooldown > 0 || ring2.cooldown > 0) {
         this.autoSteer.turn = 0;
         this.autoSteer.climb = 1.0;
       } else {
-        const r1 = ring1.pos;
-        const targetYaw = Math.atan2(-(r1.x - this.balloonPos.x), -(r1.z - this.balloonPos.z));
+        const rPos = activeRing.pos;
+        const targetYaw = Math.atan2(-(rPos.x - this.balloonPos.x), -(rPos.z - this.balloonPos.z));
         this.autoSteer.turn = clamp(angleDiff(this.balloonYaw, targetYaw) * 1.8, -1, 1);
-        this.autoSteer.climb = clamp((r1.y - 2.5 - this.balloonPos.y) * 0.14, -0.5, 1);
+        this.autoSteer.climb = clamp((rPos.y - 2.5 - this.balloonPos.y) * 0.14, -0.5, 1);
       }
 
       if (window.__moment === 'soar' && this.balloonPos.y > 54) {

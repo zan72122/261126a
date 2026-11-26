@@ -131,6 +131,7 @@ export class Game {
       audio: this.audio,
     });
     this.input.onTap = (tap) => this.director.handleTap(tap);
+    this.input.onDown = () => this.director.handlePointerDown();
 
     this.autotest = this.isAutoTest ? new AutoTest(this) : null;
 
@@ -197,7 +198,7 @@ export class Game {
     this.sun.target.position.copy(this.girl.pos);
     this.sun.target.updateMatrixWorld();
 
-    this.harbor.update(this.elapsed, this.director.lanternLevel);
+    this.harbor.update(this.elapsed, this.director.lanternLevel, this.director.state === 'harbor' && this.girl.hasShell);
     this.archipelago.update(this.elapsed, dt, this.director.lanternLevel);
     this.sea.update(this.elapsed);
     this.windRings.update(this.elapsed);
@@ -208,7 +209,9 @@ export class Game {
       this.girl.isFloating,
       night,
       this.boat,
-      shared.uBreezeBoost.value
+      shared.uBreezeBoost.value,
+      this.director.state === 'sail' ? this.director.assistStrength : 0,
+      this.director.assistTarget
     );
 
     const shot = this.director.computeShot();

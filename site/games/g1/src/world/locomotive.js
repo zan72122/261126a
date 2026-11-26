@@ -13,6 +13,7 @@ export class Locomotive {
     this.pos = new THREE.Vector3();
     this.yaw = 0;
     this.pitch = 0;
+    this.roll = 0;
     this.wheelAngle = 0;
 
     this.wheels = [];
