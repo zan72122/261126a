@@ -1,0 +1,159 @@
+# D09 test log (2026-11-26T12:46Z) — headless Chromium (Playwright) + SwiftShader (--use-angle=swiftshader --enable-unsafe-swiftshader), python3 -m http.server (root site/), autotest speed x3. Script: logs/d09/autotest.js. The play-log endpoint (external, unreachable here) is answered with 204 by Playwright.
+== 1024x768 http://localhost:8139/games/d09/index.html?autotest&q=low
+__ready=true after 3518ms
+t=3.7s state=COLLECT n=0 stage=0 bands=0000000 free=0 boatZ=0 q=low fps=60 flower=- gate L=31.4% R=49.3% top=13% camD=13.5
+t=5.1s state=COLLECT n=1 stage=0 bands=1000000 free=0 boatZ=0 q=low fps=60 flower=- gate L=31.5% R=49.3% top=13.2% camD=13.5
+t=5.7s state=WAIT n=1 stage=0 bands=1000000 free=0 boatZ=-0.05 q=low fps=60 flower=- gate L=31.7% R=49.4% top=14.5% camD=14.1
+t=7.0s state=COLLECT n=1 stage=0 bands=1000000 free=0 boatZ=-2.08 q=low fps=60 flower=- gate L=32.8% R=50.2% top=18.6% camD=15.6
+t=9.1s state=COLLECT n=2 stage=0 bands=2000000 free=0 boatZ=-3.5 q=low fps=60 flower=- gate L=32.5% R=50.4% top=15.2% camD=14.4
+t=9.6s state=WAIT n=2 stage=0 bands=2000000 free=0 boatZ=-3.55 q=low fps=60 flower=- gate L=34% R=52% top=15.8% camD=14.6
+t=11.3s state=COLLECT n=2 stage=0 bands=2000000 free=0 boatZ=-6.17 q=low fps=60 flower=- gate L=41.2% R=59.1% top=18.5% camD=15.7
+t=13.5s state=COLLECT n=3 stage=0 bands=3000000 free=0 boatZ=-7 q=low fps=60 flower=- gate L=42.2% R=60.6% top=15.2% camD=14.5
+t=13.9s state=WAIT n=3 stage=0 bands=3000000 free=0 boatZ=-7.05 q=low fps=60 flower=- gate L=41.5% R=59.9% top=15.8% camD=14.7
+  shot early
+t=16.0s state=COLLECT n=3 stage=0 bands=3000000 free=0 boatZ=-10.31 q=low fps=60 flower=- gate L=36% R=54.6% top=17.3% camD=15.2
+t=17.1s state=COLLECT n=4 stage=0 bands=3100000 free=0 boatZ=-10.5 q=low fps=60 flower=- gate L=33% R=52.1% top=15.1% camD=14.4
+t=17.6s state=WAIT n=4 stage=0 bands=3100000 free=0 boatZ=-10.55 q=low fps=60 flower=- gate L=31.8% R=51% top=15.7% camD=14.6
+t=18.8s state=COLLECT n=4 stage=0 bands=3100000 free=0 boatZ=-12.58 q=low fps=60 flower=- gate L=29.1% R=48.3% top=18.6% camD=15.7
+t=20.8s state=COLLECT n=5 stage=0 bands=3200000 free=0 boatZ=-14 q=low fps=60 flower=- gate L=28.2% R=48.1% top=15.1% camD=14.4
+t=21.3s state=WAIT n=5 stage=0 bands=3200000 free=0 boatZ=-14.05 q=low fps=60 flower=- gate L=29.7% R=49.6% top=15.5% camD=14.6
+t=22.5s state=COLLECT n=5 stage=0 bands=3200000 free=0 boatZ=-16.08 q=low fps=60 flower=- gate L=36.8% R=56.4% top=18.2% camD=15.7
+t=24.6s state=STAGE n=6 stage=1 bands=3300000 free=0 boatZ=-17.5 q=low fps=60 flower=- gate L=39.4% R=59.6% top=14.8% camD=14.5
+t=27.8s state=WAIT n=6 stage=1 bands=3300000 free=0 boatZ=-20.17 q=low fps=60 flower=- gate L=38.9% R=59.6% top=13.6% camD=13.8
+t=29.0s state=COLLECT n=6 stage=1 bands=3300000 free=0 boatZ=-21 q=low fps=60 flower=- gate L=36.8% R=57.8% top=15.5% camD=14.4
+t=31.0s state=COLLECT n=7 stage=1 bands=3310000 free=0 boatZ=-21 q=low fps=60 flower=- gate L=35.2% R=56.4% top=14.4% camD=14.3
+t=31.5s state=WAIT n=7 stage=1 bands=3310000 free=0 boatZ=-21.14 q=low fps=60 flower=- gate L=34.2% R=55.4% top=15.6% camD=14.9
+t=32.8s state=COLLECT n=7 stage=1 bands=3310000 free=0 boatZ=-24.97 q=low fps=60 flower=- gate L=29.9% R=51.1% top=18.9% camD=15.9
+t=34.7s state=COLLECT n=8 stage=1 bands=3320000 free=0 boatZ=-25.5 q=low fps=60 flower=- gate L=26.5% R=48.9% top=14.9% camD=14.6
+t=35.2s state=WAIT n=8 stage=1 bands=3320000 free=0 boatZ=-25.64 q=low fps=60 flower=- gate L=27.6% R=49.9% top=15.8% camD=15
+t=36.3s state=COLLECT n=8 stage=1 bands=3320000 free=0 boatZ=-29.47 q=low fps=60 flower=- gate L=33% R=55.2% top=18.6% camD=15.9
+t=38.5s state=COLLECT n=9 stage=1 bands=3330000 free=0 boatZ=-30 q=low fps=60 flower=- gate L=35.1% R=58.2% top=14.5% camD=14.6
+t=39.1s state=WAIT n=9 stage=1 bands=3330000 free=0 boatZ=-30.14 q=low fps=60 flower=- gate L=36.2% R=59.3% top=15.4% camD=15
+t=40.5s state=COLLECT n=9 stage=1 bands=3330000 free=0 boatZ=-34.33 q=low fps=60 flower=- gate L=39.3% R=62.7% top=18.1% camD=15.8
+t=42.9s state=COLLECT n=10 stage=1 bands=3331000 free=0 boatZ=-34.5 q=low fps=60 flower=- gate L=37.9% R=62.2% top=14.4% camD=14.7
+t=43.4s state=WAIT n=10 stage=1 bands=3331000 free=0 boatZ=-34.64 q=low fps=60 flower=- gate L=36.6% R=60.9% top=15.3% camD=15.1
+t=44.7s state=COLLECT n=10 stage=1 bands=3331000 free=0 boatZ=-38.47 q=low fps=60 flower=- gate L=31.1% R=55.7% top=18.2% camD=16
+t=46.6s state=COLLECT n=11 stage=1 bands=3332000 free=0 boatZ=-39 q=low fps=60 flower=- gate L=26.4% R=52.4% top=14.1% camD=14.6
+t=47.0s state=WAIT n=11 stage=1 bands=3332000 free=0 boatZ=-39.14 q=low fps=60 flower=- gate L=26.6% R=52.6% top=15% camD=15
+  shot mid
+t=48.6s state=COLLECT n=11 stage=1 bands=3332000 free=0 boatZ=-43.48 q=low fps=60 flower=- gate L=29.1% R=55.5% top=16.7% camD=15.5
+t=50.2s state=COLLECT n=12 stage=1 bands=3333000 free=0 boatZ=-43.5 q=low fps=60 flower=- gate L=29.5% R=56.9% top=13.6% camD=14.6
+t=50.8s state=WAIT n=12 stage=1 bands=3333000 free=0 boatZ=-43.64 q=low fps=60 flower=- gate L=31% R=58.4% top=14.5% camD=15
+t=51.9s state=COLLECT n=12 stage=1 bands=3333000 free=0 boatZ=-47.47 q=low fps=60 flower=- gate L=36.8% R=64.2% top=17.6% camD=16
+t=53.8s state=COLLECT n=13 stage=1 bands=3333100 free=0 boatZ=-48 q=low fps=60 flower=- gate L=37% R=65.9% top=13.3% camD=14.7
+t=54.3s state=WAIT n=13 stage=1 bands=3333100 free=0 boatZ=-48.14 q=low fps=60 flower=- gate L=36.2% R=65.1% top=14.2% camD=15
+t=55.5s state=COLLECT n=13 stage=1 bands=3333100 free=0 boatZ=-51.97 q=low fps=60 flower=- gate L=32.3% R=61.5% top=17.2% camD=15.9
+t=57.6s state=COLLECT n=14 stage=1 bands=3333200 free=0 boatZ=-52.5 q=low fps=60 flower=- gate L=27.4% R=58.5% top=12.9% camD=14.6
+t=58.0s state=WAIT n=14 stage=1 bands=3333200 free=0 boatZ=-52.64 q=low fps=60 flower=- gate L=26.7% R=57.9% top=13.8% camD=15
+t=59.2s state=COLLECT n=14 stage=1 bands=3333200 free=0 boatZ=-56.47 q=low fps=60 flower=- gate L=25.4% R=56.9% top=17% camD=15.9
+t=61.4s state=STAGE n=15 stage=2 bands=3333300 free=0 boatZ=-57 q=low fps=60 flower=- gate L=23.9% R=57.4% top=12.4% camD=14.6
+t=64.5s state=WAIT n=15 stage=2 bands=3333300 free=0 boatZ=-61.33 q=low fps=60 flower=- gate L=25.7% R=59.2% top=12.1% camD=18
+t=65.6s state=COLLECT n=15 stage=2 bands=3333300 free=0 boatZ=-61.5 q=low fps=60 flower=- gate L=32.3% R=66.9% top=13.6% camD=15.7
+t=67.5s state=COLLECT n=16 stage=2 bands=3333310 free=0 boatZ=-61.5 q=low fps=60 flower=- gate L=33.1% R=68.9% top=11.9% camD=14.8
+t=67.9s state=WAIT n=16 stage=2 bands=3333310 free=0 boatZ=-61.77 q=low fps=60 flower=- gate L=33% R=68.8% top=13% camD=15.2
+t=69.1s state=COLLECT n=16 stage=2 bands=3333310 free=0 boatZ=-65.48 q=low fps=60 flower=- gate L=31.4% R=68% top=15.2% camD=15.6
+t=71.0s state=COLLECT n=17 stage=2 bands=3333320 free=0 boatZ=-65.5 q=low fps=60 flower=- gate L=28.1% R=66.5% top=11.8% camD=14.8
+t=71.4s state=WAIT n=17 stage=2 bands=3333320 free=0 boatZ=-65.77 q=low fps=60 flower=- gate L=27.1% R=65.5% top=12.7% camD=15.2
+t=72.5s state=COLLECT n=17 stage=2 bands=3333320 free=0 boatZ=-69.48 q=low fps=60 flower=- gate L=22.6% R=62.2% top=14.9% camD=15.7
+t=74.4s state=COLLECT n=18 stage=2 bands=3333330 free=0 boatZ=-69.5 q=low fps=60 flower=- gate L=20% R=61.6% top=11.5% camD=15.2
+t=74.9s state=WAIT n=18 stage=2 bands=3333330 free=0 boatZ=-69.77 q=low fps=60 flower=- gate L=21.1% R=62.6% top=12.4% camD=15.4
+t=76.1s state=COLLECT n=18 stage=2 bands=3333330 free=0 boatZ=-73.48 q=low fps=60 flower=- gate L=25.5% R=68.1% top=14.1% camD=15.7
+t=77.8s state=COLLECT n=19 stage=2 bands=3333331 free=0 boatZ=-73.5 q=low fps=60 flower=- gate L=26.8% R=70.8% top=11.4% camD=16.2
+t=78.2s state=WAIT n=19 stage=2 bands=3333331 free=0 boatZ=-73.77 q=low fps=60 flower=- gate L=27.5% R=71.6% top=12.3% camD=16.1
+t=79.3s state=COLLECT n=19 stage=2 bands=3333331 free=0 boatZ=-77.48 q=low fps=60 flower=- gate L=28.7% R=74.8% top=13.6% camD=15.9
+t=81.2s state=COLLECT n=20 stage=2 bands=3333332 free=0 boatZ=-77.5 q=low fps=60 flower=- gate L=27.5% R=74.7% top=11.5% camD=16.9
+t=81.7s state=WAIT n=20 stage=2 bands=3333332 free=0 boatZ=-77.77 q=low fps=60 flower=- gate L=26.5% R=73.8% top=12.3% camD=16.7
+t=82.8s state=COLLECT n=20 stage=2 bands=3333332 free=0 boatZ=-81.48 q=low fps=60 flower=- gate L=20.6% R=70.8% top=13.3% camD=16.4
+t=84.8s state=COMPLETE n=21 stage=2 bands=3333333 free=0 boatZ=-81.5 q=low fps=60 flower=- gate L=17.8% R=69.1% top=11.5% camD=17.6
+  shot complete
+t=88.3s state=PASS n=21 stage=2 bands=3333333 free=0 boatZ=-81.56 q=low fps=60 flower=- gate L=30.1% R=69.6% top=37.3% camD=28.7
+  shot pass
+  shot sky
+t=94.8s state=AFTER n=21 stage=2 bands=3333333 free=0 boatZ=-145.56 q=low fps=60 flower=- gate L=85% R=-11.9% top=59.1% camD=17 dest=55.4%,25.7%
+  shot after
+t=103.2s state=FREE n=21 stage=2 bands=3333333 free=0 boatZ=-212.4 q=low fps=60 flower=- gate L=50.5% R=27.8% top=46.3% camD=17 dest=28.8%,28.3%
+  shot free
+flower position while waiting (x%,y% from top-left): x 46.1..52.6, y 55.3..57.5; outside 40-60/40-65: 0/56
+gate in view (cove): samples=314 cut=0 leftmost=17.8% rightmost=75.1% topmost=11.1%; climax(COMPLETE) samples=6 outside 8% margin=0
+final: n=21 bands=3333333 free=3 taps=26 states=INTRO>COLLECT>WAIT>STAGE>COMPLETE>PASS>AFTER>FREE
+__ready=true __errors=[] consoleErrors=[] externalRequests=["https://gf-playlog.zan72122.workers.dev","https://gf-playlog.zan72122.workers.dev"]
+RESULT: PASS
+== 768x1024 http://localhost:8139/games/d09/index.html?autotest&q=low
+__ready=true after 3530ms
+t=3.8s state=COLLECT n=0 stage=0 bands=0000000 free=0 boatZ=0 q=low fps=60 flower=- gate L=19.5% R=48.1% top=17.5% camD=12.1
+t=5.2s state=COLLECT n=1 stage=0 bands=1000000 free=0 boatZ=0 q=low fps=60 flower=- gate L=19.4% R=48% top=17.6% camD=12.1
+t=5.7s state=WAIT n=1 stage=0 bands=1000000 free=0 boatZ=-0.05 q=low fps=60 flower=- gate L=19.9% R=48.3% top=18.9% camD=12.6
+t=6.9s state=COLLECT n=1 stage=0 bands=1000000 free=0 boatZ=-2.08 q=low fps=60 flower=- gate L=21.6% R=49.7% top=22.6% camD=13.9
+t=8.9s state=COLLECT n=2 stage=0 bands=2000000 free=0 boatZ=-3.5 q=low fps=60 flower=- gate L=21.1% R=50% top=19.4% camD=12.8
+t=9.4s state=WAIT n=2 stage=0 bands=2000000 free=0 boatZ=-3.55 q=low fps=60 flower=- gate L=23.6% R=52.5% top=20% camD=13
+t=10.8s state=COLLECT n=2 stage=0 bands=2000000 free=0 boatZ=-6.17 q=low fps=60 flower=- gate L=35.6% R=64.3% top=22.5% camD=13.9
+t=12.7s state=COLLECT n=3 stage=0 bands=3000000 free=0 boatZ=-7 q=low fps=60 flower=- gate L=37.1% R=66.7% top=19.4% camD=13
+t=13.1s state=WAIT n=3 stage=0 bands=3000000 free=0 boatZ=-7.05 q=low fps=60 flower=- gate L=36% R=65.5% top=20% camD=13.2
+  shot early
+t=15.0s state=COLLECT n=3 stage=0 bands=3000000 free=0 boatZ=-10.31 q=low fps=60 flower=- gate L=26.9% R=56.8% top=21.4% camD=13.6
+t=16.2s state=COLLECT n=4 stage=0 bands=3100000 free=0 boatZ=-10.5 q=low fps=60 flower=- gate L=21.9% R=52.6% top=19.3% camD=12.9
+t=16.6s state=WAIT n=4 stage=0 bands=3100000 free=0 boatZ=-10.55 q=low fps=60 flower=- gate L=19.9% R=50.8% top=19.9% camD=13.1
+t=17.7s state=COLLECT n=4 stage=0 bands=3100000 free=0 boatZ=-12.58 q=low fps=60 flower=- gate L=15.6% R=46.6% top=22.5% camD=14
+t=19.7s state=COLLECT n=5 stage=0 bands=3200000 free=0 boatZ=-14 q=low fps=60 flower=- gate L=13.9% R=46% top=19.2% camD=12.9
+t=20.1s state=WAIT n=5 stage=0 bands=3200000 free=0 boatZ=-14.05 q=low fps=60 flower=- gate L=16.6% R=48.6% top=19.7% camD=13.1
+t=21.3s state=COLLECT n=5 stage=0 bands=3200000 free=0 boatZ=-16.08 q=low fps=60 flower=- gate L=28.4% R=60% top=22.2% camD=14
+t=23.2s state=STAGE n=6 stage=1 bands=3300000 free=0 boatZ=-17.5 q=low fps=60 flower=- gate L=32.4% R=65% top=19% camD=12.9
+t=25.9s state=WAIT n=6 stage=1 bands=3300000 free=0 boatZ=-20.17 q=low fps=60 flower=- gate L=31.6% R=64.9% top=17.9% camD=12.3
+t=27.0s state=COLLECT n=6 stage=1 bands=3300000 free=0 boatZ=-21 q=low fps=60 flower=- gate L=28.3% R=62.1% top=19.6% camD=12.9
+t=29.0s state=COLLECT n=7 stage=1 bands=3310000 free=0 boatZ=-21 q=low fps=60 flower=- gate L=25.6% R=59.8% top=18.6% camD=12.8
+t=29.4s state=WAIT n=7 stage=1 bands=3310000 free=0 boatZ=-21.14 q=low fps=60 flower=- gate L=23.9% R=58% top=19.7% camD=13.3
+t=30.5s state=COLLECT n=7 stage=1 bands=3310000 free=0 boatZ=-24.97 q=low fps=60 flower=- gate L=16.7% R=51.2% top=22.7% camD=14.2
+t=32.6s state=COLLECT n=8 stage=1 bands=3320000 free=0 boatZ=-25.5 q=low fps=60 flower=- gate L=11.5% R=47.5% top=19.2% camD=13.5
+t=33.1s state=WAIT n=8 stage=1 bands=3320000 free=0 boatZ=-25.64 q=low fps=60 flower=- gate L=13.3% R=49.2% top=20% camD=13.6
+t=34.2s state=COLLECT n=8 stage=1 bands=3320000 free=0 boatZ=-29.47 q=low fps=60 flower=- gate L=22.1% R=57.9% top=22.4% camD=14.2
+t=36.1s state=COLLECT n=9 stage=1 bands=3330000 free=0 boatZ=-30 q=low fps=60 flower=- gate L=25.5% R=62.8% top=18.6% camD=13
+t=36.5s state=WAIT n=9 stage=1 bands=3330000 free=0 boatZ=-30.14 q=low fps=60 flower=- gate L=27.2% R=64.6% top=19.5% camD=13.4
+t=38.0s state=COLLECT n=9 stage=1 bands=3330000 free=0 boatZ=-34.33 q=low fps=60 flower=- gate L=32.5% R=70.2% top=21.9% camD=14.1
+t=39.7s state=COLLECT n=10 stage=1 bands=3331000 free=0 boatZ=-34.5 q=low fps=60 flower=- gate L=30% R=69.3% top=18.5% camD=13.1
+t=40.2s state=WAIT n=10 stage=1 bands=3331000 free=0 boatZ=-34.64 q=low fps=60 flower=- gate L=27.9% R=67.2% top=19.3% camD=13.4
+t=41.3s state=COLLECT n=10 stage=1 bands=3331000 free=0 boatZ=-38.47 q=low fps=60 flower=- gate L=18.8% R=58.7% top=22% camD=14.2
+t=43.2s state=COLLECT n=11 stage=1 bands=3332000 free=0 boatZ=-39 q=low fps=60 flower=- gate L=11.6% R=53.3% top=18.5% camD=14.2
+t=43.7s state=WAIT n=11 stage=1 bands=3332000 free=0 boatZ=-39.14 q=low fps=60 flower=- gate L=12.1% R=53.8% top=19.3% camD=14.1
+  shot mid
+t=45.3s state=COLLECT n=11 stage=1 bands=3332000 free=0 boatZ=-43.48 q=low fps=60 flower=- gate L=15.6% R=58.5% top=20.6% camD=13.8
+t=46.6s state=COLLECT n=12 stage=1 bands=3333000 free=0 boatZ=-43.5 q=low fps=60 flower=- gate L=16.2% R=60.5% top=17.7% camD=13
+t=47.0s state=WAIT n=12 stage=1 bands=3333000 free=0 boatZ=-43.64 q=low fps=60 flower=- gate L=18.8% R=63.1% top=18.5% camD=13.3
+t=48.3s state=COLLECT n=12 stage=1 bands=3333000 free=0 boatZ=-47.47 q=low fps=60 flower=- gate L=28.3% R=72.8% top=21.3% camD=14.2
+t=50.2s state=COLLECT n=13 stage=1 bands=3333100 free=0 boatZ=-48 q=low fps=60 flower=- gate L=28.5% R=75.4% top=17.3% camD=13.1
+t=50.8s state=WAIT n=13 stage=1 bands=3333100 free=0 boatZ=-48.14 q=low fps=60 flower=- gate L=27.2% R=74.2% top=18.1% camD=13.4
+t=51.8s state=COLLECT n=13 stage=1 bands=3333100 free=0 boatZ=-51.97 q=low fps=60 flower=- gate L=20.7% R=68.2% top=20.9% camD=14.1
+t=53.6s state=COLLECT n=14 stage=1 bands=3333200 free=0 boatZ=-52.5 q=low fps=60 flower=- gate L=12.6% R=63.1% top=16.8% camD=13.1
+t=54.0s state=WAIT n=14 stage=1 bands=3333200 free=0 boatZ=-52.64 q=low fps=60 flower=- gate L=11.6% R=62.2% top=17.7% camD=13.6
+t=55.0s state=COLLECT n=14 stage=1 bands=3333200 free=0 boatZ=-56.47 q=low fps=60 flower=- gate L=10.3% R=60.7% top=21.1% camD=16
+t=57.1s state=STAGE n=15 stage=2 bands=3333300 free=0 boatZ=-57 q=low fps=60 flower=- gate L=10.8% R=61.8% top=18.6% camD=17.2
+t=60.1s state=WAIT n=15 stage=2 bands=3333300 free=0 boatZ=-61.33 q=low fps=60 flower=- gate L=12.6% R=64.9% top=17.4% camD=17.2
+t=61.1s state=COLLECT n=15 stage=2 bands=3333300 free=0 boatZ=-61.5 q=low fps=60 flower=- gate L=21.2% R=77.2% top=17.5% camD=14.2
+t=63.0s state=COLLECT n=16 stage=2 bands=3333310 free=0 boatZ=-61.5 q=low fps=60 flower=- gate L=22.1% R=80.5% top=15.7% camD=13.2
+t=63.5s state=WAIT n=16 stage=2 bands=3333310 free=0 boatZ=-61.77 q=low fps=60 flower=- gate L=21.9% R=80.4% top=16.7% camD=13.5
+t=64.5s state=COLLECT n=16 stage=2 bands=3333310 free=0 boatZ=-65.48 q=low fps=60 flower=- gate L=19.2% R=79.1% top=18.7% camD=13.9
+t=66.3s state=COLLECT n=17 stage=2 bands=3333320 free=0 boatZ=-65.5 q=low fps=60 flower=- gate L=13.7% R=76.5% top=15.5% camD=13.2
+t=66.7s state=WAIT n=17 stage=2 bands=3333320 free=0 boatZ=-65.77 q=low fps=60 flower=- gate L=12.1% R=74.8% top=16.5% camD=14.1
+t=67.7s state=COLLECT n=17 stage=2 bands=3333320 free=0 boatZ=-69.48 q=low fps=60 flower=- gate L=9.5% R=68.3% top=21.9% camD=21.4
+t=69.5s state=COLLECT n=18 stage=2 bands=3333330 free=0 boatZ=-69.5 q=low fps=60 flower=- gate L=10.9% R=67.2% top=22.2% camD=23.2
+t=69.9s state=WAIT n=18 stage=2 bands=3333330 free=0 boatZ=-69.77 q=low fps=60 flower=- gate L=12.1% R=68.5% top=22.6% camD=22.3
+t=71.1s state=COLLECT n=18 stage=2 bands=3333330 free=0 boatZ=-73.48 q=low fps=60 flower=- gate L=14.2% R=77.4% top=21% camD=16.8
+t=72.8s state=COLLECT n=19 stage=2 bands=3333331 free=0 boatZ=-73.5 q=low fps=60 flower=- gate L=12.1% R=83.8% top=15.3% camD=14.4
+t=73.3s state=WAIT n=19 stage=2 bands=3333331 free=0 boatZ=-73.77 q=low fps=60 flower=- gate L=12.9% R=85.3% top=15.7% camD=14.2
+t=74.4s state=COLLECT n=19 stage=2 bands=3333331 free=0 boatZ=-77.48 q=low fps=60 flower=- gate L=15.8% R=89.6% top=18.1% camD=16.5
+t=76.1s state=COLLECT n=20 stage=2 bands=3333332 free=0 boatZ=-77.5 q=low fps=60 flower=- gate L=14.7% R=88.9% top=16.8% camD=17.2
+t=76.6s state=WAIT n=20 stage=2 bands=3333332 free=0 boatZ=-77.77 q=low fps=60 flower=- gate L=13.2% R=87.2% top=17.7% camD=17.7
+t=77.6s state=COLLECT n=20 stage=2 bands=3333332 free=0 boatZ=-81.48 q=low fps=60 flower=- gate L=10.4% R=78.8% top=23.7% camD=25.2
+t=79.7s state=COMPLETE n=21 stage=2 bands=3333333 free=0 boatZ=-81.5 q=low fps=60 flower=- gate L=10.5% R=75% top=25% camD=27
+  shot complete
+t=83.6s state=PASS n=21 stage=2 bands=3333333 free=0 boatZ=-81.56 q=low fps=60 flower=- gate L=15.7% R=83.8% top=37.7% camD=24.9
+  shot pass
+  shot sky
+t=90.5s state=AFTER n=21 stage=2 bands=3333333 free=0 boatZ=-144.24 q=low fps=60 flower=- gate L=113.5% R=-50.6% top=59.3% camD=17 dest=60%,28.7%
+  shot after
+t=99.4s state=FREE n=21 stage=2 bands=3333333 free=0 boatZ=-212.4 q=low fps=60 flower=- gate L=50.7% R=14.8% top=47% camD=17 dest=16.4%,30.9%
+  shot free
+flower position while waiting (x%,y% from top-left): x 43.9..54.3, y 55.4..57.5; outside 40-60/40-65: 0/56
+gate in view (cove): samples=314 cut=0 leftmost=9.4% rightmost=89.6% topmost=15%; climax(COMPLETE) samples=6 outside 8% margin=0
+final: n=21 bands=3333333 free=3 taps=26 states=INTRO>COLLECT>WAIT>STAGE>COMPLETE>PASS>AFTER>FREE
+__ready=true __errors=[] consoleErrors=[] externalRequests=["https://gf-playlog.zan72122.workers.dev","https://gf-playlog.zan72122.workers.dev"]
+RESULT: PASS
