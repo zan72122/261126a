@@ -503,9 +503,9 @@ const waterMat = new THREE.ShaderMaterial({
         if (along > -0.6 && along < uWakeL) {
           float a2 = max(along, 0.0);
           float wv = abs(lat) - a2*0.36 - 0.5; float wid = 0.12 + a2*0.035; float line = exp(-wv*wv/(wid*wid));
-          float fa = exp(-a2*2.6/uWakeL);
+          float fa = exp(-a2*3.6/uWakeL);
           float cen = exp(-lat*lat*2.2)*exp(-a2*0.35)*step(0.0, along);
-          wk = (line*fa*0.9 + cen*0.5)*uCrownV;
+          wk = (line*fa*0.55 + cen*0.45)*uCrownV;
           g += vec2(-cd.y, cd.x)*sign(lat)*cos(wv*13.0)*line*fa*uCrownV*0.16;
           g += (vec2(vn2(P.xz*5.0+uTime), vn2(P.xz*5.0-uTime))-0.5)*cen*uCrownV*0.35;
         }
@@ -539,7 +539,7 @@ const waterMat = new THREE.ShaderMaterial({
         vec3 fc = 0.6 + 0.4*cos(6.2832*(vec3(0.62,0.75,0.92) + s*0.02 + P.x*0.03));
         c += fc*band*uFlow.w*exp(-age*0.45)*0.75;
       }
-      c += uMoonCol*(wk*0.42 + rip*0.32);
+      c += uMoonCol*(wk*0.3 + rip*0.28);
       float fogF = 1.0 - exp(-uFogD*uFogD*dist*dist*0.6);
       c = mix(c, uFogCol, fogF);
       c += uMoonCol*glit*(1.0 - fogF*0.45);
@@ -747,7 +747,7 @@ function buildGate(i) {
   const ring = final ? 1.25 : 0.82 + st * 0.06;
   const s = GATE_S[i];
   const blocks = [];
-  const baseCol = col('#b9b8b2'), blueCol = col('#8f9bab'), tc = new THREE.Color();
+  const baseCol = col('#8d8b85'), blueCol = col('#6f7a89'), tc = new THREE.Color();
   const tint = () => tc.copy(baseCol).lerp(blueCol, r() * 0.9).multiplyScalar(0.7 + r() * 0.35).clone();
   const pushBlock = (g, arc) => { setColor(g, tint()); setScalar(g, 'aArc', arc); blocks.push(g); };
   // pillars (stacked courses)
@@ -1004,16 +1004,16 @@ const skyU = { uTime: G.uTime, uReveal: { value: 0 }, uLift: { value: 0 }, uMoon
         float n0 = vn2(vec2(flowU*0.5, vUv.y*6.0)); g += (n0 - 0.5)*0.3;
         vec3 N = normalize(vN + vec3(g.x, 0.0, g.y));
         vec3 R = reflect(-V, N);
-        float F = 0.04 + 0.96*pow(1.0 - abs(dot(N, V)), 4.0);
-        vec3 skyc = mix(uHor, uZen, clamp(R.y*0.8, 0.0, 1.0));
-        vec3 body = mix(vec3(0.55,0.75,0.95), vec3(0.85,0.93,1.0), 0.5 + 0.5*n0);
-        vec3 c = mix(body*0.7, skyc*1.2, F);
-        float md = max(dot(R, uMoonDir), 0.0); c += uMoonCol*(pow(md, 60.0)*1.5 + pow(md, 8.0)*0.25);
+        float F = 0.03 + 0.97*pow(1.0 - abs(dot(N, V)), 5.0);
+        vec3 skyc = mix(uHor, uZen, clamp(R.y*1.6, 0.0, 1.0))*0.8;
+        vec3 body = mix(vec3(0.06,0.16,0.36), vec3(0.22,0.46,0.72), n0);
+        vec3 c = mix(body, skyc, F);
+        float md = max(dot(R, uMoonDir), 0.0); c += uMoonCol*(pow(md, 300.0)*1.4*step(0.8, n0) + pow(md, 30.0)*0.08);
         float streak = smoothstep(0.82, 1.0, vn2(vec2(vUv.x*180.0 - uTime*1.2, vUv.y*9.0)));
         float rim = smoothstep(0.55, 0.95, abs(vUv.y));
         vec3 rb = 0.6 + 0.4*cos(6.2832*(vec3(0.0,0.33,0.67) + vUv.x*3.0 + vUv.y*0.5 - uTime*0.05));
-        c += uMoonCol*streak*1.6*uGlow + mix(uMoonCol, rb, 0.5)*rim*0.9*uGlow;
-        c += uMoonCol*0.25*uGlow;
+        c += uMoonCol*streak*0.75*uGlow + mix(uMoonCol, rb, 0.6)*rim*0.5*uGlow;
+        c += uMoonCol*0.06*uGlow;
         float front = smoothstep(uReveal - 0.08, uReveal, vUv.x)*rev; c += uMoonCol*front*2.0;
         gl_FragColor = vec4(c, a*(0.92 - uFade*0.0));
         #include <tonemapping_fragment>
@@ -1172,7 +1172,7 @@ function computeRigTarget(B, w, outPos, outLook) {
     outLook.copy(C).lerp(Gc, w); outLook.y = lerp(0.3, Gc.y, w);
   } else {
     const T = pathTan(game.s, tmpV2);
-    const back = B; pathPos(Math.max(0, game.s - back), outPos); outPos.y += 0.3 * B + 0.5;
+    const back = B; pathPos(Math.max(0, game.s - back), outPos); outPos.y = Math.max(outPos.y, C.y - 2) + 0.42 * B + 1.2;
     const fh = tmpV4.set(T.x, 0, T.z).normalize();
     outLook.copy(C).addScaledVector(fh, 10 + 4 * rig.climaxK); outLook.y = C.y + 1.2 + T.y * 8;
   }
@@ -1382,7 +1382,7 @@ function applyPalette(p) {
   waterU.uStarR.value = clamp(p - 0.8, 0, 1.2);
   skyMat.uniforms.uHorGlow.value = clamp(p - 1.6, 0, 1.4);
   petalU.uIri.value = clamp((p - 1.0) * 0.32, 0, 0.62);
-  renderer.toneMappingExposure = lerp(1.06, 1.3, clamp(p / 3, 0, 1));
+  renderer.toneMappingExposure = lerp(1.02, 1.14, clamp(p / 3, 0, 1));
   if (bloomPass) bloomPass.strength = lerp(0.42, 0.82, clamp(p / 3, 0, 1));
   moonMat.uniforms.uWarm.value = clamp(p - 2.2, 0, 1);
 }
@@ -1391,7 +1391,7 @@ function refreshEnv(p) {
   const st = Math.round(p);
   if (st === envStage) return; envStage = st;
   const es = new THREE.Scene(); const sm = new THREE.Mesh(new THREE.SphereGeometry(100, 32, 16), skyMat); es.add(sm);
-  const old = scene.environment; const rt = pmrem.fromScene(es, 0.04, 0.1, 500); scene.environment = rt.texture; scene.environmentIntensity = 0.55;
+  const old = scene.environment; const rt = pmrem.fromScene(es, 0.04, 0.1, 500); scene.environment = rt.texture; scene.environmentIntensity = 0.4;
   if (old && old.userData.rt) old.userData.rt.dispose(); rt.texture.userData.rt = rt; sm.geometry.dispose();
 }
 
@@ -1457,7 +1457,7 @@ function update(dt, rdt) {
     // pass a gate?
     if (game.nextGate < 15 && game.s >= GATE_S[game.nextGate]) {
       const g = gates[game.nextGate]; game.nextGate++; activateGate(g);
-      if (g.final) { setState(ST.CLIMAX); game.climaxT = 0; game.climaxReached = true; AU.climax(); }
+      if (g.final) { setState(ST.CLIMAX); game.climaxT = 0; game.climaxReached = true; game.climaxCount = (game.climaxCount || 0) + 1; AU.climax(); }
       else setState(ST.ACTIVATE);
     }
     if (game.state !== ST.CLIMAX && game.target - game.s < 0.01 && game.v < 0.3) {
@@ -1508,8 +1508,8 @@ function update(dt, rdt) {
     }
     // speed streams along the sky river
     if (ct > 6 && ct < 25) { const n = dt * (20 + game.v * 6); for (let k = 0; k < n; k++) { const T = pathTan(game.s, tmpV2); const P = pathPos(game.s + 4 + Math.random() * 20, tmpV); const sd = (Math.random() < .5 ? -1 : 1) * (2.5 + Math.random() * 3.5);
-      const sx = -T.z, sz = T.x; const sl = Math.hypot(sx, sz) || 1; parts.spawn(P.x + sx / sl * sd, P.y + 0.3 + Math.random() * 2.5, P.z + sz / sl * sd, -T.x * game.v * 0.6 + sx / sl * sd * 0.15, -T.y * game.v * 0.6 + 0.3, -T.z * game.v * 0.6 + sz / sl * sd * 0.15, 1.4, rainbow(Math.random(), PC.tmp), 0.12 + Math.random() * 0.12, 0, 0.3); } }
-    if (ct > 20 && !game.arrived) { game.arrived = true; AU.arrival(); const C = crownWorld(tmpV);
+      const sx = -T.z, sz = T.x; const sl = Math.hypot(sx, sz) || 1; parts.spawn(P.x + sx / sl * sd, P.y + 0.3 + Math.random() * 2.5, P.z + sz / sl * sd, -T.x * game.v * 0.6 + sx / sl * sd * 0.15, -T.y * game.v * 0.6 + 0.3, -T.z * game.v * 0.6 + sz / sl * sd * 0.15, 1.4, rainbow(Math.random(), PC.tmp), 0.06 + Math.random() * 0.07, 0, 0.3); } }
+    if (ct > 20 && !game.arrived) { game.arrived = true; game.arrivedCount = (game.arrivedCount || 0) + 1; AU.arrival(); const C = crownWorld(tmpV);
       for (let k = 0; k < 260; k++) { const a = Math.random() * TAU, e = (Math.random() - 0.3) * 1.2, sp = 2 + Math.random() * 6; parts.spawn(C.x, C.y + 0.4, C.z, Math.cos(a) * Math.cos(e) * sp, Math.sin(e) * sp + 1, Math.sin(a) * Math.cos(e) * sp, 2.5 + Math.random() * 2, Math.random() < .4 ? PC.pearl : rainbow(Math.random(), PC.tmp), 0.2 + Math.random() * 0.25, -0.2, 0.7); } }
     if (ct > 25) { setState(ST.AFTERGLOW); game.afterT = 0; AU.afterglow(); }
   } else if (st === ST.AFTERGLOW) {
@@ -1581,7 +1581,7 @@ function update(dt, rdt) {
     const wv = clamp(game.v / 3, 0, 1.4) * (sky ? 0 : 1);
     waterU.uCrown.value.set(crown.position.x, crown.position.z, dir.x / Math.hypot(dir.x, dir.z), dir.z / Math.hypot(dir.x, dir.z));
     waterU.uCrownV.value = damp(waterU.uCrownV.value, wv, 0.4, dt);
-    waterU.uWakeL.value = 10 + 12 * clamp(game.lit / 10, 0, 1.5);
+    waterU.uWakeL.value = 8 + 8 * clamp(game.lit / 10, 0, 1.5);
   }
 
   // ---- camera rig
@@ -1589,7 +1589,7 @@ function update(dt, rdt) {
   if (!inSky) {
     const allow = st === ST.AIM || st === ST.IDLE || st === ST.ADVANCE || st === ST.STAGE_TRANSITION || st === ST.DRAG;
     if (allow || st === ST.ACTIVATE) frameFeedback(dt, allow);
-  } else rig.B = damp(rig.B, 13, 2.5, dt);
+  } else rig.B = damp(rig.B, 7.8, 2.5, dt);
   computeRigTarget(rig.B, rig.w, rig.tPos, rig.tLook);
   const tauP = inSky ? 0.7 : 0.85, tauL = inSky ? 0.6 : 0.55;
   rig.pos.x = damp(rig.pos.x, rig.tPos.x, tauP, dt); rig.pos.y = damp(rig.pos.y, rig.tPos.y, tauP, dt); rig.pos.z = damp(rig.pos.z, rig.tPos.z, tauP, dt);
@@ -1606,7 +1606,8 @@ function update(dt, rdt) {
     boat.rotation.set(Math.asin(clamp(bd.y, -1, 1)) + 0.012 * Math.sin(t * 1.1), Math.atan2(-bd.x, -bd.z), 0.015 * Math.sin(t * 0.9), 'YXZ');
     // keep the bow near 90% from top
     const bow = tmpV3.set(0, 0.5, boat.userData.bowZ).applyMatrix4(boat.matrixWorld); const by2 = -proj(bow, camera).y * 0.5 + 0.5;
-    if (!inSky) { if (by2 > 0.94) rig.boatOff += 1.5 * dt; else if (by2 < 0.86) rig.boatOff -= 1.5 * dt; rig.boatOff = clamp(rig.boatOff, 1.5, 7); }
+    if (inSky) rig.boatOff = damp(rig.boatOff, 2.4, 1.0, dt);
+    if (!inSky) { if (by2 > 0.94) rig.boatOff += 1.5 * dt; else if (by2 < 0.86) rig.boatOff -= 1.5 * dt; rig.boatOff = clamp(rig.boatOff, 1.5, Math.max(7, rig.B * 0.6)); }
     boat.updateMatrixWorld();
   }
 
@@ -1642,7 +1643,7 @@ function update(dt, rdt) {
     moonLight.intensity = lerp(2.4, 3.2, clamp(game.prog / 3, 0, 1));
     fillLight.position.copy(camera.position).add(tmpV3.set(0, 6, 0)); fillLight.target.position.copy(c);
     G.uLV.value.copy(L).transformDirection(camera.matrixWorldInverse);
-    hemi.intensity = lerp(1.35, 1.7, clamp(game.prog / 3, 0, 1));
+    hemi.intensity = lerp(1.2, 1.45, clamp(game.prog / 3, 0, 1));
   }
   parts.update(dt);
   updateCrownScreen();
@@ -1653,7 +1654,7 @@ const _q = new V3();
 function scr(p) { const v = proj(_q.copy(p), camera); return { x: +(v.x * 0.5 + 0.5).toFixed(4), y: +(-v.y * 0.5 + 0.5).toFixed(4) }; }
 window.__d10 = {
   get state() { return game.state; }, get lit() { return game.lit; }, get stage() { return Math.min(3, Math.floor(game.lit / 5)); }, get q() { return qName; }, get fps() { return +qa.fps.toFixed(1); },
-  get cycle() { return game.cycle; }, get visited() { return [...game.visited]; }, get climaxReached() { return game.climaxReached; }, get arrived() { return game.arrived; },
+  get cycle() { return game.cycle; }, get visited() { return [...game.visited]; }, get climaxReached() { return game.climaxReached; }, get climaxCount() { return game.climaxCount || 0; }, get arrivedCount() { return game.arrivedCount || 0; }, get arrived() { return game.arrived; },
   get climaxT() { return +game.climaxT.toFixed(2); }, replayStarted: false,
   frame() {
     const g = gateFor(); const C = crownWorld(new V3());
@@ -1697,6 +1698,8 @@ try {
   refreshEnv(0);
   game.target = REST[1];
   ready = true;
+  const SK = parseInt(QS.get('dbgskip')); // debug only: start with N gates already awake
+  if (SK > 0) { for (let i = 0; i < Math.min(14, SK); i++) { gates[i].actT = -10; gates[i].lit = 1; gates[i].U.uRun.value = 1.3; gates[i].U.uLit.value = 1; } game.lit = Math.min(14, SK); game.nextGate = game.lit; game.s = REST[game.lit]; game.target = REST[game.lit + 1]; game.prog = game.lit / 5 * 0.9; setState(ST.AIM); }
   settleRig(220);
   renderer.compile(scene, camera);
   requestAnimationFrame(t => { clockT.last = t; requestAnimationFrame(frame); });
