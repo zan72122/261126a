@@ -1,0 +1,305 @@
+# D13 test log (2026-11-26T15:09:47Z) — headless Chromium (Playwright 1.63.0) + SwiftShader (--use-angle=swiftshader --enable-unsafe-swiftshader), python3 -m http.server (root site/), autotest default speed x2
+== 1024x768 http://localhost:8137/games/d13/index.html?autotest&q=low
+  warn: [.WebGL-0x3b1c003bee00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  warn: [.WebGL-0x3b1c003bee00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  console: [D13] {"tag":"ready","state":"WAIT_SEED","climaxCount":0,"maxTaps":0,"stage":1,"taps":0,"climax":false,"avgFps":4,"q":"low","errors":0,"t":4.6}
+  warn: [.WebGL-0x3b1c003bee00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  warn: [.WebGL-0x3b1c003bee00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+__ready=true after 5962ms
+t=8s state=GERMINATE hop=0 taps=1 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.59 seedOffMax=0.59 fitMax=0 climaxFit=0 parts=35 err=0
+t=9s state=GROW hop=0 taps=1 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.59 seedOffMax=0.59 fitMax=0 climaxFit=0 parts=20 err=0
+  requestfailed: https://gf-playlog.zan72122.workers.dev/log
+t=11s state=FLY hop=0 taps=1 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.59 seedOffMax=0.59 fitMax=0.603 climaxFit=0 parts=41 err=0
+t=13s state=FLY hop=0 taps=1 stage=1 alt=6.1 sf=0 fps=4 q=low seedOff=0.59 seedOffMax=0.59 fitMax=0.603 climaxFit=0 parts=44 err=0
+t=15s state=FLY hop=0 taps=1 stage=1 alt=7.2 sf=0 fps=4 q=low seedOff=0.59 seedOffMax=0.59 fitMax=0.603 climaxFit=0 parts=48 err=0
+t=16s state=FLY hop=0 taps=1 stage=1 alt=7.8 sf=0 fps=4 q=low seedOff=0.59 seedOffMax=0.59 fitMax=0.603 climaxFit=0 parts=44 err=0
+t=18s state=WAIT_SEED hop=1 taps=1 stage=1 alt=7.9 sf=0 fps=4 q=low seedOff=0.59 seedOffMax=0.59 fitMax=0.603 climaxFit=0 parts=16 err=0
+t=20s state=GERMINATE hop=1 taps=2 stage=1 alt=7.9 sf=0 fps=4 q=low seedOff=0.12 seedOffMax=0.59 fitMax=0.603 climaxFit=0 parts=35 err=0
+t=21s state=GROW hop=1 taps=2 stage=1 alt=7.9 sf=0 fps=4 q=low seedOff=0.12 seedOffMax=0.59 fitMax=0.603 climaxFit=0 parts=9 err=0
+t=23s state=FLY hop=1 taps=2 stage=1 alt=8 sf=0 fps=4 q=low seedOff=0.12 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=40 err=0
+t=24s state=FLY hop=1 taps=2 stage=1 alt=8.7 sf=0 fps=4 q=low seedOff=0.12 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=45 err=0
+t=26s state=FLY hop=1 taps=2 stage=1 alt=9.7 sf=0 fps=4 q=low seedOff=0.12 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=49 err=0
+t=28s state=FLY hop=1 taps=2 stage=1 alt=10.2 sf=0 fps=4 q=low seedOff=0.12 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=38 err=0
+t=30s state=WAIT_SEED hop=2 taps=2 stage=1 alt=10.3 sf=0 fps=4 q=low seedOff=0.12 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=17 err=0
+t=32s state=GERMINATE hop=2 taps=3 stage=1 alt=10.3 sf=0 fps=4 q=low seedOff=0.18 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=36 err=0
+t=34s state=GROW hop=2 taps=3 stage=1 alt=10.3 sf=0 fps=4 q=low seedOff=0.18 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=23 err=0
+t=35s state=FLY hop=2 taps=3 stage=1 alt=10.4 sf=0.01 fps=4.1 q=low seedOff=0.18 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=39 err=0
+t=37s state=FLY hop=2 taps=3 stage=1 alt=10.8 sf=0.01 fps=4 q=low seedOff=0.18 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=43 err=0
+t=38s state=FLY hop=2 taps=3 stage=1 alt=11.9 sf=0.02 fps=4 q=low seedOff=0.18 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=47 err=0
+t=40s state=FLY hop=2 taps=3 stage=1 alt=12.6 sf=0.03 fps=4 q=low seedOff=0.18 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=36 err=0
+t=42s state=WAIT_SEED hop=3 taps=3 stage=1 alt=12.8 sf=0.04 fps=4 q=low seedOff=0.18 seedOffMax=0.59 fitMax=0.674 climaxFit=0 parts=15 err=0
+  shot early
+t=46s state=GROW hop=3 taps=4 stage=1 alt=12.8 sf=0.04 fps=4 q=low seedOff=0.74 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=9 err=0
+t=47s state=FLY hop=3 taps=4 stage=1 alt=13 sf=0.04 fps=4 q=low seedOff=0.74 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=42 err=0
+t=49s state=FLY hop=3 taps=4 stage=1 alt=13.9 sf=0.06 fps=4 q=low seedOff=0.74 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=49 err=0
+t=51s state=FLY hop=3 taps=4 stage=1 alt=14.9 sf=0.08 fps=4 q=low seedOff=0.74 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=49 err=0
+t=53s state=FLY hop=3 taps=4 stage=1 alt=15.2 sf=0.09 fps=4 q=low seedOff=0.74 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=24 err=0
+t=55s state=GERMINATE hop=4 taps=5 stage=1 alt=15.2 sf=0.09 fps=4 q=low seedOff=0.1 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=37 err=0
+t=56s state=GERMINATE hop=4 taps=5 stage=1 alt=15.2 sf=0.09 fps=4 q=low seedOff=0.1 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=36 err=0
+t=58s state=GROW hop=4 taps=5 stage=1 alt=15.2 sf=0.09 fps=4.1 q=low seedOff=0.1 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=10 err=0
+t=60s state=FLY hop=4 taps=5 stage=1 alt=15.5 sf=0.1 fps=4 q=low seedOff=0.1 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=43 err=0
+t=62s state=FLY hop=4 taps=5 stage=1 alt=16.4 sf=0.13 fps=4 q=low seedOff=0.1 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=47 err=0
+t=63s state=FLY hop=4 taps=5 stage=1 alt=17.1 sf=0.15 fps=4 q=low seedOff=0.1 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=49 err=0
+t=65s state=FLY hop=4 taps=5 stage=1 alt=17.6 sf=0.17 fps=4 q=low seedOff=0.1 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=23 err=0
+t=66s state=WAIT_SEED hop=5 taps=5 stage=1 alt=17.6 sf=0.17 fps=4 q=low seedOff=0.03 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=12 err=0
+t=68s state=GERMINATE hop=5 taps=6 stage=1 alt=17.6 sf=0.17 fps=4 q=low seedOff=0.03 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=36 err=0
+t=70s state=GROW hop=5 taps=6 stage=1 alt=17.6 sf=0.17 fps=4 q=low seedOff=0.03 seedOffMax=0.74 fitMax=0.674 climaxFit=0 parts=24 err=0
+t=71s state=FLY hop=5 taps=6 stage=1 alt=17.6 sf=0.17 fps=4.1 q=low seedOff=0.03 seedOffMax=0.74 fitMax=0.695 climaxFit=0 parts=39 err=0
+t=73s state=FLY hop=5 taps=6 stage=1 alt=18.6 sf=0.2 fps=4 q=low seedOff=0.03 seedOffMax=0.74 fitMax=0.695 climaxFit=0 parts=44 err=0
+t=75s state=FLY hop=5 taps=6 stage=1 alt=19.6 sf=0.25 fps=4 q=low seedOff=0.03 seedOffMax=0.74 fitMax=0.695 climaxFit=0 parts=50 err=0
+  requestfailed: https://gf-playlog.zan72122.workers.dev/log
+t=77s state=FLY hop=5 taps=6 stage=1 alt=20 sf=0.26 fps=4 q=low seedOff=0.03 seedOffMax=0.74 fitMax=0.695 climaxFit=0 parts=31 err=0
+t=79s state=STAGE_TRANSITION hop=6 taps=6 stage=2 alt=20 sf=0.26 fps=4 q=low seedOff=0.03 seedOffMax=0.74 fitMax=0.695 climaxFit=0 parts=10 err=0
+t=81s state=STAGE_TRANSITION hop=6 taps=6 stage=2 alt=20 sf=0.26 fps=4 q=low seedOff=0.03 seedOffMax=0.74 fitMax=0.695 climaxFit=0 parts=8 err=0
+t=82s state=GERMINATE hop=6 taps=7 stage=2 alt=20 sf=0.26 fps=4 q=low seedOff=0.21 seedOffMax=0.74 fitMax=0.695 climaxFit=0 parts=35 err=0
+t=84s state=GERMINATE hop=6 taps=7 stage=2 alt=20 sf=0.26 fps=4 q=low seedOff=0.21 seedOffMax=0.74 fitMax=0.695 climaxFit=0 parts=34 err=0
+t=85s state=GROW hop=6 taps=7 stage=2 alt=20 sf=0.26 fps=4 q=low seedOff=0.21 seedOffMax=0.74 fitMax=0.695 climaxFit=0 parts=9 err=0
+t=87s state=FLY hop=6 taps=7 stage=2 alt=20.4 sf=0.27 fps=4 q=low seedOff=0.21 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=41 err=0
+t=89s state=FLY hop=6 taps=7 stage=2 alt=21.6 sf=0.32 fps=4 q=low seedOff=0.21 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=48 err=0
+t=90s state=FLY hop=6 taps=7 stage=2 alt=23.2 sf=0.4 fps=4 q=low seedOff=0.21 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=47 err=0
+t=92s state=FLY hop=6 taps=7 stage=2 alt=24 sf=0.43 fps=4 q=low seedOff=0.21 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=21 err=0
+t=94s state=WAIT_SEED hop=7 taps=7 stage=2 alt=24.2 sf=0.44 fps=4 q=low seedOff=0.21 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=13 err=0
+t=96s state=GERMINATE hop=7 taps=8 stage=2 alt=24.2 sf=0.44 fps=4 q=low seedOff=0.08 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=35 err=0
+t=97s state=GROW hop=7 taps=8 stage=2 alt=24.2 sf=0.44 fps=4 q=low seedOff=0.08 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=35 err=0
+t=99s state=GROW hop=7 taps=8 stage=2 alt=24.2 sf=0.44 fps=4 q=low seedOff=0.08 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=8 err=0
+t=101s state=FLY hop=7 taps=8 stage=2 alt=24.3 sf=0.44 fps=4 q=low seedOff=0.08 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=40 err=0
+t=103s state=FLY hop=7 taps=8 stage=2 alt=25.4 sf=0.49 fps=4 q=low seedOff=0.08 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=44 err=0
+t=104s state=FLY hop=7 taps=8 stage=2 alt=27.2 sf=0.58 fps=4 q=low seedOff=0.08 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=48 err=0
+t=106s state=FLY hop=7 taps=8 stage=2 alt=29.6 sf=0.68 fps=4 q=low seedOff=0.08 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=39 err=0
+t=109s state=FLY hop=7 taps=8 stage=2 alt=30.7 sf=0.73 fps=4 q=low seedOff=0.08 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=14 err=0
+t=111s state=WAIT_SEED hop=8 taps=8 stage=2 alt=30.8 sf=0.73 fps=4 q=low seedOff=0.54 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=12 err=0
+t=112s state=GERMINATE hop=8 taps=9 stage=2 alt=30.8 sf=0.73 fps=4 q=low seedOff=0.54 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=35 err=0
+t=114s state=GROW hop=8 taps=9 stage=2 alt=30.8 sf=0.73 fps=4 q=low seedOff=0.54 seedOffMax=0.74 fitMax=0.77 climaxFit=0 parts=29 err=0
+t=116s state=GROW hop=8 taps=9 stage=2 alt=30.8 sf=0.73 fps=4 q=low seedOff=0.54 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=9 err=0
+t=118s state=FLY hop=8 taps=9 stage=2 alt=31.2 sf=0.75 fps=4 q=low seedOff=0.54 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=40 err=0
+t=120s state=FLY hop=8 taps=9 stage=2 alt=33.3 sf=0.83 fps=4 q=low seedOff=0.54 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=47 err=0
+t=121s state=FLY hop=8 taps=9 stage=2 alt=37.7 sf=0.95 fps=4 q=low seedOff=0.54 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=49 err=0
+t=123s state=FLY hop=8 taps=9 stage=2 alt=41.6 sf=1 fps=4 q=low seedOff=0.54 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=23 err=0
+t=125s state=WAIT_SEED hop=9 taps=9 stage=2 alt=42.5 sf=1 fps=4 q=low seedOff=0.54 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=15 err=0
+t=127s state=GERMINATE hop=9 taps=10 stage=2 alt=42.5 sf=1 fps=4 q=low seedOff=0.19 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=37 err=0
+t=128s state=GERMINATE hop=9 taps=10 stage=2 alt=42.5 sf=1 fps=4 q=low seedOff=0.19 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=35 err=0
+t=130s state=GROW hop=9 taps=10 stage=2 alt=42.5 sf=1 fps=4 q=low seedOff=0.19 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=8 err=0
+t=132s state=FLY hop=9 taps=10 stage=2 alt=42.5 sf=1 fps=4 q=low seedOff=0.19 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=40 err=0
+t=134s state=FLY hop=9 taps=10 stage=2 alt=43.7 sf=1 fps=4 q=low seedOff=0.19 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=44 err=0
+t=135s state=FLY hop=9 taps=10 stage=2 alt=46.9 sf=1.03 fps=4 q=low seedOff=0.19 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=47 err=0
+  requestfailed: https://gf-playlog.zan72122.workers.dev/log
+t=137s state=FLY hop=9 taps=10 stage=2 alt=52.3 sf=1.12 fps=4 q=low seedOff=0.19 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=37 err=0
+t=138s state=FLY hop=9 taps=10 stage=2 alt=54.2 sf=1.16 fps=4.1 q=low seedOff=0.19 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=16 err=0
+t=140s state=GERMINATE hop=10 taps=11 stage=2 alt=54.2 sf=1.16 fps=4 q=low seedOff=0.59 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=37 err=0
+t=142s state=GROW hop=10 taps=11 stage=2 alt=54.2 sf=1.16 fps=4 q=low seedOff=0.59 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=34 err=0
+t=143s state=GROW hop=10 taps=11 stage=2 alt=54.2 sf=1.16 fps=4 q=low seedOff=0.59 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=9 err=0
+t=145s state=FLY hop=10 taps=11 stage=2 alt=54.5 sf=1.17 fps=4 q=low seedOff=0.59 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=42 err=0
+t=147s state=FLY hop=10 taps=11 stage=2 alt=56 sf=1.2 fps=4 q=low seedOff=0.59 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=46 err=0
+t=148s state=FLY hop=10 taps=11 stage=2 alt=59.8 sf=1.31 fps=4.1 q=low seedOff=0.59 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=47 err=0
+t=150s state=WAIT_SEED hop=11 taps=11 stage=2 alt=60.8 sf=1.34 fps=4.4 q=low seedOff=0.59 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=14 err=0
+t=152s state=GERMINATE hop=11 taps=12 stage=2 alt=60.8 sf=1.34 fps=4.3 q=low seedOff=0.26 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=34 err=0
+t=153s state=GROW hop=11 taps=12 stage=2 alt=60.8 sf=1.34 fps=4.2 q=low seedOff=0.26 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=10 err=0
+t=155s state=FLY hop=11 taps=12 stage=2 alt=61.8 sf=1.37 fps=4.2 q=low seedOff=0.26 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=44 err=0
+t=157s state=FLY hop=11 taps=12 stage=2 alt=64.2 sf=1.44 fps=4 q=low seedOff=0.26 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=48 err=0
+t=158s state=STAGE_TRANSITION hop=12 taps=12 stage=3 alt=65 sf=1.47 fps=4.7 q=low seedOff=0.26 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=73 err=0
+t=160s state=WAIT_SEED hop=12 taps=12 stage=3 alt=65 sf=1.47 fps=4.5 q=low seedOff=0.26 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=71 err=0
+t=161s state=GROW hop=12 taps=13 stage=3 alt=65 sf=1.47 fps=4.9 q=low seedOff=0.12 seedOffMax=0.74 fitMax=0.803 climaxFit=0 parts=84 err=0
+t=163s state=FLY hop=12 taps=13 stage=3 alt=65.1 sf=1.47 fps=4.8 q=low seedOff=0.12 seedOffMax=0.74 fitMax=0.805 climaxFit=0 parts=39 err=0
+t=165s state=FLY hop=12 taps=13 stage=3 alt=68.8 sf=1.59 fps=4.2 q=low seedOff=0.12 seedOffMax=0.74 fitMax=0.805 climaxFit=0 parts=50 err=0
+t=167s state=FLY hop=12 taps=13 stage=3 alt=73 sf=1.71 fps=5.1 q=low seedOff=0.12 seedOffMax=0.74 fitMax=0.805 climaxFit=0 parts=26 err=0
+t=169s state=GERMINATE hop=13 taps=14 stage=3 alt=73.3 sf=1.72 fps=4.8 q=low seedOff=0.14 seedOffMax=0.74 fitMax=0.805 climaxFit=0 parts=37 err=0
+t=171s state=GROW hop=13 taps=14 stage=3 alt=73.3 sf=1.72 fps=5.5 q=low seedOff=0.14 seedOffMax=0.74 fitMax=0.805 climaxFit=0 parts=9 err=0
+  shot mid
+t=173s state=FLY hop=13 taps=14 stage=3 alt=81 sf=1.91 fps=6.6 q=low seedOff=0.14 seedOffMax=0.74 fitMax=0.805 climaxFit=0 parts=37 err=0
+t=175s state=GERMINATE hop=14 taps=15 stage=3 alt=81.7 sf=1.92 fps=5.5 q=low seedOff=0.77 seedOffMax=0.77 fitMax=0.805 climaxFit=0 parts=35 err=0
+t=177s state=GROW hop=14 taps=15 stage=3 alt=81.7 sf=1.92 fps=6 q=low seedOff=0.77 seedOffMax=0.77 fitMax=0.805 climaxFit=0 parts=10 err=0
+t=178s state=FLY hop=14 taps=15 stage=3 alt=83.4 sf=1.95 fps=4.7 q=low seedOff=0.77 seedOffMax=0.77 fitMax=0.805 climaxFit=0 parts=45 err=0
+t=180s state=FLY hop=14 taps=15 stage=3 alt=89.8 sf=2 fps=6.8 q=low seedOff=0.77 seedOffMax=0.77 fitMax=0.805 climaxFit=0 parts=23 err=0
+t=181s state=GERMINATE hop=15 taps=16 stage=3 alt=90 sf=2 fps=6.3 q=low seedOff=0.27 seedOffMax=0.77 fitMax=0.805 climaxFit=0 parts=35 err=0
+t=183s state=FLY hop=15 taps=16 stage=3 alt=90.4 sf=2 fps=6.8 q=low seedOff=0.27 seedOffMax=0.77 fitMax=0.805 climaxFit=0 parts=41 err=0
+t=184s state=FLY hop=15 taps=16 stage=3 alt=97.6 sf=2.06 fps=6.7 q=low seedOff=0.27 seedOffMax=0.77 fitMax=0.805 climaxFit=0 parts=34 err=0
+t=186s state=GERMINATE hop=16 taps=17 stage=3 alt=98.3 sf=2.07 fps=7.8 q=low seedOff=0.5 seedOffMax=0.77 fitMax=0.805 climaxFit=0 parts=35 err=0
+t=188s state=FLY hop=16 taps=17 stage=3 alt=98.7 sf=2.08 fps=7.4 q=low seedOff=0.5 seedOffMax=0.77 fitMax=0.807 climaxFit=0 parts=42 err=0
+t=189s state=FLY hop=16 taps=17 stage=3 alt=106.3 sf=2.25 fps=8.5 q=low seedOff=0.5 seedOffMax=0.77 fitMax=0.807 climaxFit=0 parts=23 err=0
+t=191s state=GERMINATE hop=17 taps=18 stage=3 alt=106.7 sf=2.26 fps=9.2 q=low seedOff=0.32 seedOffMax=0.77 fitMax=0.807 climaxFit=0 parts=35 err=0
+t=192s state=FLY hop=17 taps=18 stage=3 alt=107.3 sf=2.28 fps=7.7 q=low seedOff=0.32 seedOffMax=0.77 fitMax=0.808 climaxFit=0 parts=41 err=0
+t=194s state=FLY hop=17 taps=18 stage=3 alt=115 sf=2.5 fps=11.5 q=low seedOff=0.32 seedOffMax=0.77 fitMax=0.808 climaxFit=0 parts=17 err=0
+t=195s state=GERMINATE hop=18 taps=19 stage=4 alt=115 sf=2.5 fps=9.9 q=low seedOff=0.09 seedOffMax=0.77 fitMax=0.808 climaxFit=0 parts=36 err=0
+t=197s state=FLY hop=18 taps=19 stage=4 alt=115 sf=2.5 fps=8.5 q=low seedOff=0.09 seedOffMax=0.77 fitMax=0.809 climaxFit=0 parts=40 err=0
+t=199s state=FLY hop=18 taps=19 stage=4 alt=115.4 sf=2.51 fps=8.5 q=low seedOff=0.09 seedOffMax=0.77 fitMax=0.809 climaxFit=0 parts=43 err=0
+  requestfailed: https://gf-playlog.zan72122.workers.dev/log
+t=200s state=FLY hop=18 taps=19 stage=4 alt=123.6 sf=2.75 fps=11.5 q=low seedOff=0.09 seedOffMax=0.77 fitMax=0.809 climaxFit=0 parts=29 err=0
+t=202s state=GROW hop=19 taps=20 stage=4 alt=124 sf=2.76 fps=14.4 q=low seedOff=0.35 seedOffMax=0.77 fitMax=0.809 climaxFit=0 parts=33 err=0
+t=203s state=FLY hop=19 taps=20 stage=4 alt=127.5 sf=2.84 fps=8.6 q=low seedOff=0.35 seedOffMax=0.77 fitMax=0.81 climaxFit=0 parts=51 err=0
+t=205s state=WAIT_SEED hop=20 taps=20 stage=4 alt=133 sf=2.95 fps=15.8 q=low seedOff=0.25 seedOffMax=0.77 fitMax=0.81 climaxFit=0 parts=17 err=0
+t=206s state=FLY hop=20 taps=21 stage=4 alt=133.1 sf=2.95 fps=9.3 q=low seedOff=0.25 seedOffMax=0.77 fitMax=0.811 climaxFit=0 parts=42 err=0
+t=208s state=FLY hop=20 taps=21 stage=4 alt=141.9 sf=3 fps=18.9 q=low seedOff=0.25 seedOffMax=0.77 fitMax=0.811 climaxFit=0 parts=26 err=0
+t=210s state=GROW hop=21 taps=22 stage=4 alt=142 sf=3 fps=14.1 q=low seedOff=0.49 seedOffMax=0.77 fitMax=0.811 climaxFit=0 parts=30 err=0
+t=211s state=FLY hop=21 taps=22 stage=4 alt=145.8 sf=3 fps=10.6 q=low seedOff=0.49 seedOffMax=0.77 fitMax=0.811 climaxFit=0 parts=51 err=0
+t=213s state=GERMINATE hop=22 taps=23 stage=4 alt=151 sf=3 fps=23.2 q=low seedOff=0.32 seedOffMax=0.77 fitMax=0.811 climaxFit=0 parts=46 err=0
+t=214s state=FLY hop=22 taps=23 stage=4 alt=151.1 sf=3 fps=11.3 q=low seedOff=0.32 seedOffMax=0.77 fitMax=0.811 climaxFit=0 parts=42 err=0
+t=216s state=FLY hop=22 taps=23 stage=4 alt=159.9 sf=3 fps=17.7 q=low seedOff=0.32 seedOffMax=0.77 fitMax=0.811 climaxFit=0 parts=29 err=0
+t=217s state=FINALE hop=23 taps=24 stage=4 alt=160.1 sf=3 fps=13 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0 parts=77 err=0
+  console: [D13] {"tag":"climax","state":"FINALE","climaxCount":1,"maxTaps":24,"stage":4,"taps":24,"climax":true,"avgFps":5.9,"q":"low","errors":0,"t":218.3}
+t=219s state=FINALE hop=23 taps=24 stage=4 alt=161 sf=3 fps=13.5 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0 parts=19 err=0
+t=220s state=FINALE hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=10.4 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=39 err=0
+t=222s state=FINALE hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=8.7 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=66 err=0
+t=223s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=9.3 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=70 err=0
+  shot climax
+t=226s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=8.1 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=35 err=0
+t=227s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=9.8 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=29 err=0
+t=229s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=9.5 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=30 err=0
+t=230s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=9.4 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=29 err=0
+  console: [D13] {"tag":"afterglow","state":"RESET","climaxCount":1,"maxTaps":24,"stage":4,"taps":24,"climax":true,"avgFps":6.1,"q":"low","errors":0,"t":230.3}
+t=232s state=RESET hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=4.9 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=24 err=0
+t=233s state=RESET hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=4.1 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=18 err=0
+t=235s state=RESET hop=0 taps=0 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=12 err=0
+t=237s state=RESET hop=0 taps=0 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=8 err=0
+t=240s state=RESET hop=0 taps=0 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=9 err=0
+  console: [D13] {"tag":"replay","state":"WAIT_SEED","climaxCount":1,"maxTaps":24,"stage":1,"taps":0,"climax":false,"avgFps":6.1,"q":"low","errors":0,"t":240.6}
+  console: [D13] {"tag":"result","state":"WAIT_SEED","climaxCount":1,"maxTaps":24,"stage":1,"taps":0,"climax":false,"avgFps":6.1,"q":"low","errors":0,"t":241.1}
+t=242s state=WAIT_SEED hop=0 taps=0 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.52 seedOffMax=0.77 fitMax=0.811 climaxFit=0.801 parts=9 err=0
+RESULT 1024x768: ready=true errors=[] consoleErrors(game)=0 consoleErrors(all)=4 maxTaps=24 stageMax=4 climaxReached=true replayReady=true avgFps=6.1 seedOffMax=0.77% fitMax=0.811 climaxFitMax=0.801
+  console errors: ["Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED","Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED","Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED","Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"]
+PASS
+== 768x1024 http://localhost:8137/games/d13/index.html?autotest&q=low
+  warn: [.WebGL-0x27d4003a1600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  warn: [.WebGL-0x27d4003a1600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  console: [D13] {"tag":"ready","state":"WAIT_SEED","climaxCount":0,"maxTaps":0,"stage":1,"taps":0,"climax":false,"avgFps":4,"q":"low","errors":0,"t":4.7}
+  warn: [.WebGL-0x27d4003a1600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  warn: [.WebGL-0x27d4003a1600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+__ready=true after 5953ms
+t=8s state=GERMINATE hop=0 taps=1 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.42 seedOffMax=0.42 fitMax=0 climaxFit=0 parts=35 err=0
+t=9s state=GROW hop=0 taps=1 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.42 seedOffMax=0.42 fitMax=0 climaxFit=0 parts=27 err=0
+  requestfailed: https://gf-playlog.zan72122.workers.dev/log
+t=11s state=GROW hop=0 taps=1 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.42 seedOffMax=0.42 fitMax=0.383 climaxFit=0 parts=8 err=0
+t=13s state=FLY hop=0 taps=1 stage=1 alt=5.8 sf=0 fps=4 q=low seedOff=0.42 seedOffMax=0.42 fitMax=0.383 climaxFit=0 parts=43 err=0
+t=15s state=FLY hop=0 taps=1 stage=1 alt=7 sf=0 fps=4 q=low seedOff=0.42 seedOffMax=0.42 fitMax=0.383 climaxFit=0 parts=49 err=0
+t=17s state=FLY hop=0 taps=1 stage=1 alt=7.7 sf=0 fps=4 q=low seedOff=0.42 seedOffMax=0.42 fitMax=0.383 climaxFit=0 parts=33 err=0
+t=18s state=FLY hop=0 taps=1 stage=1 alt=7.9 sf=0 fps=4 q=low seedOff=0.42 seedOffMax=0.42 fitMax=0.383 climaxFit=0 parts=15 err=0
+t=20s state=GERMINATE hop=1 taps=2 stage=1 alt=7.9 sf=0 fps=4 q=low seedOff=0.25 seedOffMax=0.42 fitMax=0.383 climaxFit=0 parts=36 err=0
+t=21s state=GERMINATE hop=1 taps=2 stage=1 alt=7.9 sf=0 fps=4 q=low seedOff=0.25 seedOffMax=0.42 fitMax=0.383 climaxFit=0 parts=34 err=0
+t=23s state=GROW hop=1 taps=2 stage=1 alt=7.9 sf=0 fps=4 q=low seedOff=0.25 seedOffMax=0.42 fitMax=0.383 climaxFit=0 parts=9 err=0
+t=25s state=FLY hop=1 taps=2 stage=1 alt=8 sf=0 fps=4 q=low seedOff=0.25 seedOffMax=0.42 fitMax=0.48 climaxFit=0 parts=42 err=0
+t=27s state=FLY hop=1 taps=2 stage=1 alt=9 sf=0 fps=4 q=low seedOff=0.25 seedOffMax=0.42 fitMax=0.48 climaxFit=0 parts=47 err=0
+t=28s state=FLY hop=1 taps=2 stage=1 alt=10.1 sf=0 fps=4 q=low seedOff=0.25 seedOffMax=0.42 fitMax=0.48 climaxFit=0 parts=45 err=0
+t=30s state=WAIT_SEED hop=2 taps=2 stage=1 alt=10.3 sf=0 fps=4 q=low seedOff=0.25 seedOffMax=0.42 fitMax=0.48 climaxFit=0 parts=17 err=0
+t=32s state=GERMINATE hop=2 taps=3 stage=1 alt=10.3 sf=0 fps=4 q=low seedOff=0.12 seedOffMax=0.42 fitMax=0.48 climaxFit=0 parts=34 err=0
+t=34s state=GROW hop=2 taps=3 stage=1 alt=10.3 sf=0 fps=4 q=low seedOff=0.12 seedOffMax=0.42 fitMax=0.48 climaxFit=0 parts=25 err=0
+t=35s state=GROW hop=2 taps=3 stage=1 alt=10.3 sf=0 fps=4 q=low seedOff=0.12 seedOffMax=0.42 fitMax=0.48 climaxFit=0 parts=9 err=0
+t=37s state=FLY hop=2 taps=3 stage=1 alt=10.7 sf=0.01 fps=4 q=low seedOff=0.12 seedOffMax=0.42 fitMax=0.48 climaxFit=0 parts=43 err=0
+t=39s state=FLY hop=2 taps=3 stage=1 alt=11.7 sf=0.02 fps=4 q=low seedOff=0.12 seedOffMax=0.42 fitMax=0.48 climaxFit=0 parts=47 err=0
+t=40s state=FLY hop=2 taps=3 stage=1 alt=12.6 sf=0.03 fps=4 q=low seedOff=0.12 seedOffMax=0.42 fitMax=0.48 climaxFit=0 parts=37 err=0
+t=42s state=WAIT_SEED hop=3 taps=3 stage=1 alt=12.8 sf=0.04 fps=4 q=low seedOff=0.55 seedOffMax=0.55 fitMax=0.48 climaxFit=0 parts=12 err=0
+  shot early
+t=46s state=GROW hop=3 taps=4 stage=1 alt=12.8 sf=0.04 fps=4 q=low seedOff=0.55 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=9 err=0
+t=48s state=FLY hop=3 taps=4 stage=1 alt=13.1 sf=0.04 fps=4 q=low seedOff=0.55 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=43 err=0
+t=50s state=FLY hop=3 taps=4 stage=1 alt=14.1 sf=0.07 fps=4 q=low seedOff=0.55 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=49 err=0
+t=51s state=FLY hop=3 taps=4 stage=1 alt=15.1 sf=0.09 fps=4 q=low seedOff=0.55 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=36 err=0
+t=53s state=WAIT_SEED hop=4 taps=4 stage=1 alt=15.2 sf=0.09 fps=4 q=low seedOff=0.55 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=14 err=0
+t=55s state=GERMINATE hop=4 taps=5 stage=1 alt=15.2 sf=0.09 fps=4 q=low seedOff=0.11 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=35 err=0
+t=56s state=GROW hop=4 taps=5 stage=1 alt=15.2 sf=0.09 fps=4 q=low seedOff=0.11 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=25 err=0
+t=58s state=GROW hop=4 taps=5 stage=1 alt=15.2 sf=0.09 fps=4 q=low seedOff=0.11 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=9 err=0
+t=60s state=FLY hop=4 taps=5 stage=1 alt=15.5 sf=0.1 fps=4 q=low seedOff=0.11 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=43 err=0
+t=61s state=FLY hop=4 taps=5 stage=1 alt=16.4 sf=0.13 fps=4 q=low seedOff=0.11 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=48 err=0
+t=63s state=FLY hop=4 taps=5 stage=1 alt=17.4 sf=0.16 fps=4 q=low seedOff=0.11 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=39 err=0
+t=65s state=WAIT_SEED hop=5 taps=5 stage=1 alt=17.6 sf=0.17 fps=4 q=low seedOff=0.11 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=14 err=0
+t=66s state=GERMINATE hop=5 taps=6 stage=1 alt=17.6 sf=0.17 fps=4 q=low seedOff=0.19 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=34 err=0
+t=68s state=GROW hop=5 taps=6 stage=1 alt=17.6 sf=0.17 fps=4 q=low seedOff=0.19 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=24 err=0
+t=70s state=FLY hop=5 taps=6 stage=1 alt=17.6 sf=0.17 fps=4 q=low seedOff=0.19 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=38 err=0
+t=71s state=FLY hop=5 taps=6 stage=1 alt=18.1 sf=0.19 fps=4 q=low seedOff=0.19 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=43 err=0
+t=73s state=FLY hop=5 taps=6 stage=1 alt=19.3 sf=0.23 fps=4 q=low seedOff=0.19 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=50 err=0
+t=75s state=FLY hop=5 taps=6 stage=1 alt=20 sf=0.26 fps=4 q=low seedOff=0.19 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=18 err=0
+  requestfailed: https://gf-playlog.zan72122.workers.dev/log
+t=77s state=STAGE_TRANSITION hop=6 taps=6 stage=2 alt=20 sf=0.26 fps=4 q=low seedOff=0.19 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=8 err=0
+t=78s state=GERMINATE hop=6 taps=7 stage=2 alt=20 sf=0.26 fps=4 q=low seedOff=0.38 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=34 err=0
+t=80s state=GERMINATE hop=6 taps=7 stage=2 alt=20 sf=0.26 fps=4 q=low seedOff=0.38 seedOffMax=0.55 fitMax=0.523 climaxFit=0 parts=34 err=0
+t=82s state=GROW hop=6 taps=7 stage=2 alt=20 sf=0.26 fps=4 q=low seedOff=0.38 seedOffMax=0.55 fitMax=0.533 climaxFit=0 parts=8 err=0
+t=83s state=FLY hop=6 taps=7 stage=2 alt=20.3 sf=0.27 fps=4 q=low seedOff=0.38 seedOffMax=0.55 fitMax=0.533 climaxFit=0 parts=42 err=0
+t=85s state=FLY hop=6 taps=7 stage=2 alt=22.1 sf=0.35 fps=4 q=low seedOff=0.38 seedOffMax=0.55 fitMax=0.533 climaxFit=0 parts=46 err=0
+t=87s state=FLY hop=6 taps=7 stage=2 alt=23.8 sf=0.42 fps=4 q=low seedOff=0.38 seedOffMax=0.55 fitMax=0.533 climaxFit=0 parts=37 err=0
+t=88s state=WAIT_SEED hop=7 taps=7 stage=2 alt=24.2 sf=0.44 fps=4 q=low seedOff=0.38 seedOffMax=0.55 fitMax=0.533 climaxFit=0 parts=15 err=0
+t=90s state=GERMINATE hop=7 taps=8 stage=2 alt=24.2 sf=0.44 fps=4 q=low seedOff=0.4 seedOffMax=0.55 fitMax=0.533 climaxFit=0 parts=35 err=0
+t=92s state=GROW hop=7 taps=8 stage=2 alt=24.2 sf=0.44 fps=4 q=low seedOff=0.4 seedOffMax=0.55 fitMax=0.533 climaxFit=0 parts=18 err=0
+t=93s state=GROW hop=7 taps=8 stage=2 alt=24.2 sf=0.44 fps=4 q=low seedOff=0.4 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=9 err=0
+t=95s state=FLY hop=7 taps=8 stage=2 alt=24.6 sf=0.46 fps=4 q=low seedOff=0.4 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=41 err=0
+t=96s state=FLY hop=7 taps=8 stage=2 alt=26.8 sf=0.56 fps=4 q=low seedOff=0.4 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=49 err=0
+t=99s state=FLY hop=7 taps=8 stage=2 alt=29.6 sf=0.68 fps=4 q=low seedOff=0.4 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=40 err=0
+t=101s state=WAIT_SEED hop=8 taps=8 stage=2 alt=30.8 sf=0.73 fps=4 q=low seedOff=0.4 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=16 err=0
+t=103s state=GERMINATE hop=8 taps=9 stage=2 alt=30.8 sf=0.73 fps=4 q=low seedOff=0.12 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=35 err=0
+t=104s state=GROW hop=8 taps=9 stage=2 alt=30.8 sf=0.73 fps=4 q=low seedOff=0.12 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=16 err=0
+t=106s state=FLY hop=8 taps=9 stage=2 alt=30.9 sf=0.74 fps=4 q=low seedOff=0.12 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=38 err=0
+t=108s state=FLY hop=8 taps=9 stage=2 alt=33.1 sf=0.82 fps=4 q=low seedOff=0.12 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=48 err=0
+t=109s state=FLY hop=8 taps=9 stage=2 alt=39.3 sf=0.98 fps=4 q=low seedOff=0.12 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=44 err=0
+t=111s state=FLY hop=8 taps=9 stage=2 alt=42.3 sf=1 fps=4.2 q=low seedOff=0.12 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=17 err=0
+t=113s state=GERMINATE hop=9 taps=10 stage=2 alt=42.5 sf=1 fps=4 q=low seedOff=0.27 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=38 err=0
+t=114s state=GROW hop=9 taps=10 stage=2 alt=42.5 sf=1 fps=4 q=low seedOff=0.27 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=34 err=0
+t=116s state=GROW hop=9 taps=10 stage=2 alt=42.5 sf=1 fps=4 q=low seedOff=0.27 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=8 err=0
+t=118s state=FLY hop=9 taps=10 stage=2 alt=43.8 sf=1 fps=4 q=low seedOff=0.27 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=43 err=0
+t=119s state=FLY hop=9 taps=10 stage=2 alt=49.6 sf=1.07 fps=4 q=low seedOff=0.27 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=50 err=0
+t=121s state=FLY hop=9 taps=10 stage=2 alt=54.1 sf=1.16 fps=5.1 q=low seedOff=0.27 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=15 err=0
+t=123s state=GERMINATE hop=10 taps=11 stage=2 alt=54.2 sf=1.16 fps=5 q=low seedOff=0.02 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=37 err=0
+t=124s state=GROW hop=10 taps=11 stage=2 alt=54.2 sf=1.16 fps=4 q=low seedOff=0.02 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=21 err=0
+t=126s state=FLY hop=10 taps=11 stage=2 alt=54.3 sf=1.16 fps=4.1 q=low seedOff=0.02 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=40 err=0
+t=128s state=FLY hop=10 taps=11 stage=2 alt=57 sf=1.23 fps=4.5 q=low seedOff=0.02 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=48 err=0
+t=129s state=FLY hop=10 taps=11 stage=2 alt=60.7 sf=1.34 fps=5.1 q=low seedOff=0.02 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=17 err=0
+t=131s state=GERMINATE hop=11 taps=12 stage=2 alt=60.8 sf=1.34 fps=5 q=low seedOff=0.17 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=36 err=0
+t=132s state=GROW hop=11 taps=12 stage=2 alt=60.8 sf=1.34 fps=5.4 q=low seedOff=0.17 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=10 err=0
+t=134s state=FLY hop=11 taps=12 stage=2 alt=61.7 sf=1.37 fps=4.5 q=low seedOff=0.17 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=45 err=0
+t=135s state=FLY hop=11 taps=12 stage=2 alt=65 sf=1.47 fps=7.7 q=low seedOff=0.17 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=15 err=0
+t=137s state=WAIT_SEED hop=12 taps=12 stage=3 alt=65 sf=1.47 fps=7.4 q=low seedOff=0.33 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=70 err=0
+t=139s state=GROW hop=12 taps=13 stage=3 alt=65 sf=1.47 fps=6.5 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.644 climaxFit=0 parts=44 err=0
+  requestfailed: https://gf-playlog.zan72122.workers.dev/log
+t=140s state=FLY hop=12 taps=13 stage=3 alt=66.5 sf=1.51 fps=5.9 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.683 climaxFit=0 parts=45 err=0
+t=142s state=FLY hop=12 taps=13 stage=3 alt=68.6 sf=1.58 fps=6.3 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.683 climaxFit=0 parts=51 err=0
+t=144s state=WAIT_SEED hop=13 taps=13 stage=3 alt=73.3 sf=1.72 fps=7.3 q=low seedOff=0.46 seedOffMax=0.55 fitMax=0.683 climaxFit=0 parts=14 err=0
+t=145s state=GROW hop=13 taps=14 stage=3 alt=73.3 sf=1.72 fps=6 q=low seedOff=0.43 seedOffMax=0.55 fitMax=0.683 climaxFit=0 parts=16 err=0
+  shot mid
+t=148s state=FLY hop=13 taps=14 stage=3 alt=80 sf=1.89 fps=5.6 q=low seedOff=0.43 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=50 err=0
+t=149s state=GERMINATE hop=14 taps=15 stage=3 alt=81.7 sf=1.92 fps=7.6 q=low seedOff=0.19 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=35 err=0
+t=151s state=GROW hop=14 taps=15 stage=3 alt=81.7 sf=1.92 fps=7.1 q=low seedOff=0.19 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=10 err=0
+t=153s state=FLY hop=14 taps=15 stage=3 alt=88.1 sf=2 fps=7.8 q=low seedOff=0.19 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=50 err=0
+t=154s state=GERMINATE hop=15 taps=16 stage=3 alt=90 sf=2 fps=8.2 q=low seedOff=0.38 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=35 err=0
+t=156s state=FLY hop=15 taps=16 stage=3 alt=90.2 sf=2 fps=7 q=low seedOff=0.38 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=39 err=0
+t=157s state=FLY hop=15 taps=16 stage=3 alt=97.6 sf=2.06 fps=7.2 q=low seedOff=0.38 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=33 err=0
+t=159s state=GERMINATE hop=16 taps=17 stage=3 alt=98.3 sf=2.07 fps=10.7 q=low seedOff=0.23 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=34 err=0
+t=161s state=FLY hop=16 taps=17 stage=3 alt=99 sf=2.08 fps=7.5 q=low seedOff=0.23 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=42 err=0
+t=162s state=FLY hop=16 taps=17 stage=3 alt=106.4 sf=2.25 fps=9.8 q=low seedOff=0.23 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=21 err=0
+t=164s state=GERMINATE hop=17 taps=18 stage=3 alt=106.7 sf=2.26 fps=7.5 q=low seedOff=0.4 seedOffMax=0.55 fitMax=0.8 climaxFit=0 parts=35 err=0
+t=165s state=FLY hop=17 taps=18 stage=3 alt=107 sf=2.27 fps=5.8 q=low seedOff=0.4 seedOffMax=0.55 fitMax=0.803 climaxFit=0 parts=42 err=0
+t=167s state=FLY hop=17 taps=18 stage=3 alt=114.4 sf=2.48 fps=6.7 q=low seedOff=0.4 seedOffMax=0.55 fitMax=0.803 climaxFit=0 parts=30 err=0
+t=168s state=WAIT_SEED hop=18 taps=18 stage=4 alt=115 sf=2.5 fps=10.4 q=low seedOff=0.1 seedOffMax=0.55 fitMax=0.803 climaxFit=0 parts=8 err=0
+t=170s state=GERMINATE hop=18 taps=19 stage=4 alt=115 sf=2.5 fps=11.9 q=low seedOff=0.16 seedOffMax=0.55 fitMax=0.803 climaxFit=0 parts=36 err=0
+t=172s state=GROW hop=18 taps=19 stage=4 alt=115 sf=2.5 fps=7.1 q=low seedOff=0.16 seedOffMax=0.55 fitMax=0.805 climaxFit=0 parts=9 err=0
+t=173s state=FLY hop=18 taps=19 stage=4 alt=122.1 sf=2.71 fps=9.8 q=low seedOff=0.16 seedOffMax=0.55 fitMax=0.805 climaxFit=0 parts=43 err=0
+t=175s state=GERMINATE hop=19 taps=20 stage=4 alt=124 sf=2.76 fps=15.7 q=low seedOff=0.11 seedOffMax=0.55 fitMax=0.805 climaxFit=0 parts=40 err=0
+t=176s state=FLY hop=19 taps=20 stage=4 alt=124.7 sf=2.78 fps=7.7 q=low seedOff=0.11 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=43 err=0
+t=178s state=WAIT_SEED hop=20 taps=20 stage=4 alt=133 sf=2.95 fps=23.1 q=low seedOff=0.11 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=32 err=0
+t=179s state=GROW hop=20 taps=21 stage=4 alt=133 sf=2.95 fps=12.9 q=low seedOff=0.27 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=10 err=0
+t=181s state=FLY hop=20 taps=21 stage=4 alt=137.2 sf=2.99 fps=8.2 q=low seedOff=0.27 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=51 err=0
+t=182s state=GERMINATE hop=21 taps=22 stage=4 alt=142 sf=3 fps=23.1 q=low seedOff=0.15 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=46 err=0
+t=184s state=FLY hop=21 taps=22 stage=4 alt=142.1 sf=3 fps=9.6 q=low seedOff=0.15 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=42 err=0
+t=185s state=FLY hop=21 taps=22 stage=4 alt=150.9 sf=3 fps=22.5 q=low seedOff=0.15 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=32 err=0
+t=187s state=GROW hop=22 taps=23 stage=4 alt=151 sf=3 fps=12.5 q=low seedOff=0.36 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=24 err=0
+t=189s state=FLY hop=22 taps=23 stage=4 alt=156.6 sf=3 fps=10.3 q=low seedOff=0.36 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=51 err=0
+t=190s state=FINALE hop=23 taps=24 stage=4 alt=160 sf=3 fps=21.9 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=79 err=0
+t=192s state=FINALE hop=23 taps=24 stage=4 alt=160.5 sf=3 fps=11.2 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0 parts=21 err=0
+  console: [D13] {"tag":"climax","state":"FINALE","climaxCount":1,"maxTaps":24,"stage":4,"taps":24,"climax":true,"avgFps":6.1,"q":"low","errors":0,"t":191.9}
+t=193s state=FINALE hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=9.3 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=22 err=0
+t=195s state=FINALE hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=6.7 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=49 err=0
+t=196s state=FINALE hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=7.1 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=76 err=0
+t=198s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=6.3 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=68 err=0
+  shot climax
+t=200s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=4.8 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=37 err=0
+t=202s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=5.9 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=29 err=0
+t=204s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=7 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=28 err=0
+  requestfailed: https://gf-playlog.zan72122.workers.dev/log
+t=205s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=6.3 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=30 err=0
+t=207s state=AFTERGLOW hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=5.3 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=28 err=0
+  console: [D13] {"tag":"afterglow","state":"RESET","climaxCount":1,"maxTaps":24,"stage":4,"taps":24,"climax":true,"avgFps":6.2,"q":"low","errors":0,"t":207.4}
+t=208s state=RESET hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=4.4 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=27 err=0
+t=210s state=RESET hop=23 taps=24 stage=4 alt=161.2 sf=3 fps=4.3 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=22 err=0
+t=212s state=RESET hop=0 taps=0 stage=1 alt=5.5 sf=0 fps=4.1 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=15 err=0
+t=213s state=RESET hop=0 taps=0 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=11 err=0
+t=215s state=RESET hop=0 taps=0 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=9 err=0
+  console: [D13] {"tag":"replay","state":"WAIT_SEED","climaxCount":1,"maxTaps":24,"stage":1,"taps":0,"climax":false,"avgFps":6.2,"q":"low","errors":0,"t":216.4}
+t=217s state=WAIT_SEED hop=0 taps=0 stage=1 alt=5.5 sf=0 fps=4 q=low seedOff=0.35 seedOffMax=0.55 fitMax=0.808 climaxFit=0.801 parts=11 err=0
+  console: [D13] {"tag":"result","state":"WAIT_SEED","climaxCount":1,"maxTaps":24,"stage":1,"taps":0,"climax":false,"avgFps":6.1,"q":"low","errors":0,"t":216.9}
+RESULT 768x1024: ready=true errors=[] consoleErrors(game)=0 consoleErrors(all)=4 maxTaps=24 stageMax=4 climaxReached=true replayReady=true avgFps=6.2 seedOffMax=0.55% fitMax=0.808 climaxFitMax=0.801
+  console errors: ["Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED","Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED","Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED","Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"]
+PASS
