@@ -10,3 +10,8 @@
 - 12:58 クラウド起動 D02: session_017tygc5LEs39XmWxuxaDiFd（job claude-cloud-20261126-125757-97876）
 - 13:05 D03 指示文回収。Chrome 実効並列4、待ち11。
 - 13:20 D04〜D13 指示文回収（計13本）。
+- 13:21 全15本の指示文が揃い repo に push 済み（禁止語なし、各指示文の出力先 dNN 一致）。Mac の ChatGPT 作業はこれで終了（受け取り役の後始末は ai-dispatch に任せる）。
+- 13:48 D02 完了（約50分）。ブランチ claude/game-d02-implementation-0954wh → main にマージ・公開。クラウドのヘッドレス確認: 横・縦とも __errors 空、全段階到達、目標は中心から3%以内。
+- 13:49 クラウド起動 D03: session_017tygc3Wq3jGmTV5ooaaUxW（job claude-cloud-20261126-134855-11419）
+- 13:50 D01 完了（約52分）。claude/game-d01-implementation-najf3p → main マージ・公開。8つの画面設定で自動テスト通過（iPad 実機は未確認）。
+- 13:51 クラウド起動 D04: session_017tygc1qfpAfKnuTUd1xw84（job claude-cloud-20261126-135051-11775）。実行中: D03, D04
