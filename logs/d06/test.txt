@@ -1,0 +1,200 @@
+# D06 autotest log (2026-11-26T06:45Z) — headless Chromium (Playwright) + SwiftShader (--use-angle=swiftshader --enable-unsafe-swiftshader), python3 -m http.server (root site/), autotest time scale x2
+== 1024x768 http://localhost:8126/games/d06/index.html?autotest&q=low
+__ready=true after 3890ms
+t=4.2s state=START stage=0 total=0 q=low target=535,379 ring=287,174,709,595 moon=-
+t=4.6s state=WELCOME stage=0 total=0 q=low target=- ring=270,176,693,598 moon=-
+t=5.6s state=WAIT_INPUT stage=0 total=0 q=low target=480,398 ring=260,190,683,612 moon=-
+t=6.3s state=GUIDING stage=0 total=0 q=low target=395,385 ring=309,171,731,592 moon=-
+t=7.0s state=FORM_RING stage=0 total=1 q=low target=- ring=356,157,780,579 moon=-
+t=7.9s state=PASS_RING stage=0 total=1 q=low target=- ring=305,169,726,591 moon=-
+t=10.1s state=WAIT_INPUT stage=0 total=1 q=low target=473,378 ring=342,207,685,550 moon=-
+t=11.0s state=GUIDING stage=0 total=1 q=low target=434,347 ring=328,171,742,585 moon=-
+t=11.7s state=FORM_RING stage=0 total=2 q=low target=- ring=358,178,780,599 moon=-
+  shot early
+t=13.2s state=PASS_RING stage=0 total=2 q=low target=- ring=314,187,694,566 moon=-
+t=15.2s state=WAIT_INPUT stage=0 total=2 q=low target=542,378 ring=304,193,682,570 moon=-
+t=15.8s state=GUIDING stage=0 total=2 q=low target=497,387 ring=266,175,680,588 moon=-
+t=16.7s state=FORM_RING stage=0 total=3 q=low target=- ring=348,190,771,612 moon=-
+t=17.3s state=PASS_RING stage=0 total=3 q=low target=- ring=308,174,730,595 moon=-
+t=19.9s state=WAIT_INPUT stage=0 total=3 q=low target=482,379 ring=336,199,697,559 moon=-
+t=20.5s state=GUIDING stage=0 total=3 q=low target=491,372 ring=347,180,756,589 moon=-
+t=21.6s state=FORM_RING stage=0 total=4 q=low target=- ring=338,201,760,622 moon=-
+t=22.2s state=PASS_RING stage=0 total=4 q=low target=- ring=305,174,727,596 moon=-
+t=24.7s state=WAIT_INPUT stage=0 total=4 q=low target=519,387 ring=346,207,689,550 moon=-
+t=25.6s state=GUIDING stage=0 total=4 q=low target=542,389 ring=279,176,688,584 moon=-
+t=26.6s state=FORM_RING stage=0 total=5 q=low target=- ring=277,133,699,554 moon=-
+t=27.2s state=PASS_RING stage=0 total=5 q=low target=- ring=298,166,720,588 moon=-
+t=29.9s state=WAIT_INPUT stage=0 total=5 q=low target=511,389 ring=317,187,694,564 moon=-
+t=30.7s state=GUIDING stage=0 total=5 q=low target=483,392 ring=322,168,735,580 moon=-
+t=31.6s state=FORM_RING stage=0 total=6 q=low target=- ring=292,128,714,551 moon=-
+t=32.3s state=PASS_RING stage=1 total=6 q=low target=- ring=299,164,721,585 moon=-
+t=35.4s state=STAGE_TRANSITION stage=1 total=6 q=low target=- ring=306,163,715,571 moon=-
+t=37.7s state=WAIT_INPUT stage=1 total=6 q=low target=487,393 ring=286,145,744,603 moon=-
+t=38.5s state=GUIDING stage=1 total=6 q=low target=528,386 ring=306,139,765,598 moon=-
+t=39.4s state=FORM_RING stage=1 total=7 q=low target=- ring=222,170,682,630 moon=-
+t=40.2s state=PASS_RING stage=1 total=7 q=low target=- ring=276,155,735,613 moon=-
+t=43.1s state=WAIT_INPUT stage=1 total=7 q=low target=483,381 ring=320,187,699,566 moon=-
+t=44.0s state=GUIDING stage=1 total=7 q=low target=547,386 ring=283,151,728,596 moon=-
+t=45.3s state=FORM_RING stage=1 total=8 q=low target=- ring=232,180,692,639 moon=-
+t=45.9s state=PASS_RING stage=1 total=8 q=low target=- ring=274,158,732,616 moon=-
+t=49.2s state=WAIT_INPUT stage=1 total=8 q=low target=544,381 ring=312,180,707,574 moon=-
+t=50.4s state=GUIDING stage=1 total=8 q=low target=487,383 ring=287,151,738,602 moon=-
+t=51.6s state=FORM_RING stage=1 total=9 q=low target=- ring=244,205,703,665 moon=-
+t=52.6s state=PASS_RING stage=1 total=9 q=low target=- ring=279,158,738,617 moon=-
+t=55.5s state=WAIT_INPUT stage=1 total=9 q=low target=481,384 ring=326,187,705,566 moon=-
+t=56.8s state=GUIDING stage=1 total=9 q=low target=432,364 ring=299,155,750,606 moon=-
+t=57.8s state=FORM_RING stage=1 total=10 q=low target=- ring=325,148,784,606 moon=-
+  shot mid
+t=59.0s state=PASS_RING stage=1 total=10 q=low target=- ring=288,153,738,602 moon=-
+t=61.5s state=WAIT_INPUT stage=1 total=10 q=low target=545,386 ring=295,171,703,579 moon=-
+t=62.1s state=GUIDING stage=1 total=10 q=low target=514,386 ring=258,153,704,597 moon=-
+t=63.2s state=FORM_RING stage=1 total=11 q=low target=- ring=230,106,690,565 moon=-
+t=64.1s state=PASS_RING stage=1 total=11 q=low target=- ring=275,146,733,605 moon=-
+t=67.1s state=WAIT_INPUT stage=1 total=11 q=low target=471,394 ring=316,178,711,573 moon=-
+t=68.1s state=GUIDING stage=1 total=11 q=low target=509,388 ring=326,145,775,593 moon=-
+t=69.2s state=FORM_RING stage=1 total=12 q=low target=- ring=281,84,740,544 moon=-
+t=70.2s state=PASS_RING stage=2 total=12 q=low target=- ring=282,143,740,601 moon=-
+t=73.8s state=STAGE_TRANSITION stage=2 total=12 q=low target=- ring=288,151,736,599 moon=-
+t=76.2s state=WAIT_INPUT stage=2 total=12 q=low target=461,396 ring=276,133,759,615 moon=-
+t=77.0s state=GUIDING stage=2 total=12 q=low target=532,394 ring=296,120,779,603 moon=-
+t=78.1s state=FORM_RING stage=2 total=13 q=low target=- ring=197,122,683,606 moon=-
+t=79.3s state=PASS_RING stage=2 total=13 q=low target=- ring=266,138,749,621 moon=-
+t=82.2s state=WAIT_INPUT stage=2 total=13 q=low target=546,390 ring=285,155,720,591 moon=-
+t=83.1s state=GUIDING stage=2 total=13 q=low target=543,374 ring=253,131,726,604 moon=-
+t=84.3s state=FORM_RING stage=2 total=14 q=low target=- ring=222,190,706,674 moon=-
+t=85.3s state=PASS_RING stage=2 total=14 q=low target=- ring=266,145,749,628 moon=-
+t=88.2s state=WAIT_INPUT stage=2 total=14 q=low target=477,385 ring=306,164,729,586 moon=-
+t=89.3s state=GUIDING stage=2 total=14 q=low target=511,400 ring=307,128,784,604 moon=-
+t=90.6s state=FORM_RING stage=2 total=15 q=low target=- ring=302,93,786,577 moon=-
+t=91.3s state=PASS_RING stage=2 total=15 q=low target=- ring=274,134,757,617 moon=-
+t=93.9s state=WAIT_INPUT stage=2 total=15 q=low target=552,384 ring=307,173,713,578 moon=-
+t=94.9s state=GUIDING stage=2 total=15 q=low target=448,443 ring=251,133,727,610 moon=-
+t=95.6s state=FORM_RING stage=2 total=16 q=low target=- ring=293,70,778,556 moon=-
+  shot late
+t=97.2s state=PASS_RING stage=2 total=16 q=low target=- ring=285,150,730,595 moon=-
+t=99.2s state=WAIT_INPUT stage=2 total=16 q=low target=474,384 ring=302,156,738,591 moon=-
+t=99.9s state=GUIDING stage=2 total=16 q=low target=463,383 ring=306,137,781,612 moon=-
+t=101.0s state=FORM_RING stage=2 total=17 q=low target=- ring=321,114,806,599 moon=-
+t=101.8s state=PASS_RING stage=2 total=17 q=low target=- ring=276,136,760,620 moon=-
+t=104.4s state=WAIT_INPUT stage=2 total=17 q=low target=538,392 ring=301,164,721,584 moon=-
+t=105.3s state=GUIDING stage=2 total=17 q=low target=494,376 ring=238,136,717,614 moon=-
+t=106.2s state=FORM_RING stage=2 total=18 q=low target=- ring=321,121,807,606 moon=-
+t=106.8s state=CLIMAX stage=2 total=18 q=low target=- ring=277,137,762,622 moon=-
+  shot spiral
+  shot climax
+t=118.3s state=AFTERGLOW stage=2 total=18 q=low target=- ring=- moon=512,387
+  shot afterglow
+t=123.7s state=REPLAY_WAIT stage=2 total=18 q=low target=474,660 ring=- moon=517,353
+t=125.0s state=DIVE stage=2 total=18 q=low target=- ring=- moon=561,91
+t=126.9s state=START stage=0 total=0 q=low target=514,375 ring=301,166,723,587 moon=-
+states seen: START,WELCOME,WAIT_INPUT,GUIDING,FORM_RING,PASS_RING,STAGE_TRANSITION,CLIMAX,AFTERGLOW,REPLAY_WAIT,DIVE
+center check (START/WAIT_INPUT/REPLAY_WAIT target offset from screen center, max of 20 samples): 5.1% by state {"START":2.2,"WAIT_INPUT":3.5,"REPLAY_WAIT":5.1}
+ring fully on screen at completion: 21/21 samples
+pod (all snouts/tails) on screen while waiting/forming/spiral: 33/33 samples
+moon offset from center in climax (max of 8): 1.7%
+__ready=true __errors=[] consoleErrors=[] replays=1 done=true
+1024x768: PASS (127s)
+== 768x1024 http://localhost:8126/games/d06/index.html?autotest&q=low
+__ready=true after 3849ms
+t=4.2s state=START stage=0 total=0 q=low target=407,507 ring=159,302,581,724 moon=-
+t=4.6s state=WELCOME stage=0 total=0 q=low target=- ring=143,304,565,726 moon=-
+t=5.5s state=WAIT_INPUT stage=0 total=0 q=low target=353,522 ring=124,320,547,743 moon=-
+t=6.1s state=GUIDING stage=0 total=0 q=low target=342,525 ring=166,303,589,725 moon=-
+t=7.1s state=FORM_RING stage=0 total=1 q=low target=- ring=227,286,650,708 moon=-
+t=7.8s state=PASS_RING stage=0 total=1 q=low target=- ring=180,297,602,719 moon=-
+t=10.4s state=WAIT_INPUT stage=0 total=1 q=low target=350,510 ring=210,324,577,691 moon=-
+t=11.1s state=GUIDING stage=0 total=1 q=low target=346,497 ring=204,300,614,710 moon=-
+t=11.7s state=FORM_RING stage=0 total=2 q=low target=- ring=236,312,658,733 moon=-
+  shot early
+t=13.1s state=PASS_RING stage=0 total=2 q=low target=- ring=178,303,587,712 moon=-
+t=15.1s state=WAIT_INPUT stage=0 total=2 q=low target=412,504 ring=203,332,553,682 moon=-
+t=16.4s state=GUIDING stage=0 total=2 q=low target=455,575 ring=144,296,562,714 moon=-
+t=17.0s state=FORM_RING stage=0 total=3 q=low target=- ring=117,281,540,703 moon=-
+t=17.7s state=PASS_RING stage=0 total=3 q=low target=- ring=165,297,587,719 moon=-
+t=20.3s state=WAIT_INPUT stage=0 total=3 q=low target=349,505 ring=207,324,575,692 moon=-
+t=20.9s state=GUIDING stage=0 total=3 q=low target=374,516 ring=218,310,625,716 moon=-
+t=21.9s state=FORM_RING stage=0 total=4 q=low target=- ring=146,271,567,693 moon=-
+t=22.6s state=PASS_RING stage=0 total=4 q=low target=- ring=170,296,592,718 moon=-
+t=25.3s state=WAIT_INPUT stage=0 total=4 q=low target=408,512 ring=194,314,575,694 moon=-
+t=25.9s state=GUIDING stage=0 total=4 q=low target=395,465 ring=156,303,567,714 moon=-
+t=26.9s state=FORM_RING stage=0 total=5 q=low target=- ring=190,350,611,771 moon=-
+t=27.8s state=PASS_RING stage=0 total=5 q=low target=- ring=175,304,597,726 moon=-
+t=30.6s state=WAIT_INPUT stage=0 total=5 q=low target=400,519 ring=195,321,564,690 moon=-
+t=31.7s state=GUIDING stage=0 total=5 q=low target=361,556 ring=190,294,606,709 moon=-
+t=32.6s state=FORM_RING stage=0 total=6 q=low target=- ring=167,245,589,667 moon=-
+t=33.4s state=PASS_RING stage=1 total=6 q=low target=- ring=172,292,594,714 moon=-
+t=36.8s state=STAGE_TRANSITION stage=1 total=6 q=low target=- ring=172,288,593,710 moon=-
+t=39.0s state=WAIT_INPUT stage=1 total=6 q=low target=366,520 ring=155,275,614,733 moon=-
+t=39.9s state=GUIDING stage=1 total=6 q=low target=398,513 ring=178,268,637,726 moon=-
+t=40.9s state=FORM_RING stage=1 total=7 q=low target=- ring=106,298,566,757 moon=-
+t=41.9s state=PASS_RING stage=1 total=7 q=low target=- ring=150,282,609,740 moon=-
+t=44.5s state=WAIT_INPUT stage=1 total=7 q=low target=370,514 ring=185,306,583,704 moon=-
+t=45.4s state=GUIDING stage=1 total=7 q=low target=410,510 ring=151,277,596,722 moon=-
+t=46.5s state=FORM_RING stage=1 total=8 q=low target=- ring=155,335,613,793 moon=-
+t=47.4s state=PASS_RING stage=1 total=8 q=low target=- ring=155,288,613,746 moon=-
+t=50.3s state=WAIT_INPUT stage=1 total=8 q=low target=405,508 ring=171,301,581,711 moon=-
+t=51.2s state=GUIDING stage=1 total=8 q=low target=349,526 ring=161,279,612,730 moon=-
+t=52.3s state=FORM_RING stage=1 total=9 q=low target=- ring=196,226,655,686 moon=-
+t=53.2s state=PASS_RING stage=1 total=9 q=low target=- ring=159,275,617,734 moon=-
+t=56.2s state=WAIT_INPUT stage=1 total=9 q=low target=351,514 ring=196,314,579,697 moon=-
+t=57.3s state=GUIDING stage=1 total=9 q=low target=361,508 ring=171,283,620,732 moon=-
+t=58.3s state=FORM_RING stage=1 total=10 q=low target=- ring=209,274,668,732 moon=-
+  shot mid
+t=59.7s state=PASS_RING stage=1 total=10 q=low target=- ring=160,281,610,731 moon=-
+t=62.1s state=WAIT_INPUT stage=1 total=10 q=low target=421,516 ring=180,306,578,703 moon=-
+t=62.9s state=GUIDING stage=1 total=10 q=low target=385,513 ring=132,281,578,727 moon=-
+t=64.2s state=FORM_RING stage=1 total=11 q=low target=- ring=122,255,580,713 moon=-
+t=64.9s state=PASS_RING stage=1 total=11 q=low target=- ring=149,277,608,735 moon=-
+t=68.0s state=WAIT_INPUT stage=1 total=11 q=low target=346,522 ring=186,305,583,703 moon=-
+t=69.5s state=GUIDING stage=1 total=11 q=low target=379,600 ring=180,272,635,727 moon=-
+t=70.5s state=FORM_RING stage=1 total=12 q=low target=- ring=146,241,605,700 moon=-
+t=71.2s state=PASS_RING stage=2 total=12 q=low target=- ring=153,274,612,733 moon=-
+t=74.5s state=STAGE_TRANSITION stage=2 total=12 q=low target=- ring=169,287,598,716 moon=-
+t=77.1s state=WAIT_INPUT stage=2 total=12 q=low target=338,527 ring=147,262,629,744 moon=-
+t=78.1s state=GUIDING stage=2 total=12 q=low target=374,544 ring=155,251,637,734 moon=-
+t=79.2s state=FORM_RING stage=2 total=13 q=low target=- ring=176,211,660,696 moon=-
+t=80.2s state=PASS_RING stage=2 total=13 q=low target=- ring=146,263,628,746 moon=-
+t=83.1s state=WAIT_INPUT stage=2 total=13 q=low target=421,516 ring=181,299,591,709 moon=-
+t=84.2s state=GUIDING stage=2 total=13 q=low target=358,548 ring=132,257,606,731 moon=-
+t=85.1s state=FORM_RING stage=2 total=14 q=low target=- ring=168,203,651,687 moon=-
+t=86.1s state=PASS_RING stage=2 total=14 q=low target=- ring=144,262,627,745 moon=-
+t=88.7s state=WAIT_INPUT stage=2 total=14 q=low target=339,512 ring=182,300,589,707 moon=-
+t=89.9s state=GUIDING stage=2 total=14 q=low target=425,516 ring=166,256,644,734 moon=-
+t=90.9s state=FORM_RING stage=2 total=15 q=low target=- ring=88,298,572,782 moon=-
+t=91.6s state=PASS_RING stage=2 total=15 q=low target=- ring=135,274,618,757 moon=-
+t=94.5s state=WAIT_INPUT stage=2 total=15 q=low target=419,517 ring=151,282,588,719 moon=-
+t=95.2s state=GUIDING stage=2 total=15 q=low target=350,507 ring=121,260,595,734 moon=-
+t=96.2s state=FORM_RING stage=2 total=16 q=low target=- ring=190,264,674,747 moon=-
+  shot late
+t=97.6s state=PASS_RING stage=2 total=16 q=low target=- ring=157,279,603,725 moon=-
+t=99.5s state=WAIT_INPUT stage=2 total=16 q=low target=350,514 ring=171,284,606,719 moon=-
+t=100.1s state=GUIDING stage=2 total=16 q=low target=339,524 ring=172,265,645,738 moon=-
+t=101.2s state=FORM_RING stage=2 total=17 q=low target=- ring=180,233,664,716 moon=-
+t=101.9s state=PASS_RING stage=2 total=17 q=low target=- ring=147,263,630,747 moon=-
+t=104.4s state=WAIT_INPUT stage=2 total=17 q=low target=412,522 ring=172,291,594,713 moon=-
+t=105.3s state=GUIDING stage=2 total=17 q=low target=364,519 ring=112,263,591,741 moon=-
+t=106.2s state=FORM_RING stage=2 total=18 q=low target=- ring=189,232,674,716 moon=-
+t=106.9s state=CLIMAX stage=2 total=18 q=low target=- ring=149,263,633,747 moon=-
+  shot spiral
+  shot climax
+t=117.8s state=AFTERGLOW stage=2 total=18 q=low target=- ring=- moon=384,515
+  shot afterglow
+t=122.6s state=REPLAY_WAIT stage=2 total=18 q=low target=323,891 ring=- moon=384,512
+t=123.8s state=DIVE stage=2 total=18 q=low target=- ring=- moon=445,169
+t=125.8s state=START stage=0 total=0 q=low target=382,507 ring=173,295,595,717 moon=-
+states seen: START,WELCOME,WAIT_INPUT,GUIDING,FORM_RING,PASS_RING,STAGE_TRANSITION,CLIMAX,AFTERGLOW,REPLAY_WAIT,DIVE
+center check (START/WAIT_INPUT/REPLAY_WAIT target offset from screen center, max of 21 samples): 4.7% by state {"START":3,"WAIT_INPUT":4.7,"REPLAY_WAIT":3.2}
+ring fully on screen at completion: 24/24 samples
+pod (all snouts/tails) on screen while waiting/forming/spiral: 34/34 samples
+moon offset from center in climax (max of 8): 2.0%
+__ready=true __errors=[] consoleErrors=[] replays=1 done=true
+768x1024: PASS (126s)
+ALL PASS
+
+# extra checks (real touch tap / mouse swipe, other sizes and quality)
+after tap: WELCOME
+1024x768 q=high: state=GUIDING total=0 quality=high errors=[] console=[] ring=344,190,768,612
+after tap: WELCOME
+390x844 q=mid: state=FORM_RING total=1 quality=mid errors=[] console=[] ring=96,309,311,524
+after tap: WELCOME
+834x1194 q=mid: state=GUIDING total=0 quality=mid errors=[] console=[] ring=238,385,697,844
