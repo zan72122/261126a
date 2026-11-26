@@ -25,3 +25,7 @@
 - 次の起動（D09〜）は Mac オフライン（17:00〜18:00）明けの 18:00 以降。D07/D08 はクラウドで進み続ける。
 - 17:07 D07（約67分）・D08（約43分）完了 → main マージ・公開（自動チェック ok）。D01〜D08 公開済み。
 - 次は 18:05 以降（Mac 復帰後）に D09/D10 を起動。
+- 18:05 Mac 復帰を確認。D09/D10 を ai-dispatch claude-cloud で起動しようとしたが失敗: 「Cloud sessions need a claude.ai sign-in. Run `claude auth login`」。Mac の claude auth status は loggedIn=false（オフライン中にログインが外れた模様）。
+- 18:10 box の claude --cloud（同じ設定）も試したが「Cloud session create failed: 403」（box の認証はクラウドセッション作成に使えない）。セッションは作られていない。
+- 停止: D09〜D15 は未起動。ユーザーが Mac で `claude auth login`（claude.ai アカウント）をすれば、同じ手順（ai-dispatch claude-cloud 261126a + cloudprompts/DNN.txt）で再開できる。
+- 公開確認 18:12: index と D01〜D08 は全て 200、noindex あり、禁止語なし。
