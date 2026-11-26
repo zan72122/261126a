@@ -1,0 +1,236 @@
+# D12 test log (2026-11-26T14:35Z) — headless Chromium (Playwright) + SwiftShader (--use-angle=swiftshader --enable-unsafe-swiftshader), python3 -m http.server (root site/), autotest speed x3. Script: logs/d12/autotest.js. The play-log endpoint (external, unreachable here) is answered with 204 by Playwright. Landscape run rotates the viewport to portrait and back mid-game.
+== 1024x768 http://localhost:8142/games/d12/index.html?autotest&q=low
+__ready=true after 3131ms
+t=3.5s state=WAITING_FOR_TAP n=0 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=12 target=50%,50% deer=[31.7,47.4,48.3,89] stars=[29,5.8,70.9,22.1] camD=11.4
+t=5.7s state=COLLECTING_PETALS n=1 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[31.7,47.4,48.3,89] stars=[29,5.8,70.9,22.1] camD=11.4
+t=6.5s state=BUILDING_PATH n=1 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[31.7,47.4,48.3,89] stars=[29,5.8,70.9,22.1] camD=11.4
+t=8.7s state=RUNNING n=1 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=48.6%,51.4% deer=[26.5,46.5,46,92.4] stars=[29.4,5.8,71.3,22.2] camD=12.1
+t=12.6s state=WAITING_FOR_TAP n=1 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50.1%,49.9% deer=[32.5,45.2,48,86.2] stars=[31.3,5.1,73.9,21.9] camD=11.1
+t=21.8s state=COLLECTING_PETALS n=2 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[30.9,45.2,47.6,89] stars=[31.4,5,74,21.8] camD=11
+t=22.6s state=BUILDING_PATH n=2 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[30.9,45.2,47.6,89] stars=[31.4,5,74,21.8] camD=11
+t=25.0s state=RUNNING n=2 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=48%,51.5% deer=[27.4,47.2,45.2,93] stars=[30.2,5.2,72.8,22] camD=12.2
+t=28.8s state=WAITING_FOR_TAP n=2 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50.2%,49.9% deer=[33.4,46,47.5,86.2] stars=[25.5,5,68.8,21.8] camD=11.3
+t=33.2s state=COLLECTING_PETALS n=3 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[31.9,46.1,47.1,89] stars=[25.4,4.9,68.8,21.6] camD=11.2
+t=33.9s state=BUILDING_PATH n=3 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[31.9,46.1,47.1,89] stars=[25.4,4.9,68.8,21.6] camD=11.2
+t=36.0s state=RUNNING n=3 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=47.7%,51.7% deer=[28.7,48.4,44.6,92.9] stars=[23.2,5.2,66.7,21.8] camD=12.4
+t=39.8s state=WAITING_FOR_TAP n=3 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50.2%,49.8% deer=[34,46.9,47.4,86.3] stars=[14.3,5,59.3,21.6] camD=11.4
+  shot early
+t=46.6s state=COLLECTING_PETALS n=4 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[32.6,47.1,47.1,89] stars=[14.1,4.8,59.2,21.5] camD=11.3
+t=47.2s state=BUILDING_PATH n=4 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[32.6,47.1,47.1,89] stars=[14.1,4.8,59.2,21.5] camD=11.3
+t=49.2s state=RUNNING n=4 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=47.9%,51.8% deer=[29.5,49.5,44.7,92.9] stars=[12.3,4.9,57.6,21.7] camD=12.6
+t=52.8s state=WAITING_FOR_TAP n=4 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50.2%,49.8% deer=[34.1,47.5,47.8,86.2] stars=[4.7,3.7,52.1,21.3] camD=11.6
+t=57.4s state=COLLECTING_PETALS n=5 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[32.7,47.7,47.4,89] stars=[4.6,3.5,52.1,21.2] camD=11.5
+t=58.0s state=BUILDING_PATH n=5 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[32.7,47.7,47.4,89] stars=[4.6,3.5,52.1,21.2] camD=11.5
+t=60.1s state=RUNNING n=5 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=48.4%,51.8% deer=[29.5,50.1,45.3,92.8] stars=[4.2,3.7,51.7,21.4] camD=12.7
+t=63.8s state=WAITING_FOR_TAP n=5 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50.1%,49.8% deer=[33.7,47.4,48.3,86.1] stars=[2.7,3,51.2,21.1] camD=11.6
+t=67.9s state=COLLECTING_PETALS n=6 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[32.2,47.6,47.9,89] stars=[2.7,2.8,51.3,20.9] camD=11.5
+t=68.6s state=BUILDING_PATH n=6 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[32.2,47.6,47.9,89] stars=[2.7,2.8,51.3,20.9] camD=11.5
+t=70.5s state=RUNNING n=6 stage=1 lit=1100000 visited=0000000 free=0 P=0 q=low fps=10 target=48.8%,52.5% deer=[29.4,51,46,93.3] stars=[3.7,3.3,52,21.2] camD=12.8
+t=74.0s state=WAITING_FOR_TAP n=6 stage=2 lit=1100000 visited=0000000 free=0 P=0.01 q=low fps=10 target=50.1%,49.8% deer=[35.2,51.2,48.6,87] stars=[7.6,3.1,55.8,21] camD=12.3
+t=78.3s state=COLLECTING_PETALS n=7 stage=2 lit=1100000 visited=0000000 free=0 P=0.01 q=low fps=10 target=50%,50% deer=[34.3,51.6,48.4,89] stars=[7.8,2.9,56,20.8] camD=12.3
+t=79.0s state=BUILDING_PATH n=7 stage=2 lit=1100000 visited=0000000 free=0 P=0.01 q=low fps=10 target=50%,50% deer=[34.3,51.6,48.4,89] stars=[7.8,2.9,56,20.8] camD=12.3
+t=81.0s state=RUNNING n=7 stage=2 lit=1100000 visited=0000000 free=0 P=0.01 q=low fps=10 target=47.7%,54.7% deer=[30.8,57.8,45.4,95.7] stars=[7.7,3.5,55.9,21.3] camD=14.7
+t=85.4s state=WAITING_FOR_TAP n=7 stage=2 lit=1100000 visited=0000000 free=0 P=0.12 q=low fps=10 target=50.1%,49.9% deer=[38.7,56.3,48.5,86.8] stars=[5,-6.5,55.7,12.7] camD=14.1
+t=89.6s state=COLLECTING_PETALS n=8 stage=2 lit=1100000 visited=0000000 free=0 P=0.12 q=low fps=10 target=50%,50% deer=[38.1,57.2,48.3,89] stars=[4.7,-8.7,55.8,10.8] camD=14.1
+t=90.2s state=BUILDING_PATH n=8 stage=2 lit=1100000 visited=0000000 free=0 P=0.12 q=low fps=10 target=50%,50% deer=[38.2,57.2,48.3,89] stars=[4.7,-8.7,55.8,10.7] camD=14.1
+t=92.2s state=RUNNING n=8 stage=2 lit=1100000 visited=0000000 free=0 P=0.12 q=low fps=10 target=47.5%,56.8% deer=[36.6,65.1,46,95.4] stars=[2.1,-7.9,53.5,11.6] camD=17.2
+t=97.1s state=WAITING_FOR_TAP n=8 stage=2 lit=1100000 visited=0000000 free=0 P=0.31 q=low fps=10 target=50.1%,49.7% deer=[40.7,59.6,48.7,86] stars=[-9.5,-8.2,46.1,12.7] camD=15.6
+t=101.5s state=COLLECTING_PETALS n=9 stage=2 lit=1100000 visited=0000000 free=0 P=0.31 q=low fps=10 target=50%,50% deer=[39.9,60.5,48.5,89] stars=[-9.6,-8.6,46.2,12.4] camD=15.2
+t=102.2s state=BUILDING_PATH n=9 stage=2 lit=1100000 visited=0000000 free=0 P=0.31 q=low fps=10 target=50%,50% deer=[39.9,60.5,48.5,89] stars=[-9.6,-8.6,46.2,12.4] camD=15.2
+t=104.2s state=RUNNING n=9 stage=2 lit=1110000 visited=0000000 free=0 P=0.31 q=low fps=10 target=48.2%,57.1% deer=[38.4,68.1,46.6,95] stars=[-9.8,-7.5,45.8,13.4] camD=18.5
+  viewport rotated to 768x1024 (n=9)
+t=108.5s state=WAITING_FOR_TAP n=9 stage=2 lit=1110000 visited=0000000 free=0 P=0.53 q=low fps=10 target=50.1%,49.7% deer=[33.9,60.4,48.7,85.7] stars=[-42,3.9,44.6,21.8] camD=14.5
+t=112.3s state=COLLECTING_PETALS n=10 stage=2 lit=1110000 visited=0000000 free=0 P=0.53 q=low fps=10 target=50%,50% deer=[32.4,61.5,48.4,89] stars=[-42.1,3.5,44.8,21.5] camD=14.1
+t=112.8s state=BUILDING_PATH n=10 stage=2 lit=1110000 visited=0000000 free=0 P=0.53 q=low fps=10 target=50%,50% deer=[32.4,61.5,48.4,89] stars=[-42.1,3.5,44.8,21.5] camD=14.1
+t=114.6s state=RUNNING n=10 stage=2 lit=1110000 visited=0000000 free=0 P=0.53 q=low fps=10 target=48.2%,56.7% deer=[29.5,68.7,45.5,95.1] stars=[-36.8,4.8,48.1,22.4] camD=17.1
+  viewport rotated back to 1024x768 (n=10)
+t=120.0s state=WAITING_FOR_TAP n=10 stage=2 lit=1110000 visited=0000000 free=0 P=0.75 q=low fps=10 target=50.1%,49.7% deer=[40.8,60.5,49.3,85.8] stars=[3,0.9,57.2,21.1] camD=16
+t=125.2s state=COLLECTING_PETALS n=11 stage=2 lit=1110000 visited=0000000 free=0 P=0.75 q=low fps=10 target=50%,50% deer=[40,61.6,49.1,89] stars=[2.9,0.5,57.4,20.8] camD=15.6
+t=126.1s state=BUILDING_PATH n=11 stage=2 lit=1110000 visited=0000000 free=0 P=0.75 q=low fps=10 target=50%,50% deer=[40,61.6,49.1,89] stars=[2.9,0.5,57.4,20.8] camD=15.6
+t=128.5s state=RUNNING n=11 stage=2 lit=1110000 visited=0000000 free=0 P=0.75 q=low fps=10 target=48.5%,56% deer=[38.2,68,47.2,94.4] stars=[4.1,1.4,58.1,21.6] camD=18.7
+t=133.8s state=WAITING_FOR_TAP n=11 stage=2 lit=1110000 visited=0000000 free=0 P=0.92 q=low fps=10 target=50.1%,49.7% deer=[39.9,57.7,48.7,85.4] stars=[5.6,2,61,23] camD=15
+t=138.7s state=COLLECTING_PETALS n=12 stage=2 lit=1110000 visited=0000000 free=0 P=0.92 q=low fps=10 target=50%,50% deer=[38.9,58.7,48.4,89] stars=[5.5,1.7,61,22.8] camD=14.6
+t=139.4s state=BUILDING_PATH n=12 stage=2 lit=1110000 visited=0000000 free=0 P=0.92 q=low fps=10 target=50%,50% deer=[38.9,58.7,48.4,89] stars=[5.5,1.7,61,22.8] camD=14.6
+t=141.6s state=RUNNING n=12 stage=2 lit=1111000 visited=0000000 free=0 P=0.92 q=low fps=10 target=48.4%,55.5% deer=[36.7,64.9,46.3,94.6] stars=[6.6,2.4,61.8,23.5] camD=17.4
+t=145.7s state=WAITING_FOR_TAP n=12 stage=3 lit=1111000 visited=0000000 free=0 P=1 q=low fps=10 target=50%,49.8% deer=[39.1,58.1,49.5,86.4] stars=[14.8,1,70.6,23.3] camD=14.9
+t=149.2s state=COLLECTING_PETALS n=13 stage=3 lit=1111000 visited=0000000 free=0 P=1 q=low fps=10 target=50%,50% deer=[38.3,58.9,49.4,89] stars=[15,0.7,70.9,23] camD=14.7
+t=149.8s state=BUILDING_PATH n=13 stage=3 lit=1111000 visited=0000000 free=0 P=1 q=low fps=10 target=50%,50% deer=[38.3,58.9,49.4,89] stars=[15,0.7,70.9,23] camD=14.7
+t=151.3s state=RUNNING n=13 stage=3 lit=1111000 visited=0000000 free=0 P=1 q=low fps=10 target=48.3%,61% deer=[35.9,70.9,46.5,98.4] stars=[19.1,2.2,74.2,24.4] camD=19.9
+t=155.2s state=WAITING_FOR_TAP n=13 stage=3 lit=1111000 visited=0000000 free=0 P=1.05 q=low fps=10 target=50.1%,49.5% deer=[41.8,59.2,49.4,81.8] stars=[26.6,-0.9,84.6,23.5] camD=17
+  shot mid
+t=159.9s state=COLLECTING_PETALS n=14 stage=3 lit=1111000 visited=0000000 free=0 P=1.05 q=low fps=10 target=50%,50% deer=[39.9,61.5,49.2,89] stars=[26.7,-1.7,85.4,23.1] camD=15.6
+t=160.3s state=BUILDING_PATH n=14 stage=3 lit=1111000 visited=0000000 free=0 P=1.05 q=low fps=10 target=50%,50% deer=[39.9,61.5,49.2,89] stars=[26.7,-1.7,85.4,23.1] camD=15.6
+t=161.6s state=RUNNING n=14 stage=3 lit=1111100 visited=0000000 free=0 P=1.05 q=low fps=10 target=46.5%,60.9% deer=[38.3,72.9,46,97.8] stars=[22.3,0.6,80.2,24.5] camD=21
+t=165.4s state=WAITING_FOR_TAP n=14 stage=3 lit=1111100 visited=0000000 free=0 P=1.19 q=low fps=10 target=50.3%,49.5% deer=[43.1,59.9,48.4,81.8] stars=[-2.5,-0.2,60.9,23.1] camD=17.3
+t=168.7s state=COLLECTING_PETALS n=15 stage=3 lit=1111100 visited=0000000 free=0 P=1.19 q=low fps=10 target=50%,50% deer=[41.3,62.4,48,89] stars=[-3.8,-1,60.6,22.6] camD=15.9
+t=169.1s state=BUILDING_PATH n=15 stage=3 lit=1111100 visited=0000000 free=0 P=1.19 q=low fps=10 target=50%,50% deer=[41.3,62.4,48,89] stars=[-3.8,-1,60.6,22.6] camD=15.9
+t=170.6s state=RUNNING n=15 stage=3 lit=1111100 visited=0000000 free=0 P=1.19 q=low fps=10 target=45.3%,60.5% deer=[39.9,73.3,44.7,97.5] stars=[-16.7,0.1,51.2,24.1] camD=21.1
+t=174.0s state=WAITING_FOR_TAP n=15 stage=3 lit=1111100 visited=0000000 free=0 P=1.39 q=low fps=10 target=50.2%,49.5% deer=[42.8,59.4,48.5,81.6] stars=[-37.6,-2.9,31.3,19.1] camD=17.1
+t=176.7s state=COLLECTING_PETALS n=16 stage=3 lit=1111100 visited=0000000 free=0 P=1.39 q=low fps=10 target=50%,50% deer=[41,61.8,48,89] stars=[-40.5,-4.3,30.7,18.4] camD=15.7
+t=177.1s state=BUILDING_PATH n=16 stage=3 lit=1111100 visited=0000000 free=0 P=1.39 q=low fps=10 target=50%,50% deer=[41,61.8,48,89] stars=[-40.5,-4.3,30.7,18.4] camD=15.7
+t=178.3s state=RUNNING n=16 stage=3 lit=1111110 visited=0000000 free=0 P=1.39 q=low fps=10 target=46.7%,60.4% deer=[38.9,72.8,45,97.6] stars=[-45.1,-1.9,27.5,20.6] camD=20.9
+t=181.3s state=WAITING_FOR_TAP n=16 stage=3 lit=1111110 visited=0000000 free=0 P=1.61 q=low fps=10 target=50%,49.5% deer=[41.7,59.2,49.6,81.8] stars=[16.3,10.5,35,15.4] camD=17
+t=183.8s state=COLLECTING_PETALS n=17 stage=3 lit=1111110 visited=0000000 free=0 P=1.61 q=low fps=10 target=50%,50% deer=[39.8,61.5,49.3,89] stars=[15.3,9,35,14.3] camD=15.6
+t=184.2s state=BUILDING_PATH n=17 stage=3 lit=1111110 visited=0000000 free=0 P=1.61 q=low fps=10 target=50%,50% deer=[39.8,61.5,49.3,89] stars=[15.3,9,35,14.3] camD=15.6
+t=185.4s state=RUNNING n=17 stage=3 lit=1111110 visited=0000000 free=0 P=1.61 q=low fps=10 target=49.1%,60.6% deer=[37.3,72.5,46.9,97.7] stars=[21.7,14,40.7,18.2] camD=20.8
+t=188.5s state=WAITING_FOR_TAP n=17 stage=3 lit=1111110 visited=0000000 free=0 P=1.81 q=low fps=10 target=49.9%,49.5% deer=[41.3,59.1,50,81.8] stars=[45.3,18.3,63.2,23.2] camD=17
+t=190.9s state=COLLECTING_PETALS n=18 stage=3 lit=1111110 visited=0000000 free=0 P=1.81 q=low fps=10 target=50%,50% deer=[39.4,61.4,49.8,89] stars=[45.6,17,64.3,21.6] camD=15.6
+t=191.3s state=BUILDING_PATH n=18 stage=3 lit=1111110 visited=0000000 free=0 P=1.81 q=low fps=10 target=50%,50% deer=[39.4,61.4,49.8,89] stars=[45.6,17,64.3,21.6] camD=15.6
+t=192.5s state=RUNNING n=18 stage=3 lit=1111111 visited=0000000 free=0 P=1.81 q=low fps=10 target=49.1%,59.5% deer=[36.5,71.4,47.2,97.3] stars=[50,20.7,69.1,27.5] camD=20.4
+t=195.4s state=WAITING_FOR_TAP n=18 stage=4 lit=1111111 visited=0000000 free=0 P=1.95 q=low fps=10 target=50.3%,49.7% deer=[41.4,56.2,48.1,81.5] stars=[51.9,20.7,77.4,34.6] camD=15.6
+t=197.8s state=COLLECTING_PETALS n=19 stage=4 lit=1111111 visited=0000000 free=0 P=1.95 q=low fps=10 target=50%,50% deer=[39.7,58.7,47.7,89.1] stars=[51.6,16.1,78.1,32.1] camD=14.7
+t=198.2s state=BUILDING_PATH n=19 stage=4 lit=1111111 visited=0000000 free=0 P=1.95 q=low fps=10 target=50%,50% deer=[39.7,58.7,47.7,89] stars=[51.6,16,78.1,32.1] camD=14.7
+t=199.5s state=RUNNING n=19 stage=4 lit=1111111 visited=0000000 free=0 P=1.95 q=low fps=10 target=48%,56.9% deer=[36.8,66.6,45.1,95.9] stars=[51.3,19,78,37.7] camD=18.4
+t=202.4s state=WAITING_FOR_TAP n=19 stage=4 lit=1111111 visited=1000000 free=0 P=2 q=low fps=10 target=50%,49.7% deer=[38.4,55.8,50,85.2] stars=[47.2,18.1,95.9,53.2] camD=14.6
+t=204.9s state=COLLECTING_PETALS n=20 stage=4 lit=1111111 visited=1000000 free=0 P=2 q=low fps=10 target=50%,50% deer=[37.1,56.8,49.8,89] stars=[46.8,17.4,97.4,54] camD=14.2
+t=205.3s state=BUILDING_PATH n=20 stage=4 lit=1111111 visited=1000000 free=0 P=2 q=low fps=10 target=50%,50% deer=[37.1,56.8,49.8,89] stars=[46.8,17.4,97.4,54] camD=14.2
+t=206.4s state=RUNNING n=20 stage=4 lit=1111111 visited=1000000 free=0 P=2 q=low fps=10 target=46.7%,56.9% deer=[35,65,46.7,96] stars=[43.8,21.1,91.8,62.5] camD=17.7
+t=209.0s state=WAITING_FOR_TAP n=20 stage=4 lit=1111111 visited=1100000 free=0 P=2 q=low fps=10 target=50.4%,49.5% deer=[41,55.8,48.2,84.5] stars=[44.3,21.7,125.3,251.8] camD=14.6
+  shot stars
+t=213.1s state=COLLECTING_PETALS n=21 stage=4 lit=1111111 visited=1100000 free=0 P=2 q=low fps=10 target=50%,50% deer=[40.2,57,47.6,89] stars=[43.5,20.9,182.2,403.2] camD=14.2
+t=213.6s state=BUILDING_PATH n=21 stage=4 lit=1111111 visited=1100000 free=0 P=2 q=low fps=10 target=50%,50% deer=[40.2,57,47.6,89] stars=[43.5,20.9,182.2,403.2] camD=14.2
+t=214.8s state=RUNNING n=21 stage=4 lit=1111111 visited=1100000 free=0 P=2 q=low fps=10 target=47.4%,54.8% deer=[38.2,62.7,45.8,93.9] stars=[41.5,23.7,142.1,317] camD=16.6
+t=216.9s state=WAITING_FOR_TAP n=21 stage=4 lit=1111111 visited=1110000 free=0 P=2 q=low fps=10 target=50.1%,49.6% deer=[37.9,56.4,50,87.2] stars=[14.3,-112.9,82.1,117.1] camD=14.3
+t=219.7s state=COLLECTING_PETALS n=22 stage=4 lit=1111111 visited=1110000 free=0 P=2 q=low fps=10 target=50%,50% deer=[37.3,57.1,49.8,89] stars=[11.3,-106.2,82.6,123] camD=14.3
+t=220.1s state=BUILDING_PATH n=22 stage=4 lit=1111111 visited=1110000 free=0 P=2 q=low fps=10 target=50%,50% deer=[37.3,57.1,49.8,89] stars=[11.3,-106.2,82.6,123] camD=14.3
+t=221.4s state=RUNNING n=22 stage=4 lit=1111111 visited=1110000 free=0 P=2 q=low fps=10 target=45%,53.9% deer=[36.7,61.9,46.9,93.1] stars=[-30,-150.4,73.3,130.7] camD=16.3
+t=223.5s state=WAITING_FOR_TAP n=22 stage=4 lit=1111111 visited=1111000 free=0 P=2 q=low fps=10 target=51.3%,49.2% deer=[36.3,52.8,51.3,84.4] stars=[-5291.1,-3694.6,117.7,102.5] camD=13.1
+t=225.9s state=COLLECTING_PETALS n=23 stage=4 lit=1111111 visited=1111000 free=0 P=2 q=low fps=10 target=50%,50% deer=[35.1,54.3,51.1,89] stars=[-1618.7,-1077.8,129,110.8] camD=13.1
+t=226.3s state=BUILDING_PATH n=23 stage=4 lit=1111111 visited=1111000 free=0 P=2 q=low fps=10 target=50%,50% deer=[35.1,54.3,51.1,89] stars=[-1629.4,-1085.1,128.9,110.8] camD=13.1
+t=227.3s state=RUNNING n=23 stage=4 lit=1111111 visited=1111000 free=0 P=2 q=low fps=10 target=51.5%,53.8% deer=[35,58.6,48.6,92.8] stars=[-671.9,-593.6,116.6,124.5] camD=14.7
+t=229.0s state=WAITING_FOR_TAP n=23 stage=4 lit=1111111 visited=1111100 free=0 P=2 q=low fps=10 target=43.5%,49.4% deer=[28.8,56.7,52,88.7] stars=[-28.4,-490.7,578.6,74.3] camD=12.5
+t=231.8s state=COLLECTING_PETALS n=24 stage=4 lit=1111111 visited=1111100 free=0 P=2 q=low fps=10 target=50%,50% deer=[33.3,57.8,56.4,89] stars=[-19.6,-1862.3,2241.5,70.9] camD=12.9
+t=232.3s state=BUILDING_PATH n=24 stage=4 lit=1111111 visited=1111100 free=0 P=2 q=low fps=10 target=50%,50% deer=[33.3,57.8,56.4,89] stars=[-19.5,-1898.8,2283.2,70.9] camD=12.9
+t=233.5s state=RUNNING n=24 stage=4 lit=1111111 visited=1111100 free=0 P=2 q=low fps=10 target=57.1%,55.2% deer=[31.9,64.7,54.9,92.6] stars=[-380.3,-121.1,290.6,299.7] camD=14.2
+t=235.6s state=WAITING_FOR_TAP n=24 stage=4 lit=1111111 visited=1111110 free=0 P=2 q=low fps=10 target=49.5%,49.6% deer=[33.9,53.3,55.5,85.9] stars=[-288.5,37.4,51.6,99.2] camD=12.8
+t=237.8s state=COLLECTING_PETALS n=25 stage=4 lit=1111111 visited=1111110 free=0 P=2 q=low fps=10 target=50%,50% deer=[32.3,54.1,55.3,89] stars=[-272.9,37.1,51.5,94.2] camD=12.6
+t=238.1s state=BUILDING_PATH n=25 stage=4 lit=1111111 visited=1111110 free=0 P=2 q=low fps=10 target=50%,50% deer=[32.3,54.1,55.3,89] stars=[-272.8,37.1,51.5,94.2] camD=12.6
+t=239.1s state=RUNNING n=25 stage=4 lit=1111111 visited=1111110 free=0 P=2 q=low fps=10 target=51.2%,51.6% deer=[31,56.1,54.6,90.8] stars=[-212,38.3,51.1,81.4] camD=13.3
+t=240.9s state=CLIMAX n=25 stage=4 lit=1111111 visited=1111111 free=0 P=2 q=low fps=10 target=80.6%,62.2% deer=[66.6,38.9,77.2,67.7] stars=[-127.1,37,83.7,100.5] camD=17
+  shot climax
+t=248.2s state=AFTERGLOW n=25 stage=4 lit=1111111 visited=1111111 free=0 P=2 q=low fps=10 target=70%,46.3% deer=[65.1,43.3,68.1,47.9] stars=[14.5,43.1,72.7,60] camD=55.2
+  shot after
+t=251.4s state=FREE_PLAY n=25 stage=4 lit=1111111 visited=1111111 free=0 P=2 q=low fps=10 target=-109.9%,130.7% deer=[-188.4,150,-121.6,208.4] stars=[-1154.5,-5464.3,9343.5,611.6] camD=32.5
+  shot free
+target while waiting (x%,y% from top-left): x 50..50, y 50..50; off centre by >6%: 0/58
+deer bbox outside screen during play: 9/896
+climax/afterglow: seven stars + deer outside 8% margin: 0/9; star centre samples 50,50 | 50,50 | 50,50
+final: n=25 lit=1111111 visited=1111111 free=3 taps=31 states=INITIALIZING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>CLIMAX>AFTERGLOW>FREE_PLAY
+__ready=true __errors=[] consoleErrors=[] externalRequests=["https://gf-playlog.zan72122.workers.dev"]
+RESULT: PASS
+== 768x1024 http://localhost:8142/games/d12/index.html?autotest&q=low
+__ready=true after 2679ms
+t=3.0s state=WAITING_FOR_TAP n=0 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=12 target=50%,50% deer=[17.4,47.5,47.1,89] stars=[18.3,12.3,81.6,26.2] camD=10.5
+t=4.7s state=COLLECTING_PETALS n=1 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[17.4,47.5,47.1,89] stars=[18.3,12.3,81.6,26.2] camD=10.5
+t=5.3s state=BUILDING_PATH n=1 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[17.4,47.5,47.1,89] stars=[18.3,12.3,81.6,26.2] camD=10.5
+t=7.1s state=RUNNING n=1 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=47.7%,51.3% deer=[7.4,46.6,43.2,92.9] stars=[18.8,12.4,82.2,26.3] camD=11.2
+t=10.3s state=WAITING_FOR_TAP n=1 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50.2%,49.9% deer=[19.2,45.4,46.6,85.8] stars=[21.7,11.8,86.1,26.1] camD=10.3
+t=18.1s state=COLLECTING_PETALS n=2 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[15.9,45.4,46,89] stars=[21.9,11.7,86.4,26] camD=10.2
+t=18.7s state=BUILDING_PATH n=2 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[15.9,45.4,46,89] stars=[21.9,11.7,86.4,26] camD=10.2
+t=20.5s state=RUNNING n=2 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=46.7%,51.4% deer=[9,47.3,41.8,93.5] stars=[20,11.9,84.5,26.1] camD=11.3
+t=23.7s state=WAITING_FOR_TAP n=2 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50.3%,49.9% deer=[20.7,46.2,45.8,85.9] stars=[12.8,11.7,78.4,26] camD=10.4
+t=27.3s state=COLLECTING_PETALS n=3 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[17.7,46.3,45.1,89] stars=[12.7,11.6,78.4,25.8] camD=10.3
+t=27.8s state=BUILDING_PATH n=3 stage=1 lit=0000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[17.7,46.3,45.1,89] stars=[12.7,11.6,78.4,25.8] camD=10.3
+t=29.4s state=RUNNING n=3 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=46.1%,51.6% deer=[11.5,48.5,40.8,93.5] stars=[9.4,11.9,75.3,26] camD=11.4
+t=32.6s state=WAITING_FOR_TAP n=3 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50.3%,49.9% deer=[21.7,47.1,45.6,85.9] stars=[-4.2,11.7,64,25.8] camD=10.5
+  shot early
+t=38.9s state=COLLECTING_PETALS n=4 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[18.9,47.2,45,89] stars=[-4.4,11.5,63.8,25.7] camD=10.5
+t=39.4s state=BUILDING_PATH n=4 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[18.9,47.2,45,89] stars=[-4.4,11.5,63.8,25.7] camD=10.5
+t=41.2s state=RUNNING n=4 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=46.5%,51.7% deer=[13,49.5,41,93.4] stars=[-7.2,11.6,61.4,25.9] camD=11.6
+t=44.3s state=WAITING_FOR_TAP n=4 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50.3%,49.9% deer=[21.9,47.6,46.2,85.9] stars=[-18.7,10.6,53,25.6] camD=10.7
+t=48.0s state=COLLECTING_PETALS n=5 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[19,47.8,45.6,89] stars=[-18.8,10.4,53,25.5] camD=10.6
+t=48.5s state=BUILDING_PATH n=5 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[19,47.8,45.6,89] stars=[-18.8,10.4,53,25.5] camD=10.6
+t=50.3s state=RUNNING n=5 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=47.4%,51.6% deer=[13,50.1,42,93.3] stars=[-19.5,10.6,52.5,25.6] camD=11.7
+t=53.4s state=WAITING_FOR_TAP n=5 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50.2%,49.9% deer=[21.2,47.5,47.1,85.8] stars=[-21.8,10,51.7,25.4] camD=10.7
+t=57.0s state=COLLECTING_PETALS n=6 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[18.1,47.7,46.5,89] stars=[-21.7,9.8,51.9,25.2] camD=10.6
+t=57.6s state=BUILDING_PATH n=6 stage=1 lit=1000000 visited=0000000 free=0 P=0 q=low fps=10 target=50%,50% deer=[18.2,47.7,46.5,89] stars=[-21.7,9.8,51.9,25.2] camD=10.6
+t=59.1s state=RUNNING n=6 stage=1 lit=1100000 visited=0000000 free=0 P=0 q=low fps=10 target=48.1%,52.3% deer=[12.7,50.9,43.2,93.8] stars=[-20.2,10.2,53,25.5] camD=11.8
+t=62.0s state=WAITING_FOR_TAP n=6 stage=2 lit=1100000 visited=0000000 free=0 P=0.01 q=low fps=10 target=50.2%,49.8% deer=[23.9,51.1,47.7,86.6] stars=[-14.3,10.1,58.6,25.3] camD=11.3
+t=65.8s state=COLLECTING_PETALS n=7 stage=2 lit=1100000 visited=0000000 free=0 P=0.01 q=low fps=10 target=50%,50% deer=[21.9,51.5,47.2,89] stars=[-14,9.9,59,25.1] camD=11.3
+t=66.4s state=BUILDING_PATH n=7 stage=2 lit=1100000 visited=0000000 free=0 P=0.01 q=low fps=10 target=50%,50% deer=[21.9,51.5,47.2,89] stars=[-14,9.9,59,25.1] camD=11.3
+t=68.0s state=RUNNING n=7 stage=2 lit=1100000 visited=0000000 free=0 P=0.01 q=low fps=10 target=46.2%,54.4% deer=[15.3,57.6,42.1,96.4] stars=[-14.1,10.4,58.8,25.6] camD=13.6
+t=71.7s state=WAITING_FOR_TAP n=7 stage=2 lit=1100000 visited=0000000 free=0 P=0.12 q=low fps=10 target=50.2%,49.9% deer=[30,56.1,47.4,86.5] stars=[-18.3,1.9,58.6,18.3] camD=12.8
+t=75.0s state=COLLECTING_PETALS n=8 stage=2 lit=1100000 visited=0000000 free=0 P=0.12 q=low fps=10 target=50%,50% deer=[28.8,57,47.1,89] stars=[-18.7,0,58.8,16.6] camD=12.8
+t=75.5s state=BUILDING_PATH n=8 stage=2 lit=1100000 visited=0000000 free=0 P=0.12 q=low fps=10 target=50%,50% deer=[28.8,57,47.1,89] stars=[-18.7,0,58.8,16.6] camD=12.8
+t=77.1s state=RUNNING n=8 stage=2 lit=1100000 visited=0000000 free=0 P=0.12 q=low fps=10 target=45.8%,56.4% deer=[25.8,64.8,43,95.8] stars=[-22.9,0.7,55.1,17.3] camD=15.6
+t=80.9s state=WAITING_FOR_TAP n=8 stage=2 lit=1100000 visited=0000000 free=0 P=0.31 q=low fps=10 target=50.1%,49.7% deer=[33.5,59.3,47.7,85.8] stars=[-40.5,0.4,44,18.3] camD=14
+t=84.6s state=COLLECTING_PETALS n=9 stage=2 lit=1100000 visited=0000000 free=0 P=0.31 q=low fps=10 target=50%,50% deer=[31.9,60.3,47.4,89] stars=[-40.7,0,44.1,18] camD=13.7
+t=85.2s state=BUILDING_PATH n=9 stage=2 lit=1100000 visited=0000000 free=0 P=0.31 q=low fps=10 target=50%,50% deer=[31.9,60.3,47.4,89] stars=[-40.7,0,44.1,18] camD=13.7
+t=86.9s state=RUNNING n=9 stage=2 lit=1110000 visited=0000000 free=0 P=0.31 q=low fps=10 target=47%,56.8% deer=[29.2,67.8,44.1,95.4] stars=[-41,1,43.4,18.9] camD=16.7
+t=91.1s state=WAITING_FOR_TAP n=9 stage=2 lit=1110000 visited=0000000 free=0 P=0.53 q=low fps=10 target=50.1%,49.7% deer=[33.9,60.4,48.7,85.7] stars=[-41.8,4,44.5,21.8] camD=14.4
+t=95.1s state=COLLECTING_PETALS n=10 stage=2 lit=1110000 visited=0000000 free=0 P=0.53 q=low fps=10 target=50%,50% deer=[32.4,61.5,48.4,89] stars=[-41.8,3.6,44.7,21.5] camD=14.1
+t=95.7s state=BUILDING_PATH n=10 stage=2 lit=1110000 visited=0000000 free=0 P=0.53 q=low fps=10 target=50%,50% deer=[32.4,61.5,48.4,89] stars=[-41.8,3.6,44.7,21.5] camD=14.1
+t=97.7s state=RUNNING n=10 stage=2 lit=1110000 visited=0000000 free=0 P=0.53 q=low fps=10 target=48.2%,56.7% deer=[29.5,68.7,45.5,95.1] stars=[-36.5,4.9,48,22.4] camD=17.1
+t=102.3s state=WAITING_FOR_TAP n=10 stage=2 lit=1110000 visited=0000000 free=0 P=0.75 q=low fps=10 target=50.1%,49.7% deer=[33.7,60.2,48.7,85.6] stars=[-21.5,8.1,60.9,25.4] camD=14.4
+t=106.4s state=COLLECTING_PETALS n=11 stage=2 lit=1110000 visited=0000000 free=0 P=0.75 q=low fps=10 target=50%,50% deer=[32.1,61.3,48.4,89] stars=[-21.5,7.8,61.2,25.1] camD=14
+t=107.0s state=BUILDING_PATH n=11 stage=2 lit=1110000 visited=0000000 free=0 P=0.75 q=low fps=10 target=50%,50% deer=[32.1,61.3,48.4,89] stars=[-21.5,7.8,61.2,25.1] camD=14
+t=109.2s state=RUNNING n=11 stage=2 lit=1110000 visited=0000000 free=0 P=0.75 q=low fps=10 target=47.5%,55.8% deer=[28.8,67.7,45.1,94.8] stars=[-19.8,8.6,62.2,25.8] camD=16.8
+t=114.0s state=WAITING_FOR_TAP n=11 stage=2 lit=1110000 visited=0000000 free=0 P=0.92 q=low fps=10 target=50.2%,49.7% deer=[32.2,57.4,47.7,85.2] stars=[-17.4,9.1,66.6,27.1] camD=13.5
+t=118.3s state=COLLECTING_PETALS n=12 stage=2 lit=1110000 visited=0000000 free=0 P=0.92 q=low fps=10 target=50%,50% deer=[30.1,58.4,47.3,89] stars=[-17.6,8.8,66.7,26.8] camD=13.1
+t=118.9s state=BUILDING_PATH n=12 stage=2 lit=1110000 visited=0000000 free=0 P=0.92 q=low fps=10 target=50%,50% deer=[30.1,58.4,47.3,89] stars=[-17.6,8.8,66.7,26.8] camD=13.1
+t=120.8s state=RUNNING n=12 stage=2 lit=1111000 visited=0000000 free=0 P=0.92 q=low fps=10 target=47.3%,55.2% deer=[25.9,64.6,43.7,95.1] stars=[-15.9,9.5,67.8,27.4] camD=15.7
+t=124.7s state=WAITING_FOR_TAP n=12 stage=3 lit=1111000 visited=0000000 free=0 P=1 q=low fps=10 target=50.1%,49.8% deer=[30.7,57.8,49.2,86.1] stars=[-3.4,8.3,81.2,27.2] camD=13.5
+t=127.7s state=COLLECTING_PETALS n=13 stage=3 lit=1111000 visited=0000000 free=0 P=1 q=low fps=10 target=50%,50% deer=[29,58.6,48.9,89] stars=[-3.1,8,81.7,27] camD=13.2
+t=128.2s state=BUILDING_PATH n=13 stage=3 lit=1111000 visited=0000000 free=0 P=1 q=low fps=10 target=50%,50% deer=[29,58.6,48.9,89] stars=[-3.1,8,81.7,27] camD=13.2
+t=129.6s state=RUNNING n=13 stage=3 lit=1111000 visited=0000000 free=0 P=1 q=low fps=10 target=47.1%,60.5% deer=[24.5,70.6,43.9,99.1] stars=[3.1,9.3,86.7,28.3] camD=18
+t=133.0s state=WAITING_FOR_TAP n=13 stage=3 lit=1111000 visited=0000000 free=0 P=1.05 q=low fps=10 target=50.1%,49.6% deer=[35.7,58.9,49,81.4] stars=[14.5,6.6,102.7,27.4] camD=15.3
+  shot mid
+t=137.0s state=COLLECTING_PETALS n=14 stage=3 lit=1111000 visited=0000000 free=0 P=1.05 q=low fps=10 target=50%,50% deer=[32,61.2,48.6,89] stars=[14.7,5.9,103.9,27.1] camD=14
+t=137.4s state=BUILDING_PATH n=14 stage=3 lit=1111000 visited=0000000 free=0 P=1.05 q=low fps=10 target=50%,50% deer=[32,61.2,48.6,89] stars=[14.7,5.9,103.9,27.1] camD=14
+t=138.7s state=RUNNING n=14 stage=3 lit=1111100 visited=0000000 free=0 P=1.05 q=low fps=10 target=44%,60.4% deer=[28.8,72.6,43.1,98.4] stars=[7.8,7.9,95.9,28.4] camD=18.9
+t=142.1s state=WAITING_FOR_TAP n=14 stage=3 lit=1111100 visited=0000000 free=0 P=1.19 q=low fps=10 target=50.4%,49.5% deer=[37.7,59.6,47.2,81.3] stars=[-30,7.1,66.6,27.1] camD=15.5
+t=145.3s state=COLLECTING_PETALS n=15 stage=3 lit=1111100 visited=0000000 free=0 P=1.19 q=low fps=10 target=50%,50% deer=[34.4,62.1,46.5,89] stars=[-31.9,6.5,66.1,26.7] camD=14.2
+t=145.8s state=BUILDING_PATH n=15 stage=3 lit=1111100 visited=0000000 free=0 P=1.19 q=low fps=10 target=50%,50% deer=[34.4,62.1,46.5,89] stars=[-31.9,6.5,66.1,26.7] camD=14.2
+t=147.1s state=RUNNING n=15 stage=3 lit=1111100 visited=0000000 free=0 P=1.19 q=low fps=10 target=41.9%,60.1% deer=[31.7,73,40.6,98.1] stars=[-52,7.4,51.6,28] camD=19
+t=150.4s state=WAITING_FOR_TAP n=15 stage=3 lit=1111100 visited=0000000 free=0 P=1.39 q=low fps=10 target=50.3%,49.5% deer=[37.2,59.1,47.3,81.2] stars=[-85.1,4.4,21.2,23.5] camD=15.3
+t=152.9s state=COLLECTING_PETALS n=16 stage=3 lit=1111100 visited=0000000 free=0 P=1.39 q=low fps=10 target=50%,50% deer=[33.8,61.5,46.6,89] stars=[-89.3,3.2,20.3,22.9] camD=14
+t=153.3s state=BUILDING_PATH n=16 stage=3 lit=1111100 visited=0000000 free=0 P=1.39 q=low fps=10 target=50%,50% deer=[33.8,61.5,46.6,89] stars=[-89.3,3.2,20.3,22.9] camD=14
+t=154.5s state=RUNNING n=16 stage=3 lit=1111110 visited=0000000 free=0 P=1.39 q=low fps=10 target=44.3%,60% deer=[29.9,72.5,41.3,98.2] stars=[-97.3,5.2,15.3,24.8] camD=18.8
+t=157.6s state=WAITING_FOR_TAP n=16 stage=3 lit=1111110 visited=0000000 free=0 P=1.61 q=low fps=10 target=50%,49.5% deer=[35.4,58.9,49.4,81.4] stars=[-2.9,15.4,26.7,20] camD=15.3
+t=160.0s state=COLLECTING_PETALS n=17 stage=3 lit=1111110 visited=0000000 free=0 P=1.61 q=low fps=10 target=50%,50% deer=[31.7,61.2,48.8,89] stars=[-4.4,14.1,26.8,19] camD=14
+t=160.4s state=BUILDING_PATH n=17 stage=3 lit=1111110 visited=0000000 free=0 P=1.61 q=low fps=10 target=50%,50% deer=[31.7,61.2,48.8,89] stars=[-4.4,14.1,26.8,19] camD=14
+t=161.7s state=RUNNING n=17 stage=3 lit=1111110 visited=0000000 free=0 P=1.61 q=low fps=10 target=48.6%,60.2% deer=[27.1,72.2,44.7,98.3] stars=[5.4,18.5,35.5,22.3] camD=18.7
+t=164.6s state=WAITING_FOR_TAP n=17 stage=3 lit=1111110 visited=0000000 free=0 P=1.81 q=low fps=10 target=50%,49.5% deer=[34.8,58.8,50.1,81.3] stars=[42.5,22.3,70.6,26.1] camD=15.2
+t=167.0s state=COLLECTING_PETALS n=18 stage=3 lit=1111110 visited=0000000 free=0 P=1.81 q=low fps=10 target=50%,50% deer=[31,61.1,49.6,89] stars=[43,21.3,72.3,24.6] camD=14
+t=167.4s state=BUILDING_PATH n=18 stage=3 lit=1111110 visited=0000000 free=0 P=1.81 q=low fps=10 target=50%,50% deer=[31,61.1,49.6,89] stars=[43,21.3,72.3,24.6] camD=14
+t=168.4s state=RUNNING n=18 stage=3 lit=1111111 visited=0000000 free=0 P=1.81 q=low fps=10 target=48.6%,59.2% deer=[25.7,71.2,45.2,98] stars=[50,24.4,79.9,29.8] camD=18.4
+t=171.2s state=WAITING_FOR_TAP n=18 stage=4 lit=1111111 visited=0000000 free=0 P=1.95 q=low fps=10 target=50.5%,49.7% deer=[34.9,55.9,46.7,81] stars=[53.1,24.3,92.9,36] camD=14.1
+t=173.8s state=COLLECTING_PETALS n=19 stage=4 lit=1111111 visited=0000000 free=0 P=1.95 q=low fps=10 target=50%,50% deer=[31.6,58.5,46,89.1] stars=[52.5,20.3,94.1,33.6] camD=13.3
+t=174.2s state=BUILDING_PATH n=19 stage=4 lit=1111111 visited=0000000 free=0 P=1.95 q=low fps=10 target=50%,50% deer=[31.6,58.5,46,89] stars=[52.5,20.2,94.1,33.6] camD=13.3
+t=175.3s state=RUNNING n=19 stage=4 lit=1111111 visited=0000000 free=0 P=1.95 q=low fps=10 target=46.7%,56.6% deer=[26.1,66.4,41.5,96.5] stars=[52.1,22.8,94,38.7] camD=16.6
+t=178.1s state=WAITING_FOR_TAP n=19 stage=4 lit=1111111 visited=1000000 free=0 P=2 q=low fps=10 target=50.1%,49.7% deer=[29.5,55.6,50,84.9] stars=[45.2,21.9,122.8,53.1] camD=13.2
+t=180.7s state=COLLECTING_PETALS n=20 stage=4 lit=1111111 visited=1000000 free=0 P=2 q=low fps=10 target=50%,50% deer=[27,56.6,49.6,89] stars=[44.5,21.2,125.2,53.9] camD=12.8
+t=181.1s state=BUILDING_PATH n=20 stage=4 lit=1111111 visited=1000000 free=0 P=2 q=low fps=10 target=50%,50% deer=[27,56.6,49.6,89] stars=[44.5,21.2,125.2,53.9] camD=12.8
+t=182.2s state=RUNNING n=20 stage=4 lit=1111111 visited=1000000 free=0 P=2 q=low fps=10 target=44.4%,56.6% deer=[22.7,64.7,44.2,96.6] stars=[39.1,24.4,116.7,62.3] camD=16
+t=184.5s state=WAITING_FOR_TAP n=20 stage=4 lit=1111111 visited=1100000 free=0 P=2 q=low fps=10 target=50.6%,49.6% deer=[34.4,55.6,46.6,84.1] stars=[40.1,24.9,365.1,527] camD=13.2
+  shot stars
+t=188.5s state=COLLECTING_PETALS n=21 stage=4 lit=1111111 visited=1100000 free=0 P=2 q=low fps=10 target=50%,50% deer=[33,56.8,45.8,89] stars=[-3833.3,-5787.2,105.5,53.8] camD=12.8
+t=188.9s state=BUILDING_PATH n=21 stage=4 lit=1111111 visited=1100000 free=0 P=2 q=low fps=10 target=50%,50% deer=[33,56.8,45.8,89] stars=[-3836.1,-5791.4,105.5,53.8] camD=12.8
+t=190.0s state=RUNNING n=21 stage=4 lit=1111111 visited=1100000 free=0 P=2 q=low fps=10 target=45.5%,54.6% deer=[29.4,62.5,42.4,94.3] stars=[35,26.6,692.7,1095.3] camD=15
+t=192.2s state=WAITING_FOR_TAP n=21 stage=4 lit=1111111 visited=1110000 free=0 P=2 q=low fps=10 target=50.1%,49.6% deer=[28.6,56.2,50,87] stars=[-26.1,-55.7,102.2,130.5] camD=12.9
+t=194.8s state=COLLECTING_PETALS n=22 stage=4 lit=1111111 visited=1110000 free=0 P=2 q=low fps=10 target=50%,50% deer=[27.3,56.9,49.6,89] stars=[-34.6,-52.9,103.1,139.8] camD=12.9
+t=195.2s state=BUILDING_PATH n=22 stage=4 lit=1111111 visited=1110000 free=0 P=2 q=low fps=10 target=50%,50% deer=[27.3,56.9,49.6,89] stars=[-34.6,-52.9,103.1,139.7] camD=12.9
+t=196.5s state=RUNNING n=22 stage=4 lit=1111111 visited=1110000 free=0 P=2 q=low fps=10 target=41.4%,53.7% deer=[26,61.7,44.6,93.5] stars=[-37.3,-72.6,87.9,150.3] camD=14.8
+t=198.8s state=WAITING_FOR_TAP n=22 stage=4 lit=1111111 visited=1111000 free=0 P=2 q=low fps=10 target=52%,49.2% deer=[26,52.7,51.8,84.1] stars=[-717.4,-253.2,186.6,110] camD=11.9
+t=201.2s state=COLLECTING_PETALS n=23 stage=4 lit=1111111 visited=1111000 free=0 P=2 q=low fps=10 target=50%,50% deer=[24.2,54.2,52,89] stars=[-624.8,-206.5,215.5,121.7] camD=11.8
+t=201.5s state=BUILDING_PATH n=23 stage=4 lit=1111111 visited=1111000 free=0 P=2 q=low fps=10 target=50%,50% deer=[24.2,54.2,52,89] stars=[-625.8,-206.9,215.4,121.6] camD=11.8
+t=202.6s state=RUNNING n=23 stage=4 lit=1111111 visited=1111000 free=0 P=2 q=low fps=10 target=52.6%,53.6% deer=[23.9,58.4,47.6,93.2] stars=[-386.6,-168.7,195.2,141.2] camD=13.3
+t=204.4s state=WAITING_FOR_TAP n=23 stage=4 lit=1111111 visited=1111100 free=0 P=2 q=low fps=10 target=40.4%,49.4% deer=[14.7,56.5,55.5,88.5] stars=[-94,-140.7,375.3,75.6] camD=11.2
+t=207.9s state=COLLECTING_PETALS n=24 stage=4 lit=1111111 visited=1111100 free=0 P=2 q=low fps=10 target=50%,50% deer=[20.3,57.7,61.4,89] stars=[-78.9,-210.8,581.4,71.8] camD=11.6
+t=208.3s state=BUILDING_PATH n=24 stage=4 lit=1111111 visited=1111100 free=0 P=2 q=low fps=10 target=50%,50% deer=[20.4,57.7,61.4,89] stars=[-78.8,-211.6,582.8,71.8] camD=11.6
+t=209.8s state=RUNNING n=24 stage=4 lit=1111111 visited=1111100 free=0 P=2 q=low fps=10 target=62.2%,55% deer=[17.4,64.7,59,92.8] stars=[-2588.8,-59.9,325.4,909.9] camD=12.8
+t=211.9s state=WAITING_FOR_TAP n=24 stage=4 lit=1111111 visited=1111110 free=0 P=2 q=low fps=10 target=49.3%,49.6% deer=[21.9,53.2,59.9,85.7] stars=[-544.1,38.4,53.1,98.6] camD=11.5
+t=214.1s state=COLLECTING_PETALS n=25 stage=4 lit=1111111 visited=1111110 free=0 P=2 q=low fps=10 target=50%,50% deer=[18.5,54,59.3,89] stars=[-508.4,38.2,52.6,93] camD=11.4
+t=214.4s state=BUILDING_PATH n=25 stage=4 lit=1111111 visited=1111110 free=0 P=2 q=low fps=10 target=50%,50% deer=[18.5,54,59.3,89] stars=[-508.3,38.2,52.6,93] camD=11.4
+t=215.4s state=RUNNING n=25 stage=4 lit=1111111 visited=1111110 free=0 P=2 q=low fps=10 target=52.1%,51.5% deer=[16.1,56,58.2,91] stars=[-392.6,39.2,51.9,81.1] camD=12.1
+t=217.2s state=CLIMAX n=25 stage=4 lit=1111111 visited=1111111 free=0 P=2 q=low fps=10 target=105.7%,60.8% deer=[81.6,41.8,98.8,65.3] stars=[-205.2,40.3,117.4,89.9] camD=21.1
+t=222.9s state=AFTERGLOW n=25 stage=4 lit=1111111 visited=1111111 free=0 P=2 q=low fps=10 target=71.4%,47.8% deer=[66.4,45.9,69.5,48.8] stars=[14.4,45.8,73.7,55.6] camD=80.1
+  shot after
+t=226.5s state=FREE_PLAY n=25 stage=4 lit=1111111 visited=1111111 free=0 P=2 q=low fps=10 target=-209.2%,122.5% deer=[-296.2,135.2,-224.1,169.6] stars=[-1407.7,135.3,-243.8,515.1] camD=42.1
+  shot free
+target while waiting (x%,y% from top-left): x 50..50, y 50..50; off centre by >6%: 0/59
+deer bbox outside screen during play: 14/897
+climax/afterglow: seven stars + deer outside 8% margin: 0/10; star centre samples 50,50 | 50,50 | 50,50
+final: n=25 lit=1111111 visited=1111111 free=3 taps=31 states=INITIALIZING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>WAITING_FOR_TAP>COLLECTING_PETALS>BUILDING_PATH>RUNNING>CLIMAX>AFTERGLOW>FREE_PLAY
+__ready=true __errors=[] consoleErrors=[] externalRequests=["https://gf-playlog.zan72122.workers.dev"]
+RESULT: PASS
