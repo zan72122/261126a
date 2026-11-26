@@ -31,3 +31,7 @@
 - 公開確認 18:12: index と D01〜D08 は全て 200、noindex あり、禁止語なし。
 - 21:04 ユーザーが Mac で Claude に再ログイン（auth status: loggedIn=true, claude.ai）を確認。
 - 21:05 クラウド起動 D09: session_017tygc4agk3VkYNb7i7Gpfd / D10: session_017tygc4B6B21naar9jcYu9C。
+- 19:22 別のbotが同じリポジトリに g1〜g3（Hydrogen batch1）を公開していた。そのまま残し、一覧の並べ方だけ対応（D は D 順、その後に g）。
+- 21:44 D10 のブランチ（claude/implement-d10-game-1jizzo）に途中の push、D09 にメモの push（サムネイル未着のため作業継続中と判断し、まだマージしない）。
+- 21:45 誤って D11 を起動（D09 完了と判断したため）: session_017tygc5uXqwytdBRcuuWtBa。実行中は D09・D10・D11 の3本。D09/D10 が終わるまで次は起動しない。
+- 21:55 D09 完了（約50分）→ main マージ・公開（自動チェック ok）。実行中: D10, D11（2本）。D12 は次に空きが出たら起動。
