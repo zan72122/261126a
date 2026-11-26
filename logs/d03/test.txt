@@ -1,0 +1,263 @@
+# D03 autotest log (2026-11-26T05:42:25Z) — headless Chromium (Playwright, chromium-headless-shell) + SwiftShader (--use-angle=swiftshader --enable-unsafe-swiftshader), python3 -m http.server (root site/)
+# gf-playlog の外部送信のみテスト側で 204 を返す（ゲーム本体は外部アクセスなし）
+== 1024x768 http://localhost:8123/games/d03/index.html?autotest&q=low
+   [d03] TITLE_IDLE call=0 t=0.0
+   [d03] TRAVEL call=0 t=1.6
+__ready=true after 2699ms
+t=2s state=TRAVEL call=0 orb=null head=[489,390,true] ring=null
+   [d03] TARGET_READY call=0 t=9.4
+t=9.7s state=TARGET_READY call=0 orb=[512,384,0,0] head=[676,419,true] ring=null
+   [d03] ANIMAL_JOIN call=1 t=11.1
+t=11.1s state=ANIMAL_JOIN call=1 orb=[395,387,11.4,0.4] head=[581,418,true] ring=null
+   [d03] TRAVEL call=1 t=13.8
+t=13.8s state=TRAVEL call=1 orb=null head=[589,405,true] ring=null
+   [d03] TARGET_READY call=1 t=25.7
+t=26.1s state=TARGET_READY call=1 orb=[512,384,0,0] head=[498,425,true] ring=null
+   [d03] ANIMAL_JOIN call=2 t=27.5
+t=27.5s state=ANIMAL_JOIN call=2 orb=[610,379,9.6,0.7] head=[575,421,true] ring=null
+   [d03] TRAVEL call=2 t=31.1
+t=31.1s state=TRAVEL call=2 orb=null head=[566,400,true] ring=null
+   [d03] TARGET_READY call=2 t=42.4
+t=42.7s state=TARGET_READY call=2 orb=[512,384,0,0] head=[618,458,true] ring=null
+   [d03] ANIMAL_JOIN call=3 t=44.2
+t=44.5s state=ANIMAL_JOIN call=3 orb=null head=[511,429,true] ring=null
+   [d03] TRAVEL call=3 t=48.7
+t=48.7s state=TRAVEL call=3 orb=null head=[503,398,true] ring=null
+   [d03] TARGET_READY call=3 t=59.0
+t=59.3s state=TARGET_READY call=3 orb=[512,384,0,0] head=[236,380,true] ring=null
+   [d03] ANIMAL_JOIN call=4 t=60.7
+t=60.7s state=ANIMAL_JOIN call=4 orb=[683,457,16.7,9.6] head=[394,438,true] ring=null
+   [d03] TRAVEL call=4 t=64.1
+t=64.1s state=TRAVEL call=4 orb=null head=[384,466,true] ring=null
+   [d03] TARGET_READY call=4 t=75.6
+t=75.9s state=TARGET_READY call=4 orb=[512,384,0,0] head=[676,425,true] ring=null
+   [d03] ANIMAL_JOIN call=5 t=77.3
+t=77.3s state=ANIMAL_JOIN call=5 orb=[402,385,10.8,0.2] head=[587,422,true] ring=null
+   [d03] TRAVEL call=5 t=80.2
+t=80.6s state=TRAVEL call=5 orb=null head=[602,420,true] ring=null
+   [d03] TARGET_READY call=5 t=92.1
+t=92.4s state=TARGET_READY call=5 orb=[512,384,0,0] head=[513,383,true] ring=null
+   [d03] ANIMAL_JOIN call=6 t=94.0
+t=94.3s state=ANIMAL_JOIN call=6 orb=null head=[702,468,true] ring=null
+   [d03] STAGE_TRANSITION call=6 t=97.3
+t=97.6s state=STAGE_TRANSITION call=6 orb=null head=[601,445,true] ring=null
+   [d03] TRAVEL call=6 t=102.8
+t=102.8s state=TRAVEL call=6 orb=null head=[554,422,true] ring=null
+   [d03] TARGET_READY call=6 t=107.2
+t=107.6s state=TARGET_READY call=6 orb=[512,384,0,0] head=[638,432,true] ring=null
+   [d03] ANIMAL_JOIN call=7 t=109.2
+t=109.5s state=ANIMAL_JOIN call=7 orb=null head=[527,425,true] ring=null
+   [d03] TRAVEL call=7 t=112.3
+t=112.3s state=TRAVEL call=7 orb=null head=[516,397,true] ring=null
+   [d03] TARGET_READY call=7 t=122.1
+t=122.1s state=TARGET_READY call=7 orb=null head=[265,471,true] ring=null
+   [d03] ANIMAL_JOIN call=8 t=123.8
+t=124.1s state=ANIMAL_JOIN call=8 orb=null head=[392,434,true] ring=null
+   [d03] TRAVEL call=8 t=127.5
+t=127.5s state=TRAVEL call=8 orb=null head=[385,408,true] ring=null
+   [d03] TARGET_READY call=8 t=137.2
+t=137.2s state=TARGET_READY call=8 orb=null head=[621,394,true] ring=null
+   [d03] ANIMAL_JOIN call=9 t=138.9
+t=139.3s state=ANIMAL_JOIN call=9 orb=null head=[424,472,true] ring=null
+   [d03] TRAVEL call=9 t=142.1
+t=142.5s state=TRAVEL call=9 orb=null head=[500,444,true] ring=null
+   [d03] TARGET_READY call=9 t=152.4
+t=152.7s state=TARGET_READY call=9 orb=[512,384,0,0] head=[346,443,true] ring=null
+   [d03] ANIMAL_JOIN call=10 t=154.3
+t=154.6s state=ANIMAL_JOIN call=10 orb=null head=[461,433,true] ring=null
+   [d03] TRAVEL call=10 t=157.3
+t=157.3s state=TRAVEL call=10 orb=null head=[428,404,true] ring=null
+   [d03] TARGET_READY call=10 t=167.5
+t=167.5s state=TARGET_READY call=10 orb=null head=[671,506,true] ring=null
+   [d03] ANIMAL_JOIN call=11 t=169.2
+t=169.5s state=ANIMAL_JOIN call=11 orb=null head=[549,451,true] ring=null
+   [d03] TRAVEL call=11 t=172.8
+t=172.8s state=TRAVEL call=11 orb=null head=[605,406,true] ring=null
+   [d03] TARGET_READY call=11 t=182.3
+t=182.3s state=TARGET_READY call=11 orb=null head=[463,425,true] ring=null
+   [d03] ANIMAL_JOIN call=12 t=184.1
+t=184.1s state=ANIMAL_JOIN call=12 orb=[649,413,13.4,3.7] head=[587,453,true] ring=null
+   [d03] STAGE_TRANSITION call=12 t=187.6
+t=188s state=STAGE_TRANSITION call=12 orb=null head=[577,441,true] ring=null
+   [d03] TRAVEL call=12 t=193.0
+t=193s state=TRAVEL call=12 orb=null head=[566,420,true] ring=null
+   [d03] TARGET_READY call=12 t=196.8
+t=197.1s state=TARGET_READY call=12 orb=[512,384,0,0] head=[678,472,true] ring=null
+   [d03] ANIMAL_JOIN call=13 t=198.7
+t=199.1s state=ANIMAL_JOIN call=13 orb=null head=[562,435,true] ring=null
+   [d03] TRAVEL call=13 t=202.4
+t=202.4s state=TRAVEL call=13 orb=null head=[580,398,true] ring=null
+   [d03] TARGET_READY call=13 t=210.7
+t=210.7s state=TARGET_READY call=13 orb=null head=[392,444,true] ring=null
+   [d03] ANIMAL_JOIN call=14 t=212.3
+t=212.7s state=ANIMAL_JOIN call=14 orb=null head=[503,433,true] ring=null
+   [d03] TRAVEL call=14 t=215.3
+t=215.3s state=TRAVEL call=14 orb=null head=[501,403,true] ring=null
+   [d03] TARGET_READY call=14 t=224.5
+t=224.5s state=TARGET_READY call=14 orb=null head=[643,400,true] ring=null
+   [d03] ANIMAL_JOIN call=15 t=226.2
+t=226.6s state=ANIMAL_JOIN call=15 orb=null head=[439,478,true] ring=null
+   [d03] TRAVEL call=15 t=229.5
+t=229.8s state=TRAVEL call=15 orb=null head=[486,442,true] ring=null
+   [d03] TARGET_READY call=15 t=238.5
+t=238.5s state=TARGET_READY call=15 orb=null head=[282,502,true] ring=null
+   [d03] ANIMAL_JOIN call=16 t=240.3
+t=240.3s state=ANIMAL_JOIN call=16 orb=[612,355,9.8,3.8] head=[374,469,true] ring=null
+   [d03] TRAVEL call=16 t=243.7
+t=244s state=TRAVEL call=16 orb=null head=[391,409,true] ring=null
+   [d03] TARGET_READY call=16 t=252.6
+t=252.9s state=TARGET_READY call=16 orb=[512,384,0,0] head=[609,435,true] ring=null
+   [d03] ANIMAL_JOIN call=17 t=254.4
+t=254.4s state=ANIMAL_JOIN call=17 orb=[316,424,19.1,5.2] head=[449,472,true] ring=null
+   [d03] TRAVEL call=17 t=257.7
+t=258s state=TRAVEL call=17 orb=null head=[506,437,true] ring=null
+   [d03] TARGET_READY call=17 t=266.5
+t=266.9s state=TARGET_READY call=17 orb=[512,384,0,0] head=[391,580,true] ring=null
+   [d03] ANIMAL_JOIN call=18 t=268.3
+t=268.6s state=ANIMAL_JOIN call=18 orb=null head=[505,494,true] ring=null
+   [d03] TRAVEL call=18 t=273.6
+t=274s state=TRAVEL call=18 orb=null head=[628,422,true] ring=null
+   [d03] CLIMAX call=18 t=306.4
+t=306.9s state=CLIMAX call=18 orb=null head=[571,664,true] ring=null
+   [d03] AFTERGLOW call=18 t=330.6
+t=330.6s state=AFTERGLOW call=18 orb=null head=[413,610,true] ring=[512,384,323,true]
+   [d03] TITLE_IDLE call=0 t=343.5
+t=343.9s state=TITLE_IDLE call=0 orb=[512,384,0,0] head=[650,299,true] ring=null
+   [d03] autotest done
+result: ready=true errors=[] consoleErrors=[] autotest={"climax":true,"loops":1} done=true quality=low
+checks: maxOrbOffsetFromCenter=0% ringSamples=50 ringFullyInFrame=true giraffeHeadOffscreenSamples=0/521 externalRequests=["https://gf-playlog.zan72122.workers.dev/log","https://gf-playlog.zan72122.workers.dev/log","https://gf-playlog.zan72122.workers.dev/log","https://gf-playlog.zan72122.workers.dev/log"]
+elapsed=195s  PASS
+
+== 768x1024 http://localhost:8123/games/d03/index.html?autotest&q=low
+   [d03] TITLE_IDLE call=0 t=0.0
+   [d03] TRAVEL call=0 t=1.6
+__ready=true after 2545ms
+t=2s state=TRAVEL call=0 orb=null head=[350,516,true] ring=null
+   [d03] TARGET_READY call=0 t=9.2
+t=9.2s state=TARGET_READY call=0 orb=null head=[515,549,true] ring=null
+   [d03] ANIMAL_JOIN call=1 t=10.9
+t=11.2s state=ANIMAL_JOIN call=1 orb=null head=[401,555,true] ring=null
+   [d03] TRAVEL call=1 t=13.7
+t=13.7s state=TRAVEL call=1 orb=null head=[463,538,true] ring=null
+   [d03] TARGET_READY call=1 t=25.8
+t=26.1s state=TARGET_READY call=1 orb=[384,512,0,0] head=[414,557,true] ring=null
+   [d03] ANIMAL_JOIN call=2 t=27.7
+t=28s state=ANIMAL_JOIN call=2 orb=null head=[523,558,true] ring=null
+   [d03] TRAVEL call=2 t=30.9
+t=30.9s state=TRAVEL call=2 orb=null head=[474,535,true] ring=null
+   [d03] TARGET_READY call=2 t=42.5
+t=42.8s state=TARGET_READY call=2 orb=[384,512,0,0] head=[456,598,true] ring=null
+   [d03] ANIMAL_JOIN call=3 t=44.3
+t=44.6s state=ANIMAL_JOIN call=3 orb=null head=[347,566,true] ring=null
+   [d03] TRAVEL call=3 t=48.6
+t=49s state=TRAVEL call=3 orb=null head=[338,545,true] ring=null
+   [d03] TARGET_READY call=3 t=59.3
+t=59.3s state=TARGET_READY call=3 orb=null head=[129,506,true] ring=null
+   [d03] ANIMAL_JOIN call=4 t=61.0
+t=61.3s state=ANIMAL_JOIN call=4 orb=null head=[320,617,true] ring=null
+   [d03] TRAVEL call=4 t=64.2
+t=64.5s state=TRAVEL call=4 orb=null head=[233,591,true] ring=null
+   [d03] TARGET_READY call=4 t=75.6
+t=75.6s state=TARGET_READY call=4 orb=null head=[518,554,true] ring=null
+   [d03] ANIMAL_JOIN call=5 t=77.2
+t=77.5s state=ANIMAL_JOIN call=5 orb=null head=[405,559,true] ring=null
+   [d03] TRAVEL call=5 t=80.1
+t=80.1s state=TRAVEL call=5 orb=null head=[477,544,true] ring=null
+   [d03] TARGET_READY call=5 t=92.0
+t=92s state=TARGET_READY call=5 orb=null head=[430,507,true] ring=null
+   [d03] ANIMAL_JOIN call=6 t=93.8
+t=94.1s state=ANIMAL_JOIN call=6 orb=null head=[626,616,true] ring=null
+   [d03] STAGE_TRANSITION call=6 t=97.2
+t=97.2s state=STAGE_TRANSITION call=6 orb=null head=[505,612,true] ring=null
+   [d03] TRAVEL call=6 t=102.5
+t=102.5s state=TRAVEL call=6 orb=null head=[416,548,true] ring=null
+   [d03] TARGET_READY call=6 t=107.3
+t=107.6s state=TARGET_READY call=6 orb=[384,512,0,0] head=[477,561,true] ring=null
+   [d03] ANIMAL_JOIN call=7 t=109.0
+t=109.3s state=ANIMAL_JOIN call=7 orb=null head=[369,558,true] ring=null
+   [d03] TRAVEL call=7 t=112.5
+t=112.5s state=TRAVEL call=7 orb=null head=[385,525,true] ring=null
+   [d03] TARGET_READY call=7 t=122.5
+t=122.8s state=TARGET_READY call=7 orb=[384,512,0,0] head=[170,614,true] ring=null
+   [d03] ANIMAL_JOIN call=8 t=124.3
+t=124.3s state=ANIMAL_JOIN call=8 orb=[497,486,14.7,2.5] head=[259,584,true] ring=null
+   [d03] TRAVEL call=8 t=128.0
+t=128.3s state=TRAVEL call=8 orb=null head=[256,547,true] ring=null
+   [d03] TARGET_READY call=8 t=137.6
+t=137.6s state=TARGET_READY call=8 orb=null head=[458,519,true] ring=null
+   [d03] ANIMAL_JOIN call=9 t=139.4
+t=139.4s state=ANIMAL_JOIN call=9 orb=[236,569,19.2,5.5] head=[324,574,true] ring=null
+   [d03] TRAVEL call=9 t=142.8
+t=143.1s state=TRAVEL call=9 orb=null head=[375,584,true] ring=null
+   [d03] TARGET_READY call=9 t=152.6
+t=152.9s state=TARGET_READY call=9 orb=[384,512,0,0] head=[253,571,true] ring=null
+   [d03] ANIMAL_JOIN call=10 t=154.4
+t=154.7s state=ANIMAL_JOIN call=10 orb=null head=[361,567,true] ring=null
+   [d03] TRAVEL call=10 t=157.5
+t=157.5s state=TRAVEL call=10 orb=null head=[291,531,true] ring=null
+   [d03] TARGET_READY call=10 t=167.5
+t=167.5s state=TARGET_READY call=10 orb=null head=[509,644,true] ring=null
+   [d03] ANIMAL_JOIN call=11 t=169.4
+t=169.4s state=ANIMAL_JOIN call=11 orb=[285,478,12.9,3.3] head=[421,608,true] ring=null
+   [d03] TRAVEL call=11 t=173.3
+t=173.7s state=TRAVEL call=11 orb=null head=[480,547,true] ring=null
+   [d03] TARGET_READY call=11 t=182.8
+t=183.2s state=TARGET_READY call=11 orb=[384,512,0,0] head=[380,545,true] ring=null
+   [d03] ANIMAL_JOIN call=12 t=184.8
+t=185.1s state=ANIMAL_JOIN call=12 orb=null head=[580,629,true] ring=null
+   [d03] STAGE_TRANSITION call=12 t=188.0
+t=188.4s state=STAGE_TRANSITION call=12 orb=null head=[462,576,true] ring=null
+   [d03] TRAVEL call=12 t=193.4
+t=193.7s state=TRAVEL call=12 orb=null head=[469,574,true] ring=null
+   [d03] TARGET_READY call=12 t=196.9
+t=196.9s state=TARGET_READY call=12 orb=null head=[524,608,true] ring=null
+   [d03] ANIMAL_JOIN call=13 t=198.6
+t=198.9s state=ANIMAL_JOIN call=13 orb=null head=[408,570,true] ring=null
+   [d03] TRAVEL call=13 t=202.4
+t=202.7s state=TRAVEL call=13 orb=null head=[446,543,true] ring=null
+   [d03] TARGET_READY call=13 t=210.8
+t=210.8s state=TARGET_READY call=13 orb=null head=[296,566,true] ring=null
+   [d03] ANIMAL_JOIN call=14 t=212.6
+t=212.6s state=ANIMAL_JOIN call=14 orb=[480,508,12.5,0.4] head=[379,562,true] ring=null
+   [d03] TRAVEL call=14 t=215.7
+t=215.7s state=TRAVEL call=14 orb=null head=[383,536,true] ring=null
+   [d03] TARGET_READY call=14 t=224.9
+t=225.2s state=TARGET_READY call=14 orb=[384,512,0,0] head=[479,517,true] ring=null
+   [d03] ANIMAL_JOIN call=15 t=226.5
+t=226.5s state=ANIMAL_JOIN call=15 orb=[214,580,22.1,6.6] head=[334,582,true] ring=null
+   [d03] TRAVEL call=15 t=229.7
+t=229.7s state=TRAVEL call=15 orb=null head=[344,605,true] ring=null
+   [d03] TARGET_READY call=15 t=238.6
+t=238.9s state=TARGET_READY call=15 orb=[384,512,0,0] head=[187,641,true] ring=null
+   [d03] ANIMAL_JOIN call=16 t=240.5
+t=240.8s state=ANIMAL_JOIN call=16 orb=null head=[298,591,true] ring=null
+   [d03] TRAVEL call=16 t=243.9
+t=243.9s state=TRAVEL call=16 orb=null head=[238,532,true] ring=null
+   [d03] TARGET_READY call=16 t=252.7
+t=253s state=TARGET_READY call=16 orb=[384,512,0,0] head=[444,564,true] ring=null
+   [d03] ANIMAL_JOIN call=17 t=254.5
+t=254.8s state=ANIMAL_JOIN call=17 orb=null head=[254,628,true] ring=null
+   [d03] TRAVEL call=17 t=257.8
+t=257.8s state=TRAVEL call=17 orb=null head=[357,599,true] ring=null
+   [d03] TARGET_READY call=17 t=267.1
+t=267.3s state=TARGET_READY call=17 orb=[384,512,0,0] head=[302,741,true] ring=null
+   [d03] ANIMAL_JOIN call=18 t=269.0
+t=269.4s state=ANIMAL_JOIN call=18 orb=null head=[425,628,true] ring=null
+   [d03] TRAVEL call=18 t=274.3
+t=274.5s state=TRAVEL call=18 orb=null head=[526,559,true] ring=null
+   [d03] CLIMAX call=18 t=307.3
+t=307.3s state=CLIMAX call=18 orb=null head=[519,848,true] ring=null
+   [d03] AFTERGLOW call=18 t=331.3
+t=331.3s state=AFTERGLOW call=18 orb=null head=[265,781,true] ring=[384,512,323,true]
+   [d03] TITLE_IDLE call=0 t=344.0
+t=344s state=TITLE_IDLE call=0 orb=null head=[547,397,true] ring=null
+   [d03] autotest done
+result: ready=true errors=[] consoleErrors=[] autotest={"climax":true,"loops":1} done=true quality=low
+checks: maxOrbOffsetFromCenter=0% ringSamples=48 ringFullyInFrame=true giraffeHeadOffscreenSamples=0/536 externalRequests=["https://gf-playlog.zan72122.workers.dev/log","https://gf-playlog.zan72122.workers.dev/log","https://gf-playlog.zan72122.workers.dev/log"]
+elapsed=195s  PASS
+
+== screenshots run (1024x768, shots.js)
+1 {"state":"TARGET_READY","call":2,"t":42.3,"head":[621,458,true]}
+2 {"state":"TARGET_READY","call":11,"t":188.4,"head":[461,426,true]}
+3 {"state":"CLIMAX","call":18,"t":330.6,"head":[413,610,true],"ring":[512,384,323,true]}
+errors []
