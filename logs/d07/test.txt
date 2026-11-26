@@ -1,0 +1,283 @@
+# D07 autotest log (2026-11-26T07:47Z) — headless Chromium (Playwright) + SwiftShader (--use-angle=swiftshader --enable-unsafe-swiftshader), python3 -m http.server (root site/), autotest time scale x2.5, played from the start (no skipping)
+== 1024x768 http://localhost:8127/games/d07/index.html?autotest&q=low
+__ready=true after 4058ms
+t=4.3s state=WAIT round=0 lit=0 stage=0 q=low circle=0.5,0.5063 whaleY=-1.94 camD=28 drops=0 glow=0
+t=14.0s state=CHARGING round=0 lit=0 stage=0 q=low circle=0.5,0.5065 whaleY=-1.19 camD=27 drops=0 glow=7
+t=15.7s state=BREACH round=1 lit=0 stage=0 q=low circle=0.5,0.5221 whaleY=-5.66 camD=26.8 drops=0 glow=3
+t=19.8s state=SPLASH round=1 lit=0 stage=0 q=low circle=0.491,0.5852 whaleY=0.59 camD=31.8 drops=229 glow=0
+t=20.6s state=WAVE round=1 lit=0 stage=0 q=low circle=0.66,0.6077 whaleY=-2.47 camD=48.4 drops=103 glow=0
+t=22.5s state=LIGHT_UP round=1 lit=0 stage=0 q=low circle=0.7163,0.6144 whaleY=-2.03 camD=57.3 drops=0 glow=26
+t=24.2s state=WAIT round=1 lit=1 stage=0 q=low circle=0.6345,0.5805 whaleY=-1.81 camD=51.9 drops=0 glow=3
+t=25.7s state=CHARGING round=1 lit=1 stage=0 q=low circle=0.5076,0.5104 whaleY=-1.62 camD=29.4 drops=0 glow=1
+t=25.9s state=BREACH round=2 lit=1 stage=0 q=low circle=0.5042,0.5235 whaleY=-1.58 camD=28.4 drops=0 glow=1
+  shot early
+t=30.9s state=SPLASH round=2 lit=1 stage=0 q=low circle=0.7093,0.657 whaleY=-1.01 camD=36 drops=191 glow=0
+t=31.5s state=WAVE round=2 lit=1 stage=0 q=low circle=0.7806,0.7104 whaleY=-2.47 camD=44 drops=109 glow=0
+t=33.8s state=LIGHT_UP round=2 lit=1 stage=0 q=low circle=0.8242,0.7447 whaleY=-2.03 camD=51.1 drops=0 glow=26
+t=35.4s state=WAIT round=2 lit=2 stage=0 q=low circle=0.8259,0.6962 whaleY=-1.97 camD=46.8 drops=0 glow=6
+t=37.0s state=CHARGING round=2 lit=2 stage=0 q=low circle=0.5146,0.5147 whaleY=-1.71 camD=28.9 drops=0 glow=1
+t=37.9s state=BREACH round=3 lit=2 stage=0 q=low circle=0.5012,0.5372 whaleY=-5.58 camD=26.9 drops=0 glow=2
+t=42.0s state=SPLASH round=3 lit=2 stage=0 q=low circle=0.479,0.5837 whaleY=0.52 camD=31.1 drops=221 glow=0
+t=42.8s state=WAVE round=3 lit=2 stage=0 q=low circle=0.6368,0.6173 whaleY=-2.47 camD=45.7 drops=121 glow=0
+t=44.9s state=LIGHT_UP round=3 lit=2 stage=0 q=low circle=0.694,0.6278 whaleY=-2.03 camD=53.6 drops=0 glow=26
+t=46.8s state=WAIT round=3 lit=3 stage=0 q=low circle=0.6372,0.5988 whaleY=-1.99 camD=48.8 drops=0 glow=5
+t=48.5s state=CHARGING round=3 lit=3 stage=0 q=low circle=0.5038,0.5089 whaleY=-0.71 camD=28.3 drops=0 glow=14
+t=49.5s state=BREACH round=4 lit=3 stage=0 q=low circle=0.5003,0.5368 whaleY=-6.58 camD=26.8 drops=0 glow=2
+t=53.8s state=SPLASH round=4 lit=3 stage=0 q=low circle=0.644,0.6194 whaleY=0.56 camD=30.3 drops=223 glow=0
+t=55.1s state=WAVE round=4 lit=3 stage=0 q=low circle=0.7687,0.7294 whaleY=-2.47 camD=42.7 drops=110 glow=0
+t=57.2s state=LIGHT_UP round=4 lit=3 stage=0 q=low circle=0.813,0.7721 whaleY=-2.08 camD=49.2 drops=0 glow=26
+t=59.4s state=WAIT round=4 lit=4 stage=0 q=low circle=0.6513,0.6122 whaleY=-1.36 camD=40.6 drops=0 glow=0
+t=60.7s state=CHARGING round=4 lit=4 stage=0 q=low circle=0.511,0.5139 whaleY=-0.9 camD=28.8 drops=0 glow=1
+t=62.3s state=BREACH round=5 lit=4 stage=0 q=low circle=0.5003,0.5222 whaleY=-5.66 camD=26.9 drops=0 glow=3
+t=66.4s state=SPLASH round=5 lit=4 stage=0 q=low circle=0.4621,0.5859 whaleY=0.59 camD=29.9 drops=225 glow=0
+t=67.2s state=WAVE round=5 lit=4 stage=0 q=low circle=0.5933,0.6232 whaleY=-2.47 camD=41.1 drops=88 glow=0
+t=69.2s state=LIGHT_UP round=5 lit=4 stage=0 q=low circle=0.6479,0.6381 whaleY=-2.08 camD=47.1 drops=0 glow=26
+t=71.2s state=WAIT round=5 lit=5 stage=0 q=low circle=0.6346,0.6198 whaleY=-1.15 camD=43.6 drops=0 glow=2
+t=74.0s state=CHARGING round=5 lit=5 stage=0.19 q=low circle=0.5058,0.5112 whaleY=-0.97 camD=28.6 drops=0 glow=1
+t=74.3s state=BREACH round=6 lit=5 stage=0.22 q=low circle=0.5032,0.5242 whaleY=-1.58 camD=27.8 drops=0 glow=1
+t=82.7s state=SPLASH round=6 lit=5 stage=0.69 q=low circle=0.4647,0.6163 whaleY=0.4 camD=30.6 drops=217 glow=0
+t=84.8s state=WAVE round=6 lit=5 stage=0.78 q=low circle=0.5982,0.7085 whaleY=-2.66 camD=43.9 drops=85 glow=0
+t=88.4s state=LIGHT_UP round=6 lit=5 stage=1 q=low circle=0.6527,0.7438 whaleY=-2.12 camD=50.8 drops=0 glow=26
+t=90.6s state=WAIT round=6 lit=6 stage=1 q=low circle=0.6147,0.6619 whaleY=-1.73 camD=46.7 drops=0 glow=6
+t=92.3s state=CHARGING round=6 lit=6 stage=1 q=low circle=0.5057,0.5139 whaleY=-1.55 camD=28.9 drops=0 glow=1
+t=93.1s state=BREACH round=7 lit=6 stage=1 q=low circle=0.5009,0.523 whaleY=-2.91 camD=27.3 drops=0 glow=3
+t=97.5s state=SPLASH round=7 lit=6 stage=1 q=low circle=0.4452,0.5934 whaleY=0.4 camD=29.1 drops=221 glow=0
+t=98.3s state=WAVE round=7 lit=6 stage=1 q=low circle=0.5462,0.6407 whaleY=-2.66 camD=37.9 drops=96 glow=0
+t=100.1s state=LIGHT_UP round=7 lit=6 stage=1 q=low circle=0.5945,0.6626 whaleY=-2.21 camD=42.4 drops=0 glow=26
+t=102.2s state=WAIT round=7 lit=7 stage=1 q=low circle=0.5676,0.643 whaleY=-1.95 camD=39.8 drops=0 glow=5
+t=104.1s state=CHARGING round=7 lit=7 stage=1 q=low circle=0.5025,0.5114 whaleY=-1.7 camD=28.2 drops=0 glow=13
+t=105.5s state=BREACH round=8 lit=7 stage=1 q=low circle=0.5002,0.5224 whaleY=-3.56 camD=27 drops=0 glow=3
+t=109.7s state=SPLASH round=8 lit=7 stage=1 q=low circle=0.4423,0.6271 whaleY=0.4 camD=29.6 drops=218 glow=0
+t=110.7s state=WAVE round=8 lit=7 stage=1 q=low circle=0.5413,0.7506 whaleY=-2.66 camD=39.8 drops=96 glow=0
+t=113.0s state=LIGHT_UP round=8 lit=7 stage=1 q=low circle=0.5905,0.807 whaleY=-2.12 camD=45.2 drops=0 glow=26
+t=115.2s state=WAIT round=8 lit=8 stage=1 q=low circle=0.6552,0.7054 whaleY=-1.99 camD=42 drops=0 glow=3
+t=117.0s state=CHARGING round=8 lit=8 stage=1 q=low circle=0.5064,0.5145 whaleY=-1.73 camD=28.5 drops=0 glow=1
+t=118.8s state=BREACH round=9 lit=8 stage=1 q=low circle=0.5001,0.5222 whaleY=-5.66 camD=26.9 drops=0 glow=3
+t=122.9s state=SPLASH round=9 lit=8 stage=1 q=low circle=0.4359,0.6026 whaleY=0.4 camD=28.8 drops=223 glow=0
+t=123.9s state=WAVE round=9 lit=8 stage=1 q=low circle=0.5199,0.6574 whaleY=-2.66 camD=36.8 drops=79 glow=0
+t=126.2s state=LIGHT_UP round=9 lit=8 stage=1 q=low circle=0.565,0.6857 whaleY=-2.12 camD=41 drops=0 glow=26
+t=128.3s state=WAIT round=9 lit=9 stage=1 q=low circle=0.5219,0.6194 whaleY=-1.95 camD=38.6 drops=0 glow=3
+t=130.0s state=CHARGING round=9 lit=9 stage=1 q=low circle=0.5009,0.5108 whaleY=-1.27 camD=28.1 drops=0 glow=1
+t=130.5s state=BREACH round=10 lit=9 stage=1 q=low circle=0.5003,0.5377 whaleY=-3.57 camD=27.1 drops=0 glow=1
+t=134.8s state=SPLASH round=10 lit=9 stage=1 q=low circle=0.431,0.6278 whaleY=0.4 camD=28.8 drops=219 glow=0
+t=135.8s state=WAVE round=10 lit=9 stage=1 q=low circle=0.5045,0.7676 whaleY=-2.66 camD=37 drops=96 glow=0
+t=137.6s state=LIGHT_UP round=10 lit=9 stage=1 q=low circle=0.5453,0.8373 whaleY=-2.21 camD=41.2 drops=0 glow=26
+t=139.8s state=WAIT round=10 lit=10 stage=1 q=low circle=0.5892,0.7539 whaleY=-1.41 camD=38.8 drops=0 glow=1
+t=144.8s state=CHARGING round=10 lit=10 stage=1.19 q=low circle=0.5031,0.515 whaleY=-0.82 camD=28.2 drops=0 glow=1
+t=145.7s state=BREACH round=11 lit=10 stage=1.28 q=low circle=0.5005,0.5233 whaleY=-2.91 camD=27.1 drops=0 glow=3
+t=154.0s state=SPLASH round=11 lit=10 stage=1.78 q=low circle=0.612,0.6031 whaleY=-1.1 camD=27.3 drops=234 glow=18
+t=156.6s state=WAVE round=11 lit=10 stage=1.88 q=low circle=0.6298,0.7078 whaleY=-2.53 camD=31.2 drops=108 glow=17
+t=159.8s state=LIGHT_UP round=11 lit=10 stage=2 q=low circle=0.6361,0.7798 whaleY=-2.1 camD=33.1 drops=0 glow=37
+  shot mid
+t=163.5s state=WAIT round=11 lit=11 stage=2 q=low circle=0.511,0.523 whaleY=-1.19 camD=28.2 drops=0 glow=0
+t=164.0s state=CHARGING round=11 lit=11 stage=2 q=low circle=0.5033,0.5114 whaleY=-1.13 camD=27.5 drops=0 glow=13
+t=165.4s state=BREACH round=12 lit=11 stage=2 q=low circle=0.5001,0.537 whaleY=-6.58 camD=26.7 drops=0 glow=2
+t=169.6s state=SPLASH round=12 lit=11 stage=2 q=low circle=0.6091,0.6294 whaleY=-1.11 camD=28.8 drops=222 glow=21
+t=170.4s state=WAVE round=12 lit=11 stage=2 q=low circle=0.6147,0.7822 whaleY=-2.53 camD=36.9 drops=101 glow=19
+t=172.3s state=LIGHT_UP round=12 lit=11 stage=2 q=low circle=0.6124,0.8595 whaleY=-2.1 camD=41.1 drops=0 glow=35
+t=174.8s state=WAIT round=12 lit=12 stage=2 q=low circle=0.6318,0.7435 whaleY=-1.8 camD=38.7 drops=0 glow=2
+t=176.5s state=CHARGING round=12 lit=12 stage=2 q=low circle=0.5047,0.5148 whaleY=-1.6 camD=28.1 drops=0 glow=1
+t=178.2s state=BREACH round=13 lit=12 stage=2 q=low circle=0.5001,0.5222 whaleY=-5.66 camD=26.9 drops=0 glow=3
+t=182.6s state=SPLASH round=13 lit=12 stage=2 q=low circle=0.5986,0.6046 whaleY=-1.11 camD=27.9 drops=226 glow=30
+t=183.5s state=WAVE round=13 lit=12 stage=2 q=low circle=0.5692,0.6896 whaleY=-2.53 camD=33.2 drops=109 glow=29
+t=185.3s state=LIGHT_UP round=13 lit=12 stage=2 q=low circle=0.547,0.7405 whaleY=-2.1 camD=36 drops=0 glow=38
+t=187.5s state=WAIT round=13 lit=13 stage=2 q=low circle=0.518,0.6649 whaleY=-1.96 camD=34.5 drops=0 glow=6
+t=189.4s state=CHARGING round=13 lit=13 stage=2 q=low circle=0.5006,0.5114 whaleY=-1.71 camD=27.7 drops=0 glow=1
+t=189.6s state=BREACH round=14 lit=13 stage=2 q=low circle=0.5003,0.5246 whaleY=-1.58 camD=27.3 drops=0 glow=1
+t=194.3s state=SPLASH round=14 lit=13 stage=2 q=low circle=0.5924,0.6182 whaleY=-1.1 camD=29 drops=223 glow=31
+t=195.3s state=WAVE round=14 lit=13 stage=2 q=low circle=0.5525,0.7656 whaleY=-2.53 camD=37.4 drops=98 glow=30
+t=197.6s state=LIGHT_UP round=14 lit=13 stage=2 q=low circle=0.5272,0.8411 whaleY=-2.04 camD=41.9 drops=0 glow=41
+t=200.0s state=WAIT round=14 lit=14 stage=2 q=low circle=0.5212,0.6881 whaleY=-1.99 camD=39.3 drops=0 glow=6
+t=201.9s state=CHARGING round=14 lit=14 stage=2 q=low circle=0.5009,0.5139 whaleY=-1.73 camD=28.2 drops=0 glow=1
+t=202.9s state=BREACH round=15 lit=14 stage=2 q=low circle=0.5001,0.5231 whaleY=-2.91 camD=27.1 drops=0 glow=3
+t=208.1s state=SPLASH round=15 lit=14 stage=2 q=low circle=0.5733,0.5941 whaleY=-1.1 camD=28.7 drops=236 glow=22
+t=209.2s state=WAVE round=15 lit=14 stage=2 q=low circle=0.477,0.6453 whaleY=-2.53 camD=36.5 drops=112 glow=21
+t=211.4s state=LIGHT_UP round=15 lit=14 stage=2 q=low circle=0.4293,0.6694 whaleY=-2.1 camD=40.5 drops=0 glow=35
+t=213.5s state=WAIT round=15 lit=15 stage=2 q=low circle=0.4989,0.6528 whaleY=-1.76 camD=38.3 drops=0 glow=5
+t=216.3s state=CHARGING round=15 lit=15 stage=2.19 q=low circle=0.5,0.5115 whaleY=-1.1 camD=28.1 drops=0 glow=13
+t=218.6s state=BREACH round=16 lit=15 stage=2.31 q=low circle=0.5,0.5224 whaleY=-3.56 camD=27 drops=0 glow=3
+t=226.4s state=SPLASH round=16 lit=15 stage=2.75 q=low circle=0.5675,0.6396 whaleY=0.4 camD=29 drops=228 glow=38
+t=227.4s state=WAVE round=16 lit=15 stage=2.84 q=low circle=0.491,0.7751 whaleY=-2.66 camD=37.4 drops=95 glow=38
+t=232.0s state=LIGHT_UP round=16 lit=15 stage=3 q=low circle=0.448,0.8447 whaleY=-2.12 camD=41.9 drops=0 glow=44
+t=234.2s state=WAIT round=16 lit=16 stage=3 q=low circle=0.5117,0.7221 whaleY=-1.21 camD=39.3 drops=0 glow=6
+t=235.9s state=CHARGING round=16 lit=16 stage=3 q=low circle=0.5004,0.5146 whaleY=-0.76 camD=28.2 drops=0 glow=1
+t=237.8s state=BREACH round=17 lit=16 stage=3 q=low circle=0.5,0.5222 whaleY=-5.66 camD=26.9 drops=1 glow=3
+t=242.3s state=SPLASH round=17 lit=16 stage=3 q=low circle=0.3783,0.6104 whaleY=0.4 camD=28.2 drops=224 glow=23
+t=243.3s state=WAVE round=17 lit=16 stage=3 q=low circle=0.2867,0.6713 whaleY=-2.66 camD=34.4 drops=94 glow=22
+t=245.2s state=LIGHT_UP round=17 lit=16 stage=3 q=low circle=0.2435,0.7066 whaleY=-2.21 camD=37.5 drops=0 glow=37
+t=247.5s state=WAIT round=17 lit=17 stage=3 q=low circle=0.2951,0.6489 whaleY=-1.58 camD=35.8 drops=0 glow=8
+t=249.3s state=CHARGING round=17 lit=17 stage=3 q=low circle=0.493,0.5113 whaleY=-1.4 camD=27.9 drops=0 glow=1
+t=249.7s state=BREACH round=18 lit=17 stage=3 q=low circle=0.4962,0.5245 whaleY=-1.58 camD=27.4 drops=0 glow=1
+t=254.3s state=SPLASH round=18 lit=17 stage=3 q=low circle=0.375,0.6321 whaleY=0.4 camD=28.8 drops=234 glow=26
+t=255.4s state=WAVE round=18 lit=17 stage=3 q=low circle=0.2771,0.772 whaleY=-2.66 camD=36.9 drops=95 glow=26
+t=257.4s state=LIGHT_UP round=18 lit=17 stage=3 q=low circle=0.2336,0.8436 whaleY=-2.21 camD=41.1 drops=0 glow=44
+t=259.7s state=WAIT round=18 lit=18 stage=3 q=low circle=0.3604,0.7409 whaleY=-1.9 camD=38.7 drops=0 glow=4
+t=261.5s state=CHARGING round=18 lit=18 stage=3 q=low circle=0.495,0.5148 whaleY=-1.65 camD=28.1 drops=0 glow=1
+t=262.4s state=BREACH round=19 lit=18 stage=3 q=low circle=0.4992,0.5232 whaleY=-2.91 camD=27.1 drops=0 glow=3
+t=267.0s state=SPLASH round=19 lit=18 stage=3 q=low circle=0.3694,0.599 whaleY=0.4 camD=29.3 drops=234 glow=25
+t=267.9s state=WAVE round=19 lit=18 stage=3 q=low circle=0.2583,0.6413 whaleY=-2.66 camD=38.6 drops=109 glow=25
+t=270.0s state=LIGHT_UP round=19 lit=18 stage=3 q=low circle=0.2138,0.6621 whaleY=-2.12 camD=43.6 drops=0 glow=35
+t=272.2s state=WAIT round=19 lit=19 stage=3 q=low circle=0.2958,0.6196 whaleY=-1.97 camD=40.7 drops=0 glow=4
+t=274.1s state=CHARGING round=19 lit=19 stage=3 q=low circle=0.4916,0.511 whaleY=-1.72 camD=28.3 drops=0 glow=13
+t=275.3s state=BREACH round=20 lit=19 stage=3 q=low circle=0.4993,0.5223 whaleY=-3.56 camD=27 drops=0 glow=3
+t=279.8s state=SPLASH round=20 lit=19 stage=3 q=low circle=0.5323,0.621 whaleY=0.4 camD=30.7 drops=222 glow=20
+t=280.8s state=WAVE round=20 lit=19 stage=3 q=low circle=0.3936,0.7047 whaleY=-2.66 camD=44.4 drops=83 glow=18
+t=282.8s state=LIGHT_UP round=20 lit=19 stage=3 q=low circle=0.3385,0.7365 whaleY=-2.12 camD=51.5 drops=0 glow=36
+t=285.1s state=FINALE round=20 lit=20 stage=3 q=low circle=0.3985,0.7775 whaleY=-1.99 camD=51.8 drops=0 glow=5
+t=289.2s state=FINAL_WAIT round=20 lit=20 stage=3 q=low circle=0.5749,0.9782 whaleY=-1.42 camD=48.9 drops=0 glow=0
+t=291.3s state=FINAL_CHARGING round=20 lit=20 stage=3 q=low circle=0.5039,0.5292 whaleY=-0.9 camD=37.3 drops=0 glow=1
+t=294.3s state=STAR_SWIM round=20 lit=20 stage=3 q=low circle=0.5,0.5141 whaleY=-7.71 camD=36 drops=0 glow=3
+  shot climax
+t=305.9s state=AFTERGLOW round=20 lit=20 stage=3 q=low circle=1.0434,1.5585 whaleY=27.07 camD=36.3 drops=0 glow=164
+t=315.4s state=RESET round=20 lit=20 stage=3 q=low circle=1.346,1.5005 whaleY=26.71 camD=37.5 drops=0 glow=16
+t=331.6s state=WAIT round=0 lit=0 stage=0.64 q=low circle=1.3008,0.5207 whaleY=-3.72 camD=31.2 drops=0 glow=0
+t=336.8s state=WAIT round=0 lit=0 stage=0 q=low circle=0.5008,0.5065 whaleY=-1.47 camD=27 drops=0 glow=0
+states seen: WAIT,CHARGING,BREACH,SPLASH,WAVE,LIGHT_UP,FINALE,FINAL_WAIT,FINAL_CHARGING,STAR_SWIM,AFTERGLOW,RESET
+max lit=20 max stage=3 replay-ready=true
+circle center offset max: WAIT=3.6% FINAL_WAIT=4.4% (samples 49)
+whale fully in frame (airborne samples): 188/188, worst overflow=0.0%
+climax whale center offset max: 5.3% (samples 49)
+__errors=[]
+console errors=[]
+RESULT: PASS
+== 768x1024 http://localhost:8127/games/d07/index.html?autotest&q=low
+__ready=true after 4234ms
+t=4.5s state=WAIT round=0 lit=0 stage=0 q=low circle=0.5,0.5051 whaleY=-1.94 camD=30.4 drops=0 glow=0
+t=14.4s state=CHARGING round=0 lit=0 stage=0 q=low circle=0.5,0.5052 whaleY=-1.19 camD=30 drops=0 glow=7
+t=16.0s state=BREACH round=1 lit=0 stage=0 q=low circle=0.5,0.5178 whaleY=-5.66 camD=29.6 drops=0 glow=3
+t=20.2s state=SPLASH round=1 lit=0 stage=0 q=low circle=0.488,0.564 whaleY=0.59 camD=37.1 drops=229 glow=0
+t=21.0s state=WAVE round=1 lit=0 stage=0 q=low circle=0.6757,0.5665 whaleY=-2.47 camD=64.1 drops=103 glow=0
+t=23.1s state=LIGHT_UP round=1 lit=0 stage=0 q=low circle=0.7232,0.5664 whaleY=-2.03 camD=78.6 drops=0 glow=26
+t=25.1s state=WAIT round=1 lit=1 stage=0 q=low circle=0.6074,0.5372 whaleY=-1.81 camD=59.7 drops=0 glow=0
+t=26.5s state=CHARGING round=1 lit=1 stage=0 q=low circle=0.5105,0.508 whaleY=-1.62 camD=33.9 drops=0 glow=1
+t=26.8s state=BREACH round=2 lit=1 stage=0 q=low circle=0.5059,0.5185 whaleY=-1.58 camD=32 drops=0 glow=1
+  shot early
+t=31.7s state=SPLASH round=2 lit=1 stage=0 q=low circle=0.7589,0.6093 whaleY=-1.01 camD=43.7 drops=191 glow=0
+t=32.2s state=WAVE round=2 lit=1 stage=0 q=low circle=0.8116,0.6314 whaleY=-2.47 camD=56.6 drops=109 glow=0
+t=33.9s state=LIGHT_UP round=2 lit=1 stage=0 q=low circle=0.8349,0.6422 whaleY=-2.08 camD=67.9 drops=0 glow=26
+t=35.6s state=WAIT round=2 lit=2 stage=0 q=low circle=0.8513,0.6189 whaleY=-1.97 camD=61.3 drops=0 glow=6
+t=37.0s state=CHARGING round=2 lit=2 stage=0 q=low circle=0.5202,0.5114 whaleY=-1.71 camD=33.1 drops=0 glow=1
+t=37.7s state=BREACH round=3 lit=2 stage=0 q=low circle=0.5033,0.5185 whaleY=-2.91 camD=30.3 drops=0 glow=3
+t=42.5s state=SPLASH round=3 lit=2 stage=0 q=low circle=0.5603,0.5682 whaleY=-0.99 camD=45.5 drops=190 glow=0
+t=43.0s state=WAVE round=3 lit=2 stage=0 q=low circle=0.6511,0.5728 whaleY=-2.47 camD=59.9 drops=121 glow=0
+t=44.8s state=LIGHT_UP round=3 lit=2 stage=0 q=low circle=0.7004,0.5743 whaleY=-2.03 camD=72.7 drops=0 glow=26
+t=46.6s state=WAIT round=3 lit=3 stage=0 q=low circle=0.6487,0.5603 whaleY=-1.99 camD=65.1 drops=0 glow=5
+t=48.6s state=CHARGING round=3 lit=3 stage=0 q=low circle=0.5095,0.5084 whaleY=-1.62 camD=33.4 drops=0 glow=13
+t=50.0s state=BREACH round=4 lit=3 stage=0 q=low circle=0.5004,0.5298 whaleY=-6.58 camD=29.4 drops=0 glow=2
+t=53.9s state=SPLASH round=4 lit=3 stage=0 q=low circle=0.6962,0.5915 whaleY=0.56 camD=34.5 drops=223 glow=0
+t=55.0s state=WAVE round=4 lit=3 stage=0 q=low circle=0.8113,0.6505 whaleY=-2.45 camD=57.9 drops=65 glow=0
+t=56.4s state=LIGHT_UP round=4 lit=3 stage=0 q=low circle=0.8244,0.6586 whaleY=-2.08 camD=64.6 drops=0 glow=26
+t=58.1s state=WAIT round=4 lit=4 stage=0 q=low circle=0.7582,0.6059 whaleY=-1.48 camD=58.6 drops=0 glow=3
+t=59.7s state=CHARGING round=4 lit=4 stage=0 q=low circle=0.5152,0.5109 whaleY=-0.9 camD=32.8 drops=0 glow=1
+t=61.2s state=BREACH round=5 lit=4 stage=0 q=low circle=0.5004,0.5179 whaleY=-5.66 camD=29.7 drops=0 glow=3
+t=65.5s state=SPLASH round=5 lit=4 stage=0 q=low circle=0.4482,0.566 whaleY=0.59 camD=34.2 drops=225 glow=0
+t=66.3s state=WAVE round=5 lit=4 stage=0 q=low circle=0.605,0.578 whaleY=-2.47 camD=53.1 drops=88 glow=0
+t=68.4s state=LIGHT_UP round=5 lit=4 stage=0 q=low circle=0.6554,0.5813 whaleY=-2.03 camD=63.2 drops=0 glow=26
+t=70.1s state=WAIT round=5 lit=5 stage=0.03 q=low circle=0.6002,0.5515 whaleY=-1.02 camD=50.3 drops=0 glow=0
+t=72.7s state=CHARGING round=5 lit=5 stage=0.19 q=low circle=0.5081,0.5087 whaleY=-0.97 camD=32.7 drops=0 glow=1
+t=73.0s state=BREACH round=6 lit=5 stage=0.22 q=low circle=0.5045,0.5192 whaleY=-1.58 camD=31.3 drops=0 glow=1
+t=81.5s state=SPLASH round=6 lit=5 stage=0.69 q=low circle=0.4518,0.5892 whaleY=0.4 camD=35 drops=217 glow=0
+t=83.8s state=WAVE round=6 lit=5 stage=0.81 q=low circle=0.6304,0.6368 whaleY=-2.64 camD=60 drops=61 glow=0
+t=86.3s state=LIGHT_UP round=6 lit=5 stage=1 q=low circle=0.6597,0.6434 whaleY=-2.12 camD=67.2 drops=0 glow=26
+t=88.3s state=WAIT round=6 lit=6 stage=1 q=low circle=0.591,0.5735 whaleY=-1.72 camD=52.9 drops=0 glow=0
+t=89.6s state=CHARGING round=6 lit=6 stage=1 q=low circle=0.5078,0.5108 whaleY=-1.55 camD=33 drops=0 glow=1
+t=90.4s state=BREACH round=7 lit=6 stage=1 q=low circle=0.5013,0.5184 whaleY=-2.91 camD=30.3 drops=0 glow=3
+t=94.7s state=SPLASH round=7 lit=6 stage=1 q=low circle=0.4243,0.5725 whaleY=0.4 camD=32.9 drops=221 glow=0
+t=95.8s state=WAVE round=7 lit=6 stage=1 q=low circle=0.5716,0.5931 whaleY=-2.64 camD=50.7 drops=52 glow=0
+t=97.2s state=LIGHT_UP round=7 lit=6 stage=1 q=low circle=0.5997,0.5965 whaleY=-2.21 camD=55.6 drops=0 glow=26
+t=99.0s state=WAIT round=7 lit=7 stage=1 q=low circle=0.5735,0.5875 whaleY=-1.95 camD=51.4 drops=0 glow=5
+t=100.6s state=CHARGING round=7 lit=7 stage=1 q=low circle=0.5035,0.5089 whaleY=-1.7 camD=32.1 drops=0 glow=13
+t=101.7s state=BREACH round=8 lit=7 stage=1 q=low circle=0.5003,0.518 whaleY=-3.56 camD=29.9 drops=0 glow=3
+t=105.8s state=SPLASH round=8 lit=7 stage=1 q=low circle=0.4203,0.5987 whaleY=0.4 camD=33.3 drops=218 glow=0
+t=106.9s state=WAVE round=8 lit=7 stage=1 q=low circle=0.5658,0.669 whaleY=-2.64 camD=52.7 drops=51 glow=0
+t=108.4s state=LIGHT_UP round=8 lit=7 stage=1 q=low circle=0.5949,0.681 whaleY=-2.12 camD=58.2 drops=0 glow=26
+t=110.5s state=WAIT round=8 lit=8 stage=1 q=low circle=0.6181,0.5893 whaleY=-1.99 camD=47.3 drops=0 glow=0
+t=111.9s state=CHARGING round=8 lit=8 stage=1 q=low circle=0.5089,0.5114 whaleY=-1.73 camD=32.3 drops=0 glow=1
+t=113.9s state=BREACH round=9 lit=8 stage=1 q=low circle=0.5002,0.5179 whaleY=-5.66 camD=29.7 drops=0 glow=3
+t=118.2s state=SPLASH round=9 lit=8 stage=1 q=low circle=0.4111,0.5801 whaleY=0.4 camD=32.4 drops=223 glow=0
+t=119.2s state=WAVE round=9 lit=8 stage=1 q=low circle=0.5229,0.6018 whaleY=-2.66 camD=46 drops=79 glow=0
+t=121.2s state=LIGHT_UP round=9 lit=8 stage=1 q=low circle=0.5685,0.6101 whaleY=-2.12 camD=53.1 drops=0 glow=26
+t=123.0s state=WAIT round=9 lit=9 stage=1 q=low circle=0.5249,0.5765 whaleY=-1.95 camD=49.1 drops=0 glow=3
+t=124.6s state=CHARGING round=9 lit=9 stage=1 q=low circle=0.5012,0.5085 whaleY=-1.27 camD=31.9 drops=0 glow=1
+t=124.9s state=BREACH round=10 lit=9 stage=1 q=low circle=0.5007,0.5192 whaleY=-1.58 camD=30.7 drops=0 glow=1
+t=129.2s state=SPLASH round=10 lit=9 stage=1 q=low circle=0.4041,0.6 whaleY=0.4 camD=32.3 drops=219 glow=0
+t=130.1s state=WAVE round=10 lit=9 stage=1 q=low circle=0.5052,0.6735 whaleY=-2.66 camD=45.7 drops=96 glow=0
+t=131.9s state=LIGHT_UP round=10 lit=9 stage=1 q=low circle=0.5478,0.7005 whaleY=-2.21 camD=52.5 drops=0 glow=26
+t=134.0s state=WAIT round=10 lit=10 stage=1 q=low circle=0.5992,0.659 whaleY=-1.41 camD=48.8 drops=0 glow=1
+t=138.0s state=CHARGING round=10 lit=10 stage=1.19 q=low circle=0.5044,0.5118 whaleY=-0.82 camD=31.8 drops=0 glow=1
+t=138.8s state=BREACH round=11 lit=10 stage=1.28 q=low circle=0.5007,0.5187 whaleY=-2.91 camD=30 drops=0 glow=3
+t=148.4s state=SPLASH round=11 lit=10 stage=1.78 q=low circle=0.6585,0.5821 whaleY=-1.1 camD=30.1 drops=234 glow=18
+t=150.5s state=WAVE round=11 lit=10 stage=1.88 q=low circle=0.6537,0.6384 whaleY=-2.53 camD=37.3 drops=108 glow=17
+t=153.5s state=LIGHT_UP round=11 lit=10 stage=2 q=low circle=0.6444,0.667 whaleY=-2.1 camD=41 drops=0 glow=37
+  shot mid
+t=156.6s state=WAIT round=11 lit=11 stage=2 q=low circle=0.5151,0.5178 whaleY=-1.19 camD=32.2 drops=0 glow=0
+t=157.1s state=CHARGING round=11 lit=11 stage=2 q=low circle=0.5046,0.509 whaleY=-1.13 camD=30.9 drops=0 glow=13
+t=158.3s state=BREACH round=12 lit=11 stage=2 q=low circle=0.5004,0.5181 whaleY=-3.56 camD=29.7 drops=0 glow=3
+t=162.9s state=SPLASH round=12 lit=11 stage=2 q=low circle=0.6627,0.6085 whaleY=-1.11 camD=30.3 drops=222 glow=21
+t=163.7s state=WAVE round=12 lit=11 stage=2 q=low circle=0.6726,0.7388 whaleY=-2.53 camD=38.1 drops=101 glow=19
+t=165.7s state=LIGHT_UP round=12 lit=11 stage=2 q=low circle=0.6701,0.8061 whaleY=-2.1 camD=42.1 drops=0 glow=35
+t=167.9s state=WAIT round=12 lit=12 stage=2 q=low circle=0.6975,0.7053 whaleY=-1.8 camD=40.1 drops=0 glow=2
+t=169.5s state=CHARGING round=12 lit=12 stage=2 q=low circle=0.5068,0.512 whaleY=-1.6 camD=31 drops=0 glow=1
+t=171.3s state=BREACH round=13 lit=12 stage=2 q=low circle=0.5002,0.518 whaleY=-5.66 camD=29.6 drops=0 glow=3
+t=175.6s state=SPLASH round=13 lit=12 stage=2 q=low circle=0.6382,0.5824 whaleY=-1.11 camD=31 drops=226 glow=30
+t=176.7s state=WAVE round=13 lit=12 stage=2 q=low circle=0.5803,0.6237 whaleY=-2.53 camD=40.6 drops=109 glow=29
+t=178.6s state=LIGHT_UP round=13 lit=12 stage=2 q=low circle=0.5493,0.6419 whaleY=-2.1 camD=45.5 drops=0 glow=38
+t=180.8s state=WAIT round=13 lit=13 stage=2 q=low circle=0.5203,0.6047 whaleY=-1.96 camD=43 drops=0 glow=6
+t=182.3s state=CHARGING round=13 lit=13 stage=2 q=low circle=0.5008,0.509 whaleY=-1.71 camD=31.3 drops=0 glow=1
+t=182.6s state=BREACH round=14 lit=13 stage=2 q=low circle=0.5004,0.5197 whaleY=-1.58 camD=30.4 drops=0 glow=1
+t=187.9s state=SPLASH round=14 lit=13 stage=2 q=low circle=0.6322,0.5951 whaleY=-1.1 camD=31.7 drops=223 glow=31
+t=188.9s state=WAVE round=14 lit=13 stage=2 q=low circle=0.5666,0.6895 whaleY=-2.53 camD=43.2 drops=98 glow=30
+t=191.1s state=LIGHT_UP round=14 lit=13 stage=2 q=low circle=0.5325,0.7291 whaleY=-2.04 camD=49.3 drops=0 glow=41
+t=193.2s state=WAIT round=14 lit=14 stage=2 q=low circle=0.5272,0.6356 whaleY=-1.99 camD=46 drops=0 glow=6
+t=195.0s state=CHARGING round=14 lit=14 stage=2 q=low circle=0.5013,0.5111 whaleY=-1.73 camD=31.6 drops=0 glow=1
+t=195.8s state=BREACH round=15 lit=14 stage=2 q=low circle=0.5002,0.5186 whaleY=-2.91 camD=29.9 drops=0 glow=3
+t=200.4s state=SPLASH round=15 lit=14 stage=2 q=low circle=0.601,0.5729 whaleY=-1.1 camD=32.5 drops=236 glow=22
+t=201.4s state=WAVE round=15 lit=14 stage=2 q=low circle=0.474,0.5926 whaleY=-2.53 camD=46.5 drops=112 glow=21
+t=203.4s state=LIGHT_UP round=15 lit=14 stage=2 q=low circle=0.4264,0.5992 whaleY=-2.1 camD=53.6 drops=0 glow=35
+t=205.4s state=WAIT round=15 lit=15 stage=2 q=low circle=0.4989,0.592 whaleY=-1.76 camD=49.7 drops=0 glow=5
+t=208.6s state=CHARGING round=15 lit=15 stage=2.19 q=low circle=0.4999,0.509 whaleY=-1.1 camD=31.9 drops=0 glow=13
+t=210.9s state=BREACH round=16 lit=15 stage=2.31 q=low circle=0.5,0.518 whaleY=-3.56 camD=29.9 drops=0 glow=3
+t=219.3s state=SPLASH round=16 lit=15 stage=2.75 q=low circle=0.5935,0.6088 whaleY=0.4 camD=32.5 drops=228 glow=38
+t=220.3s state=WAVE round=16 lit=15 stage=2.84 q=low circle=0.4897,0.6762 whaleY=-2.66 camD=46.4 drops=95 glow=38
+t=224.9s state=LIGHT_UP round=16 lit=15 stage=3 q=low circle=0.446,0.7014 whaleY=-2.12 camD=53.8 drops=0 glow=44
+t=226.9s state=WAIT round=16 lit=16 stage=3 q=low circle=0.5132,0.6412 whaleY=-1.21 camD=49.7 drops=0 glow=6
+t=228.7s state=CHARGING round=16 lit=16 stage=3 q=low circle=0.5006,0.5114 whaleY=-0.76 camD=31.9 drops=0 glow=1
+t=230.5s state=BREACH round=17 lit=16 stage=3 q=low circle=0.5,0.5179 whaleY=-5.66 camD=29.7 drops=1 glow=3
+t=234.7s state=SPLASH round=17 lit=16 stage=3 q=low circle=0.3302,0.5867 whaleY=0.4 camD=31.5 drops=224 glow=23
+t=235.5s state=WAVE round=17 lit=16 stage=3 q=low circle=0.2537,0.6112 whaleY=-2.66 camD=42.6 drops=94 glow=22
+t=237.3s state=LIGHT_UP round=17 lit=16 stage=3 q=low circle=0.2303,0.6222 whaleY=-2.21 camD=48.3 drops=0 glow=37
+t=239.3s state=WAIT round=17 lit=17 stage=3 q=low circle=0.2705,0.5938 whaleY=-1.58 camD=45.3 drops=0 glow=8
+t=241.3s state=CHARGING round=17 lit=17 stage=3 q=low circle=0.4902,0.5088 whaleY=-1.4 camD=31.5 drops=0 glow=1
+t=241.6s state=BREACH round=18 lit=17 stage=3 q=low circle=0.4946,0.5195 whaleY=-1.58 camD=30.5 drops=0 glow=1
+t=246.4s state=SPLASH round=18 lit=17 stage=3 q=low circle=0.3262,0.6033 whaleY=0.4 camD=32.3 drops=234 glow=26
+t=247.3s state=WAVE round=18 lit=17 stage=3 q=low circle=0.2442,0.6755 whaleY=-2.66 camD=45.7 drops=95 glow=26
+t=249.0s state=LIGHT_UP round=18 lit=17 stage=3 q=low circle=0.2206,0.7027 whaleY=-2.21 camD=52.5 drops=0 glow=44
+t=250.9s state=WAIT round=18 lit=18 stage=3 q=low circle=0.3436,0.6518 whaleY=-1.9 camD=48.8 drops=0 glow=4
+t=252.5s state=CHARGING round=18 lit=18 stage=3 q=low circle=0.493,0.5116 whaleY=-1.65 camD=31.8 drops=0 glow=1
+t=253.4s state=BREACH round=19 lit=18 stage=3 q=low circle=0.4989,0.5187 whaleY=-2.91 camD=30 drops=0 glow=3
+t=257.9s state=SPLASH round=19 lit=18 stage=3 q=low circle=0.3198,0.5768 whaleY=0.4 camD=33.2 drops=234 glow=25
+t=258.8s state=WAVE round=19 lit=18 stage=3 q=low circle=0.2252,0.5904 whaleY=-2.66 camD=49.1 drops=109 glow=25
+t=261.1s state=LIGHT_UP round=19 lit=18 stage=3 q=low circle=0.2001,0.5955 whaleY=-2.12 camD=57.5 drops=0 glow=35
+t=263.0s state=WAIT round=19 lit=19 stage=3 q=low circle=0.2734,0.5746 whaleY=-1.97 camD=52.7 drops=0 glow=4
+t=264.6s state=CHARGING round=19 lit=19 stage=3 q=low circle=0.4883,0.5086 whaleY=-1.72 camD=32.2 drops=0 glow=13
+t=266.1s state=BREACH round=20 lit=19 stage=3 q=low circle=0.499,0.518 whaleY=-3.56 camD=29.9 drops=0 glow=3
+t=270.5s state=SPLASH round=20 lit=19 stage=3 q=low circle=0.5439,0.5924 whaleY=0.4 camD=35.3 drops=222 glow=20
+t=271.3s state=WAVE round=20 lit=19 stage=3 q=low circle=0.3816,0.6281 whaleY=-2.66 camD=57.3 drops=83 glow=18
+t=273.1s state=LIGHT_UP round=20 lit=19 stage=3 q=low circle=0.3327,0.6378 whaleY=-2.12 camD=68.8 drops=0 glow=36
+t=274.8s state=FINALE round=20 lit=20 stage=3 q=low circle=0.405,0.6461 whaleY=-1.99 camD=72.4 drops=0 glow=5
+t=278.7s state=FINAL_WAIT round=20 lit=20 stage=3 q=low circle=0.5464,0.6667 whaleY=-1.42 camD=77 drops=0 glow=0
+t=280.6s state=FINAL_CHARGING round=20 lit=20 stage=3 q=low circle=0.5058,0.5241 whaleY=-0.9 camD=40 drops=0 glow=1
+t=283.4s state=STAR_SWIM round=20 lit=20 stage=3 q=low circle=0.5,0.5126 whaleY=-7.71 camD=36 drops=0 glow=3
+  shot climax
+t=297.3s state=AFTERGLOW round=20 lit=20 stage=3 q=low circle=1.3553,1.4282 whaleY=27.17 camD=36.7 drops=0 glow=158
+t=307.2s state=RESET round=20 lit=20 stage=3 q=low circle=1.8384,1.3904 whaleY=26.71 camD=37.5 drops=0 glow=16
+t=325.4s state=WAIT round=0 lit=0 stage=0.57 q=low circle=1.3144,0.5134 whaleY=-3.09 camD=31.3 drops=0 glow=0
+t=330.1s state=WAIT round=0 lit=0 stage=0 q=low circle=0.5012,0.5052 whaleY=-1.47 camD=30 drops=0 glow=0
+states seen: WAIT,CHARGING,BREACH,SPLASH,WAVE,LIGHT_UP,FINALE,FINAL_WAIT,FINAL_CHARGING,STAR_SWIM,AFTERGLOW,RESET
+max lit=20 max stage=3 replay-ready=true
+circle center offset max: WAIT=2.8% FINAL_WAIT=3.5% (samples 43)
+whale fully in frame (airborne samples): 193/193, worst overflow=0.0%
+climax whale center offset max: 4.7% (samples 54)
+__errors=[]
+console errors=[]
+RESULT: PASS
