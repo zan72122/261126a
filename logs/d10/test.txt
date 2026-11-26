@@ -1,0 +1,195 @@
+# D10 test log (2026-11-26T12:46Z) — headless Chromium (Playwright) + SwiftShader (--use-angle=swiftshader --enable-unsafe-swiftshader), python3 -m http.server (root site/), autotest speed x3, external playlog endpoint stubbed (no outside network)
+== 1024x768 http://localhost:8131/games/d10/index.html?autotest&q=low
+__ready=true after 4218ms
+t=4.5s state=IDLE lit=0 stage=0 cycle=0 crown=(50.0%,64.6%) moon=(50.0%,20.0%) moonTop=14.4% gate=(50.0%,31.1%) apexTop=10.2% sides=28.6..71.4% bow=83.0% B=8.5
+t=9.7s state=AIM lit=0 stage=0 cycle=0 crown=(50.0%,65.0%) moon=(50.0%,20.0%) moonTop=14.4% gate=(50.0%,31.1%) apexTop=10.2% sides=28.6..71.4% bow=86.8% B=8.5
+t=38.2s state=DRAG lit=0 stage=0 cycle=0 crown=(50.0%,65.6%) moon=(50.0%,20.0%) moonTop=14.4% gate=(50.0%,31.1%) apexTop=10.2% sides=28.6..71.4% bow=88.2% B=8.5
+t=40.0s state=AIM lit=0 stage=0 cycle=0 crown=(50.3%,65.2%) moon=(50.0%,20.0%) moonTop=14.4% gate=(50.0%,31.1%) apexTop=10.2% sides=28.6..71.4% bow=88.0% B=8.5
+t=42.7s state=DRAG lit=0 stage=0 cycle=0 crown=(50.3%,65.6%) moon=(50.0%,20.0%) moonTop=14.4% gate=(50.0%,31.1%) apexTop=10.2% sides=28.6..71.4% bow=87.5% B=8.5
+t=43.8s state=AIM lit=0 stage=0 cycle=0 crown=(50.3%,65.1%) moon=(50.0%,20.0%) moonTop=14.4% gate=(50.0%,31.1%) apexTop=10.2% sides=28.6..71.4% bow=87.4% B=8.5
+t=47.7s state=DRAG lit=0 stage=0 cycle=0 crown=(50.3%,64.9%) moon=(50.0%,20.0%) moonTop=14.4% gate=(50.0%,31.1%) apexTop=10.2% sides=28.6..71.4% bow=87.3% B=8.5
+t=48.2s state=GLIDE lit=0 stage=0 cycle=0 crown=(50.2%,63.7%) moon=(50.0%,20.0%) moonTop=14.4% gate=(50.0%,31.2%) apexTop=10.2% sides=28.5..71.5% bow=84.2% B=8.5
+t=76.9s state=ACTIVATE lit=1 stage=0 cycle=0 crown=(50.0%,55.4%) moon=(50.0%,20.0%) moonTop=14.4% gate=(49.5%,26.4%) apexTop=8.3% sides=32.9..66.0% bow=72.4% B=8.5
+t=94.2s state=ADVANCE lit=1 stage=0 cycle=0 crown=(50.0%,62.2%) moon=(50.0%,20.0%) moonTop=14.2% gate=(50.0%,31.2%) apexTop=10.2% sides=30.5..69.3% bow=93.2% B=9.89
+t=97.6s state=AIM lit=1 stage=0 cycle=0 crown=(50.0%,63.4%) moon=(50.0%,20.0%) moonTop=14.1% gate=(50.0%,31.5%) apexTop=10.3% sides=30.4..69.5% bow=94.2% B=9.89
+t=97.9s state=DRAG lit=1 stage=0 cycle=0 crown=(50.0%,64.0%) moon=(50.0%,20.0%) moonTop=14.1% gate=(50.0%,31.5%) apexTop=10.3% sides=30.4..69.5% bow=93.5% B=9.89
+t=98.9s state=GLIDE lit=1 stage=0 cycle=0 crown=(50.1%,63.5%) moon=(50.0%,20.0%) moonTop=14.1% gate=(50.0%,31.6%) apexTop=10.4% sides=30.3..69.5% bow=91.3% B=9.89
+t=122.5s state=ACTIVATE lit=2 stage=0 cycle=0 crown=(50.0%,56.1%) moon=(50.0%,20.0%) moonTop=14.1% gate=(49.2%,30.2%) apexTop=15.1% sides=33.7..64.5% bow=80.2% B=9.89
+t=139.9s state=ADVANCE lit=2 stage=0 cycle=0 crown=(50.1%,62.9%) moon=(50.0%,20.0%) moonTop=13.9% gate=(50.0%,34.4%) apexTop=16.2% sides=31.2..68.6% bow=93.7% B=9.89
+t=141.9s state=AIM lit=2 stage=0 cycle=0 crown=(50.0%,63.9%) moon=(50.0%,20.0%) moonTop=13.9% gate=(50.0%,34.4%) apexTop=15.8% sides=30.9..68.9% bow=89.9% B=9.89
+t=142.2s state=DRAG lit=2 stage=0 cycle=0 crown=(50.0%,64.4%) moon=(50.0%,20.0%) moonTop=13.9% gate=(50.0%,34.4%) apexTop=15.8% sides=30.9..68.9% bow=90.1% B=9.89
+t=143.2s state=GLIDE lit=2 stage=0 cycle=0 crown=(50.1%,63.8%) moon=(50.0%,20.0%) moonTop=13.9% gate=(50.0%,34.3%) apexTop=15.7% sides=30.8..69.0% bow=89.0% B=9.89
+  screenshot 1
+t=173.2s state=ACTIVATE lit=3 stage=0 cycle=0 crown=(50.1%,55.7%) moon=(50.0%,20.0%) moonTop=13.9% gate=(48.9%,29.9%) apexTop=14.7% sides=33.1..64.4% bow=79.4% B=9.89
+t=192.7s state=ADVANCE lit=3 stage=0 cycle=0 crown=(50.1%,63.1%) moon=(50.0%,20.0%) moonTop=13.6% gate=(50.0%,34.3%) apexTop=16.0% sides=30.9..68.8% bow=93.4% B=9.89
+t=196.4s state=AIM lit=3 stage=0 cycle=0 crown=(50.0%,63.9%) moon=(50.0%,20.0%) moonTop=13.6% gate=(50.0%,34.3%) apexTop=15.6% sides=30.6..69.2% bow=93.8% B=9.89
+t=196.7s state=DRAG lit=3 stage=0 cycle=0 crown=(50.0%,64.5%) moon=(50.0%,20.0%) moonTop=13.6% gate=(50.0%,34.3%) apexTop=15.6% sides=30.6..69.2% bow=93.2% B=9.89
+t=197.6s state=GLIDE lit=3 stage=0 cycle=0 crown=(50.1%,63.8%) moon=(50.0%,20.0%) moonTop=13.6% gate=(50.0%,34.3%) apexTop=15.5% sides=30.5..69.3% bow=91.2% B=9.89
+t=214.3s state=ACTIVATE lit=4 stage=0 cycle=0 crown=(50.1%,56.2%) moon=(50.0%,20.0%) moonTop=13.6% gate=(48.8%,28.5%) apexTop=11.7% sides=33.3..64.0% bow=79.7% B=9.89
+t=233.2s state=ADVANCE lit=4 stage=0 cycle=0 crown=(50.1%,63.2%) moon=(50.0%,20.0%) moonTop=13.4% gate=(49.9%,32.7%) apexTop=12.5% sides=31.3..68.4% bow=93.4% B=9.89
+t=237.2s state=AIM lit=4 stage=0 cycle=0 crown=(50.0%,64.0%) moon=(50.0%,20.0%) moonTop=13.4% gate=(50.0%,32.6%) apexTop=12.0% sides=31.0..68.7% bow=93.6% B=9.89
+t=237.5s state=DRAG lit=4 stage=0 cycle=0 crown=(50.0%,64.6%) moon=(50.0%,20.0%) moonTop=13.4% gate=(50.0%,32.6%) apexTop=12.0% sides=31.0..68.8% bow=93.0% B=9.89
+t=238.6s state=GLIDE lit=4 stage=0 cycle=0 crown=(50.2%,64.0%) moon=(50.0%,20.0%) moonTop=13.4% gate=(50.0%,32.6%) apexTop=11.9% sides=30.9..68.8% bow=91.8% B=9.89
+t=269.7s state=ACTIVATE lit=5 stage=1 cycle=0 crown=(50.1%,56.5%) moon=(50.0%,20.0%) moonTop=13.3% gate=(48.6%,28.5%) apexTop=12.3% sides=32.0..64.9% bow=78.5% B=9.89
+t=285.5s state=STAGE_TRANSITION lit=5 stage=1 cycle=0 crown=(50.1%,62.8%) moon=(50.0%,20.0%) moonTop=13.1% gate=(49.9%,32.2%) apexTop=12.9% sides=30.1..69.5% bow=93.7% B=9.89
+t=304.3s state=AIM lit=5 stage=1 cycle=0 crown=(50.0%,64.4%) moon=(50.0%,20.0%) moonTop=13.1% gate=(50.0%,31.8%) apexTop=11.8% sides=29.6..70.2% bow=92.1% B=9.89
+t=304.6s state=DRAG lit=5 stage=1 cycle=0 crown=(50.0%,64.9%) moon=(50.0%,20.0%) moonTop=13.1% gate=(50.0%,31.8%) apexTop=11.8% sides=29.6..70.2% bow=92.0% B=9.89
+t=305.5s state=GLIDE lit=5 stage=1 cycle=0 crown=(50.1%,64.2%) moon=(50.0%,20.0%) moonTop=13.1% gate=(50.0%,31.8%) apexTop=11.8% sides=29.6..70.2% bow=90.0% B=9.89
+t=323.2s state=ACTIVATE lit=6 stage=1 cycle=0 crown=(50.1%,54.9%) moon=(50.0%,20.0%) moonTop=13.1% gate=(48.6%,27.7%) apexTop=11.6% sides=33.4..63.5% bow=74.0% B=9.89
+t=331.0s state=ADVANCE lit=6 stage=1 cycle=0 crown=(50.1%,62.2%) moon=(50.0%,20.0%) moonTop=12.8% gate=(49.9%,31.2%) apexTop=10.8% sides=30.6..69.1% bow=94.2% B=10.62
+t=332.0s state=AIM lit=6 stage=1 cycle=0 crown=(50.0%,63.4%) moon=(50.0%,20.0%) moonTop=12.8% gate=(50.0%,31.2%) apexTop=10.6% sides=30.4..69.3% bow=93.9% B=10.62
+t=332.3s state=DRAG lit=6 stage=1 cycle=0 crown=(50.0%,64.0%) moon=(50.0%,20.0%) moonTop=12.8% gate=(50.0%,31.2%) apexTop=10.5% sides=30.4..69.4% bow=94.2% B=10.62
+t=333.2s state=GLIDE lit=6 stage=1 cycle=0 crown=(50.1%,63.6%) moon=(50.0%,20.0%) moonTop=12.8% gate=(50.0%,31.2%) apexTop=10.5% sides=30.3..69.4% bow=91.5% B=10.62
+t=344.9s state=ACTIVATE lit=7 stage=1 cycle=0 crown=(50.0%,55.3%) moon=(50.0%,20.0%) moonTop=12.8% gate=(49.0%,29.7%) apexTop=15.3% sides=33.8..64.2% bow=77.5% B=10.62
+t=357.9s state=ADVANCE lit=7 stage=1 cycle=0 crown=(50.1%,62.1%) moon=(50.0%,20.0%) moonTop=12.6% gate=(50.0%,33.2%) apexTop=14.8% sides=30.4..69.3% bow=93.0% B=10.62
+t=359.5s state=AIM lit=7 stage=1 cycle=0 crown=(50.0%,63.9%) moon=(50.0%,20.0%) moonTop=12.6% gate=(50.0%,33.0%) apexTop=14.2% sides=30.0..69.8% bow=93.1% B=10.62
+t=359.8s state=DRAG lit=7 stage=1 cycle=0 crown=(50.0%,64.4%) moon=(50.0%,20.0%) moonTop=12.6% gate=(50.0%,33.0%) apexTop=14.2% sides=30.0..69.8% bow=89.3% B=10.62
+t=360.7s state=GLIDE lit=7 stage=1 cycle=0 crown=(50.1%,64.1%) moon=(50.0%,20.0%) moonTop=12.6% gate=(50.0%,33.0%) apexTop=14.1% sides=29.9..69.9% bow=88.4% B=10.62
+t=379.0s state=ACTIVATE lit=8 stage=1 cycle=0 crown=(50.0%,54.9%) moon=(50.0%,20.0%) moonTop=12.6% gate=(49.6%,29.9%) apexTop=15.7% sides=34.8..64.5% bow=76.3% B=10.62
+  screenshot 2
+t=394.5s state=ADVANCE lit=8 stage=1 cycle=0 crown=(50.0%,62.5%) moon=(50.0%,20.0%) moonTop=12.3% gate=(50.0%,33.6%) apexTop=15.5% sides=30.9..69.1% bow=94.0% B=10.62
+t=396.1s state=AIM lit=8 stage=1 cycle=0 crown=(50.0%,64.1%) moon=(50.0%,20.0%) moonTop=12.3% gate=(50.0%,33.4%) apexTop=14.8% sides=30.4..69.5% bow=95.3% B=10.62
+t=396.4s state=DRAG lit=8 stage=1 cycle=0 crown=(50.0%,64.6%) moon=(50.0%,20.0%) moonTop=12.3% gate=(50.0%,33.4%) apexTop=14.8% sides=30.4..69.5% bow=91.4% B=10.62
+t=397.1s state=GLIDE lit=8 stage=1 cycle=0 crown=(50.2%,63.9%) moon=(50.0%,20.0%) moonTop=12.3% gate=(50.0%,33.4%) apexTop=14.6% sides=30.3..69.7% bow=89.7% B=10.62
+t=410.1s state=ACTIVATE lit=9 stage=1 cycle=0 crown=(49.9%,57.3%) moon=(50.0%,20.0%) moonTop=12.3% gate=(50.2%,31.1%) apexTop=15.9% sides=35.5..64.9% bow=79.7% B=10.62
+t=424.4s state=ADVANCE lit=9 stage=1 cycle=0 crown=(50.0%,62.3%) moon=(50.0%,20.0%) moonTop=12.1% gate=(50.0%,32.1%) apexTop=12.5% sides=31.3..68.9% bow=92.2% B=10.62
+t=426.2s state=AIM lit=9 stage=1 cycle=0 crown=(50.0%,63.9%) moon=(50.0%,20.0%) moonTop=12.0% gate=(50.0%,31.8%) apexTop=11.6% sides=30.7..69.4% bow=95.4% B=10.62
+t=426.5s state=DRAG lit=9 stage=1 cycle=0 crown=(50.0%,64.5%) moon=(50.0%,20.0%) moonTop=12.0% gate=(50.0%,31.8%) apexTop=11.6% sides=30.7..69.4% bow=91.5% B=10.62
+t=427.3s state=GLIDE lit=9 stage=1 cycle=0 crown=(50.1%,64.1%) moon=(50.0%,20.0%) moonTop=12.0% gate=(50.0%,31.8%) apexTop=11.5% sides=30.6..69.4% bow=89.9% B=10.62
+t=439.0s state=ACTIVATE lit=10 stage=2 cycle=0 crown=(49.9%,55.4%) moon=(50.0%,20.0%) moonTop=12.0% gate=(50.9%,28.5%) apexTop=13.6% sides=35.4..66.7% bow=76.8% B=10.62
+t=447.2s state=STAGE_TRANSITION lit=10 stage=2 cycle=0 crown=(49.9%,62.9%) moon=(50.0%,20.0%) moonTop=11.8% gate=(50.1%,31.7%) apexTop=12.9% sides=30.4..69.9% bow=90.5% B=10.62
+t=453.6s state=AIM lit=10 stage=2 cycle=0 crown=(50.0%,64.6%) moon=(50.0%,20.0%) moonTop=11.8% gate=(50.0%,31.1%) apexTop=11.4% sides=29.6..70.6% bow=92.0% B=10.62
+t=453.8s state=DRAG lit=10 stage=2 cycle=0 crown=(50.0%,65.0%) moon=(50.0%,20.0%) moonTop=11.8% gate=(50.0%,31.1%) apexTop=11.4% sides=29.6..70.6% bow=92.0% B=10.62
+t=454.1s state=GLIDE lit=10 stage=2 cycle=0 crown=(50.1%,64.4%) moon=(50.0%,20.0%) moonTop=11.8% gate=(50.0%,31.1%) apexTop=11.4% sides=29.5..70.7% bow=89.6% B=10.62
+t=466.1s state=ACTIVATE lit=11 stage=2 cycle=0 crown=(49.6%,56.2%) moon=(50.0%,20.0%) moonTop=11.7% gate=(51.1%,30.2%) apexTop=15.0% sides=36.3..66.2% bow=73.7% B=10.62
+t=471.6s state=ADVANCE lit=11 stage=2 cycle=0 crown=(49.9%,62.0%) moon=(50.0%,20.0%) moonTop=11.5% gate=(50.1%,31.3%) apexTop=11.4% sides=30.9..69.6% bow=96.6% B=11.69
+t=473.6s state=AIM lit=11 stage=2 cycle=0 crown=(49.9%,63.4%) moon=(50.0%,20.0%) moonTop=11.5% gate=(50.1%,31.2%) apexTop=10.9% sides=30.4..69.9% bow=93.3% B=11.69
+t=473.9s state=DRAG lit=11 stage=2 cycle=0 crown=(49.9%,63.9%) moon=(50.0%,20.0%) moonTop=11.5% gate=(50.1%,31.2%) apexTop=10.9% sides=30.4..70.0% bow=93.8% B=11.69
+t=474.4s state=GLIDE lit=11 stage=2 cycle=0 crown=(50.1%,63.6%) moon=(50.0%,20.0%) moonTop=11.5% gate=(50.0%,31.2%) apexTop=10.7% sides=30.2..70.1% bow=92.7% B=11.69
+t=487.0s state=ACTIVATE lit=12 stage=2 cycle=0 crown=(49.9%,55.1%) moon=(50.0%,20.0%) moonTop=11.5% gate=(51.8%,30.6%) apexTop=17.6% sides=38.1..65.8% bow=75.2% B=11.69
+t=496.5s state=ADVANCE lit=12 stage=2 cycle=0 crown=(49.8%,61.5%) moon=(50.0%,20.0%) moonTop=11.3% gate=(50.1%,33.7%) apexTop=16.5% sides=31.9..68.7% bow=98.0% B=11.69
+t=497.2s state=AIM lit=12 stage=2 cycle=0 crown=(49.9%,63.0%) moon=(50.0%,20.0%) moonTop=11.3% gate=(50.1%,33.5%) apexTop=15.8% sides=31.3..69.1% bow=96.3% B=11.69
+t=497.5s state=DRAG lit=12 stage=2 cycle=0 crown=(49.9%,63.7%) moon=(50.0%,20.0%) moonTop=11.3% gate=(50.1%,33.4%) apexTop=15.6% sides=31.2..69.2% bow=94.2% B=11.69
+t=497.7s state=GLIDE lit=12 stage=2 cycle=0 crown=(50.1%,63.4%) moon=(50.0%,20.0%) moonTop=11.3% gate=(50.1%,33.4%) apexTop=15.4% sides=31.0..69.3% bow=90.0% B=11.69
+t=511.9s state=ACTIVATE lit=13 stage=2 cycle=0 crown=(49.9%,54.3%) moon=(50.0%,20.0%) moonTop=11.2% gate=(51.5%,30.4%) apexTop=17.7% sides=37.7..65.7% bow=74.5% B=11.69
+t=520.1s state=ADVANCE lit=13 stage=2 cycle=0 crown=(49.9%,62.1%) moon=(50.0%,20.0%) moonTop=11.0% gate=(50.1%,33.9%) apexTop=16.8% sides=31.5..68.9% bow=95.4% B=11.69
+t=520.8s state=AIM lit=13 stage=2 cycle=0 crown=(49.9%,63.3%) moon=(50.0%,20.0%) moonTop=11.0% gate=(50.0%,33.6%) apexTop=15.9% sides=30.9..69.4% bow=92.8% B=11.69
+t=521.0s state=DRAG lit=13 stage=2 cycle=0 crown=(50.0%,63.8%) moon=(50.0%,20.0%) moonTop=11.0% gate=(50.0%,33.5%) apexTop=15.8% sides=30.7..69.5% bow=90.3% B=11.69
+t=521.2s state=GLIDE lit=13 stage=2 cycle=0 crown=(50.1%,63.4%) moon=(50.0%,20.0%) moonTop=11.0% gate=(50.0%,33.5%) apexTop=15.6% sides=30.6..69.6% bow=85.6% B=11.69
+t=530.1s state=ACTIVATE lit=14 stage=2 cycle=0 crown=(49.9%,54.6%) moon=(50.0%,20.0%) moonTop=11.0% gate=(51.1%,23.8%) apexTop=3.2% sides=33.5..68.9% bow=75.6% B=11.69
+t=544.0s state=ADVANCE lit=14 stage=2 cycle=0 crown=(50.0%,62.8%) moon=(50.0%,20.0%) moonTop=10.8% gate=(50.0%,30.9%) apexTop=8.7% sides=30.7..69.5% bow=116.1% B=19.28
+t=548.7s state=AIM lit=14 stage=2 cycle=0 crown=(50.0%,64.0%) moon=(50.0%,20.0%) moonTop=10.7% gate=(50.0%,31.7%) apexTop=9.6% sides=30.7..69.4% bow=106.7% B=19.28
+t=548.9s state=DRAG lit=14 stage=2 cycle=0 crown=(50.0%,64.3%) moon=(50.0%,20.0%) moonTop=10.7% gate=(50.0%,31.7%) apexTop=9.7% sides=30.7..69.4% bow=103.3% B=19.28
+t=549.4s state=GLIDE lit=14 stage=2 cycle=0 crown=(50.1%,64.0%) moon=(50.0%,20.0%) moonTop=10.7% gate=(50.0%,31.9%) apexTop=9.8% sides=30.6..69.4% bow=100.2% B=19.28
+t=567.9s state=CLIMAX lit=15 stage=3 cycle=0 crown=(50.0%,56.9%) moon=(50.0%,20.0%) moonTop=10.7% bow=86.6% B=19.28
+  screenshot 3
+t=596.8s state=AFTERGLOW lit=15 stage=3 cycle=0 crown=(50.1%,72.3%) moon=(50.0%,31.0%) moonTop=15.4% bow=81.6% B=7.8
+t=609.0s state=RESET lit=15 stage=3 cycle=0 crown=(50.1%,88.1%) moon=(50.0%,31.0%) moonTop=15.4% bow=115.5% B=7.8
+t=611.7s state=RESET lit=0 stage=0 cycle=1 crown=(50.0%,64.8%) moon=(50.0%,20.0%) moonTop=9.6% gate=(50.0%,31.1%) apexTop=10.2% sides=28.6..71.4% bow=86.8% B=8.5
+t=624.8s state=IDLE lit=0 stage=0 cycle=1 crown=(50.0%,65.0%) moon=(50.0%,20.0%) moonTop=13.1% gate=(50.0%,31.1%) apexTop=10.2% sides=28.5..71.4% bow=91.8% B=8.43
+t=625.1s state=AIM lit=0 stage=0 cycle=1 crown=(50.0%,65.6%) moon=(50.0%,20.0%) moonTop=13.2% gate=(50.0%,31.1%) apexTop=10.2% sides=28.5..71.4% bow=90.8% B=8.43
+replay started; visited=IDLE,AIM,DRAG,GLIDE,ACTIVATE,ADVANCE,STAGE_TRANSITION,CLIMAX,AFTERGLOW,RESET
+result 1024x768: __errors=[] consoleErrors=[] climaxCount=1 arrivedAtMoon=1 cycle=1 replayStarted=true
+composition: AIM violations 0/135, moon violations 0/2052, climax crown-out 0/168
+PASS
+== 768x1024 http://localhost:8131/games/d10/index.html?autotest&q=low
+__ready=true after 4560ms
+t=4.8s state=IDLE lit=0 stage=0 cycle=0 crown=(50.0%,64.6%) moon=(50.0%,20.0%) moonTop=15.2% gate=(50.0%,36.1%) apexTop=18.5% sides=17.6..82.4% bow=83.3% B=8.5
+t=6.2s state=AIM lit=0 stage=0 cycle=0 crown=(50.0%,64.8%) moon=(50.0%,20.0%) moonTop=15.2% gate=(50.0%,36.1%) apexTop=18.5% sides=17.6..82.4% bow=88.4% B=8.5
+t=29.0s state=DRAG lit=0 stage=0 cycle=0 crown=(50.0%,65.3%) moon=(50.0%,20.0%) moonTop=15.2% gate=(50.0%,36.1%) apexTop=18.5% sides=17.6..82.4% bow=89.8% B=8.5
+t=29.8s state=AIM lit=0 stage=0 cycle=0 crown=(50.4%,65.2%) moon=(50.0%,20.0%) moonTop=15.2% gate=(50.0%,36.1%) apexTop=18.5% sides=17.6..82.4% bow=89.7% B=8.5
+t=32.9s state=DRAG lit=0 stage=0 cycle=0 crown=(50.4%,65.3%) moon=(50.0%,20.0%) moonTop=15.2% gate=(50.0%,36.1%) apexTop=18.5% sides=17.6..82.4% bow=89.2% B=8.5
+t=34.0s state=AIM lit=0 stage=0 cycle=0 crown=(50.4%,65.0%) moon=(50.0%,20.0%) moonTop=15.2% gate=(50.0%,36.1%) apexTop=18.5% sides=17.6..82.4% bow=89.0% B=8.5
+t=37.5s state=DRAG lit=0 stage=0 cycle=0 crown=(50.4%,64.9%) moon=(50.0%,20.0%) moonTop=15.2% gate=(50.0%,36.1%) apexTop=18.5% sides=17.6..82.4% bow=88.8% B=8.5
+t=37.8s state=GLIDE lit=0 stage=0 cycle=0 crown=(50.3%,64.0%) moon=(50.0%,20.0%) moonTop=15.2% gate=(50.0%,36.1%) apexTop=18.4% sides=17.5..82.5% bow=86.2% B=8.5
+t=58.4s state=ACTIVATE lit=1 stage=0 cycle=0 crown=(50.2%,58.6%) moon=(50.0%,20.0%) moonTop=15.1% gate=(49.5%,33.8%) apexTop=18.7% sides=24.4..74.5% bow=73.9% B=8.5
+t=68.3s state=ADVANCE lit=1 stage=0 cycle=0 crown=(50.1%,63.1%) moon=(50.0%,20.0%) moonTop=14.9% gate=(50.0%,34.8%) apexTop=16.1% sides=19.0..80.8% bow=86.9% B=8.5
+t=69.3s state=AIM lit=1 stage=0 cycle=0 crown=(50.0%,64.0%) moon=(50.0%,20.0%) moonTop=14.9% gate=(50.0%,34.7%) apexTop=15.6% sides=18.5..81.3% bow=91.3% B=8.5
+t=69.5s state=DRAG lit=1 stage=0 cycle=0 crown=(50.0%,64.4%) moon=(50.0%,20.0%) moonTop=14.9% gate=(50.0%,34.6%) apexTop=15.5% sides=18.4..81.4% bow=92.5% B=8.5
+t=69.8s state=GLIDE lit=1 stage=0 cycle=0 crown=(50.3%,63.7%) moon=(50.0%,20.0%) moonTop=14.9% gate=(50.0%,34.6%) apexTop=15.3% sides=18.2..81.6% bow=90.3% B=8.5
+t=85.5s state=ACTIVATE lit=2 stage=0 cycle=0 crown=(50.3%,58.0%) moon=(50.0%,20.0%) moonTop=14.9% gate=(49.1%,34.9%) apexTop=21.5% sides=24.3..73.6% bow=73.4% B=8.5
+t=93.5s state=ADVANCE lit=2 stage=0 cycle=0 crown=(50.1%,63.4%) moon=(50.0%,20.0%) moonTop=14.7% gate=(50.0%,36.8%) apexTop=20.1% sides=19.3..80.3% bow=87.5% B=8.5
+t=95.3s state=AIM lit=2 stage=0 cycle=0 crown=(50.0%,63.9%) moon=(50.0%,20.0%) moonTop=14.7% gate=(50.0%,36.7%) apexTop=19.7% sides=18.9..80.8% bow=91.5% B=8.5
+t=95.5s state=DRAG lit=2 stage=0 cycle=0 crown=(50.0%,64.2%) moon=(50.0%,20.0%) moonTop=14.7% gate=(50.0%,36.6%) apexTop=19.6% sides=18.8..80.9% bow=92.2% B=8.5
+t=96.3s state=GLIDE lit=2 stage=0 cycle=0 crown=(50.2%,63.6%) moon=(50.0%,20.0%) moonTop=14.7% gate=(50.0%,36.6%) apexTop=19.6% sides=18.8..80.9% bow=90.3% B=8.5
+  screenshot 1
+t=113.5s state=ACTIVATE lit=3 stage=0 cycle=0 crown=(50.1%,56.3%) moon=(50.0%,20.0%) moonTop=14.7% gate=(48.3%,32.8%) apexTop=19.1% sides=23.0..73.2% bow=70.8% B=8.5
+t=128.0s state=ADVANCE lit=3 stage=0 cycle=0 crown=(50.1%,62.8%) moon=(50.0%,20.0%) moonTop=14.5% gate=(49.9%,36.7%) apexTop=20.0% sides=19.0..80.5% bow=86.2% B=8.5
+t=129.2s state=AIM lit=3 stage=0 cycle=0 crown=(50.1%,63.5%) moon=(50.0%,20.0%) moonTop=14.5% gate=(50.0%,36.6%) apexTop=19.6% sides=18.6..81.0% bow=90.1% B=8.5
+t=129.5s state=DRAG lit=3 stage=0 cycle=0 crown=(50.1%,64.0%) moon=(50.0%,20.0%) moonTop=14.5% gate=(50.0%,36.6%) apexTop=19.6% sides=18.5..81.1% bow=90.4% B=8.5
+t=130.3s state=GLIDE lit=3 stage=0 cycle=0 crown=(50.5%,63.2%) moon=(50.0%,20.0%) moonTop=14.5% gate=(50.0%,36.6%) apexTop=19.4% sides=18.3..81.4% bow=88.1% B=8.5
+t=149.5s state=ACTIVATE lit=4 stage=0 cycle=0 crown=(50.1%,56.5%) moon=(50.0%,20.0%) moonTop=14.5% gate=(48.1%,31.7%) apexTop=16.6% sides=23.4..72.3% bow=71.4% B=8.5
+t=157.0s state=ADVANCE lit=4 stage=0 cycle=0 crown=(50.2%,62.9%) moon=(50.0%,20.0%) moonTop=14.3% gate=(49.9%,35.3%) apexTop=16.9% sides=19.8..79.7% bow=84.8% B=8.5
+t=157.8s state=AIM lit=4 stage=0 cycle=0 crown=(50.1%,63.6%) moon=(50.0%,20.0%) moonTop=14.2% gate=(49.9%,35.1%) apexTop=16.5% sides=19.3..80.2% bow=88.5% B=8.5
+t=158.0s state=DRAG lit=4 stage=0 cycle=0 crown=(50.1%,64.1%) moon=(50.0%,20.0%) moonTop=14.2% gate=(50.0%,35.1%) apexTop=16.3% sides=19.2..80.4% bow=89.7% B=8.5
+t=158.9s state=GLIDE lit=4 stage=0 cycle=0 crown=(50.3%,63.7%) moon=(50.0%,20.0%) moonTop=14.2% gate=(50.0%,35.1%) apexTop=16.3% sides=19.1..80.5% bow=88.2% B=8.5
+t=174.5s state=ACTIVATE lit=5 stage=1 cycle=0 crown=(50.1%,56.6%) moon=(50.0%,20.0%) moonTop=14.2% gate=(47.8%,31.7%) apexTop=17.2% sides=21.3..73.7% bow=71.3% B=8.5
+t=183.9s state=STAGE_TRANSITION lit=5 stage=1 cycle=0 crown=(50.2%,63.5%) moon=(50.0%,20.0%) moonTop=14.0% gate=(49.9%,34.9%) apexTop=17.4% sides=18.0..81.4% bow=86.5% B=8.5
+t=188.6s state=AIM lit=5 stage=1 cycle=0 crown=(50.0%,64.8%) moon=(50.0%,20.0%) moonTop=14.0% gate=(50.0%,34.5%) apexTop=16.5% sides=17.2..82.4% bow=93.7% B=8.5
+t=188.9s state=DRAG lit=5 stage=1 cycle=0 crown=(50.0%,65.3%) moon=(50.0%,20.0%) moonTop=14.0% gate=(50.0%,34.5%) apexTop=16.5% sides=17.2..82.4% bow=93.8% B=8.5
+t=189.1s state=GLIDE lit=5 stage=1 cycle=0 crown=(50.4%,64.6%) moon=(50.0%,20.0%) moonTop=14.0% gate=(50.0%,34.5%) apexTop=16.5% sides=17.1..82.5% bow=91.3% B=8.5
+t=202.0s state=ACTIVATE lit=6 stage=1 cycle=0 crown=(50.1%,55.0%) moon=(50.0%,20.0%) moonTop=14.0% gate=(47.7%,31.1%) apexTop=16.8% sides=23.6..71.4% bow=65.5% B=8.5
+t=208.8s state=ADVANCE lit=6 stage=1 cycle=0 crown=(50.2%,62.4%) moon=(50.0%,20.0%) moonTop=13.8% gate=(49.8%,33.6%) apexTop=14.9% sides=18.5..80.9% bow=82.7% B=8.5
+t=210.6s state=AIM lit=6 stage=1 cycle=0 crown=(50.1%,63.8%) moon=(50.0%,20.0%) moonTop=13.8% gate=(49.9%,33.3%) apexTop=14.2% sides=17.9..81.6% bow=88.1% B=8.5
+t=210.9s state=DRAG lit=6 stage=1 cycle=0 crown=(50.1%,64.3%) moon=(50.0%,20.0%) moonTop=13.8% gate=(49.9%,33.3%) apexTop=14.2% sides=17.8..81.7% bow=88.5% B=8.5
+t=211.7s state=GLIDE lit=6 stage=1 cycle=0 crown=(50.3%,63.9%) moon=(50.0%,20.0%) moonTop=13.8% gate=(49.9%,33.2%) apexTop=14.1% sides=17.7..81.8% bow=87.7% B=8.5
+t=227.5s state=ACTIVATE lit=7 stage=1 cycle=0 crown=(50.3%,56.8%) moon=(50.0%,20.0%) moonTop=13.7% gate=(48.9%,33.8%) apexTop=20.6% sides=23.8..73.8% bow=68.6% B=8.5
+t=234.6s state=ADVANCE lit=7 stage=1 cycle=0 crown=(50.1%,62.7%) moon=(50.0%,20.0%) moonTop=13.6% gate=(49.9%,34.9%) apexTop=17.8% sides=17.6..82.0% bow=83.4% B=8.5
+t=235.3s state=AIM lit=7 stage=1 cycle=0 crown=(50.0%,64.1%) moon=(50.0%,20.0%) moonTop=13.6% gate=(50.0%,34.6%) apexTop=17.0% sides=16.9..82.8% bow=90.1% B=8.5
+t=235.6s state=DRAG lit=7 stage=1 cycle=0 crown=(50.0%,64.6%) moon=(50.0%,20.0%) moonTop=13.6% gate=(50.0%,34.6%) apexTop=17.0% sides=16.9..82.8% bow=90.4% B=8.5
+t=236.5s state=GLIDE lit=7 stage=1 cycle=0 crown=(50.2%,64.0%) moon=(50.0%,20.0%) moonTop=13.6% gate=(50.0%,34.6%) apexTop=16.9% sides=16.8..83.0% bow=89.1% B=8.5
+t=250.5s state=ACTIVATE lit=8 stage=1 cycle=0 crown=(50.1%,57.0%) moon=(50.0%,20.0%) moonTop=13.5% gate=(49.6%,34.2%) apexTop=21.2% sides=25.1..74.0% bow=69.4% B=8.5
+  screenshot 2
+t=253.8s state=ADVANCE lit=8 stage=1 cycle=0 crown=(50.0%,62.3%) moon=(50.0%,20.0%) moonTop=13.4% gate=(50.0%,35.3%) apexTop=18.4% sides=18.4..81.5% bow=83.0% B=8.5
+t=255.7s state=AIM lit=8 stage=1 cycle=0 crown=(50.0%,63.4%) moon=(50.0%,20.0%) moonTop=13.4% gate=(50.0%,35.1%) apexTop=17.8% sides=17.8..82.1% bow=88.1% B=8.5
+t=256.0s state=DRAG lit=8 stage=1 cycle=0 crown=(50.0%,63.9%) moon=(50.0%,20.0%) moonTop=13.4% gate=(50.0%,35.1%) apexTop=17.8% sides=17.8..82.2% bow=88.5% B=8.5
+t=256.3s state=GLIDE lit=8 stage=1 cycle=0 crown=(50.3%,63.3%) moon=(50.0%,20.0%) moonTop=13.3% gate=(50.0%,35.0%) apexTop=17.6% sides=17.5..82.5% bow=87.2% B=8.5
+t=270.1s state=ACTIVATE lit=9 stage=1 cycle=0 crown=(50.0%,55.1%) moon=(50.0%,20.0%) moonTop=13.3% gate=(50.4%,31.2%) apexTop=17.3% sides=26.7..74.2% bow=66.3% B=8.5
+t=278.2s state=ADVANCE lit=9 stage=1 cycle=0 crown=(49.9%,62.4%) moon=(50.0%,20.0%) moonTop=13.1% gate=(50.0%,33.8%) apexTop=15.5% sides=19.0..81.2% bow=83.0% B=8.5
+t=278.9s state=AIM lit=9 stage=1 cycle=0 crown=(50.0%,63.9%) moon=(50.0%,20.0%) moonTop=13.1% gate=(50.0%,33.5%) apexTop=14.6% sides=18.1..82.1% bow=89.5% B=8.5
+t=279.1s state=DRAG lit=9 stage=1 cycle=0 crown=(50.0%,64.4%) moon=(50.0%,20.0%) moonTop=13.1% gate=(50.0%,33.4%) apexTop=14.5% sides=17.9..82.2% bow=90.9% B=8.5
+t=279.4s state=GLIDE lit=9 stage=1 cycle=0 crown=(50.3%,63.6%) moon=(50.0%,20.0%) moonTop=13.1% gate=(50.0%,33.4%) apexTop=14.3% sides=17.7..82.4% bow=89.0% B=8.5
+t=287.2s state=ACTIVATE lit=10 stage=2 cycle=0 crown=(49.6%,57.7%) moon=(50.0%,20.0%) moonTop=13.1% gate=(51.0%,33.4%) apexTop=19.9% sides=25.9..76.5% bow=69.9% B=8.5
+t=291.0s state=STAGE_TRANSITION lit=10 stage=2 cycle=0 crown=(49.9%,62.8%) moon=(50.0%,20.0%) moonTop=12.9% gate=(50.1%,33.5%) apexTop=15.9% sides=17.6..83.0% bow=85.5% B=8.5
+t=295.7s state=AIM lit=10 stage=2 cycle=0 crown=(50.0%,64.9%) moon=(50.0%,20.0%) moonTop=12.9% gate=(50.0%,32.9%) apexTop=14.7% sides=16.4..83.9% bow=90.7% B=8.5
+t=296.0s state=DRAG lit=10 stage=2 cycle=0 crown=(50.0%,65.2%) moon=(50.0%,20.0%) moonTop=12.9% gate=(50.0%,32.9%) apexTop=14.7% sides=16.4..83.9% bow=96.4% B=8.5
+t=296.3s state=GLIDE lit=10 stage=2 cycle=0 crown=(50.3%,64.3%) moon=(50.0%,20.0%) moonTop=12.9% gate=(50.0%,32.9%) apexTop=14.6% sides=16.3..84.0% bow=93.3% B=8.5
+t=304.9s state=ACTIVATE lit=11 stage=2 cycle=0 crown=(49.8%,54.2%) moon=(50.0%,20.0%) moonTop=12.9% gate=(52.6%,30.9%) apexTop=17.2% sides=29.3..76.6% bow=62.6% B=8.5
+t=308.5s state=ADVANCE lit=11 stage=2 cycle=0 crown=(49.7%,61.8%) moon=(50.0%,20.0%) moonTop=12.7% gate=(50.2%,32.5%) apexTop=13.5% sides=17.8..83.2% bow=79.8% B=8.5
+t=309.2s state=AIM lit=11 stage=2 cycle=0 crown=(49.9%,63.0%) moon=(50.0%,20.0%) moonTop=12.7% gate=(50.1%,32.0%) apexTop=12.5% sides=16.8..84.0% bow=85.8% B=8.5
+t=309.5s state=DRAG lit=11 stage=2 cycle=0 crown=(49.9%,63.5%) moon=(50.0%,20.0%) moonTop=12.7% gate=(50.1%,31.9%) apexTop=12.2% sides=16.6..84.2% bow=87.8% B=8.5
+t=309.7s state=GLIDE lit=11 stage=2 cycle=0 crown=(50.2%,62.9%) moon=(50.0%,20.0%) moonTop=12.7% gate=(50.1%,31.8%) apexTop=11.9% sides=16.3..84.4% bow=87.0% B=8.5
+t=317.9s state=ACTIVATE lit=12 stage=2 cycle=0 crown=(49.3%,55.5%) moon=(50.0%,20.0%) moonTop=12.6% gate=(52.1%,33.9%) apexTop=21.7% sides=29.2..75.5% bow=64.6% B=8.5
+t=320.5s state=ADVANCE lit=12 stage=2 cycle=0 crown=(49.7%,62.4%) moon=(50.0%,20.0%) moonTop=12.4% gate=(50.2%,34.1%) apexTop=17.2% sides=18.6..82.3% bow=82.0% B=8.5
+t=321.2s state=AIM lit=12 stage=2 cycle=0 crown=(49.9%,64.0%) moon=(50.0%,20.0%) moonTop=12.4% gate=(50.1%,33.7%) apexTop=16.4% sides=17.6..83.0% bow=88.4% B=8.5
+t=321.5s state=DRAG lit=12 stage=2 cycle=0 crown=(49.9%,64.5%) moon=(50.0%,20.0%) moonTop=12.4% gate=(50.1%,33.7%) apexTop=16.2% sides=17.4..83.2% bow=89.7% B=8.5
+t=322.3s state=GLIDE lit=12 stage=2 cycle=0 crown=(50.1%,64.0%) moon=(50.0%,20.0%) moonTop=12.4% gate=(50.1%,33.6%) apexTop=16.1% sides=17.3..83.2% bow=88.3% B=8.5
+t=329.9s state=ACTIVATE lit=13 stage=2 cycle=0 crown=(49.4%,55.9%) moon=(50.0%,20.0%) moonTop=12.4% gate=(51.7%,33.9%) apexTop=21.7% sides=28.1..75.9% bow=65.1% B=8.5
+t=332.4s state=ADVANCE lit=13 stage=2 cycle=0 crown=(49.8%,61.9%) moon=(50.0%,20.0%) moonTop=12.2% gate=(50.2%,34.4%) apexTop=17.8% sides=18.3..82.4% bow=79.7% B=8.5
+t=333.2s state=AIM lit=13 stage=2 cycle=0 crown=(49.9%,63.4%) moon=(50.0%,20.0%) moonTop=12.2% gate=(50.1%,34.0%) apexTop=17.1% sides=17.5..83.1% bow=85.9% B=8.5
+t=333.5s state=DRAG lit=13 stage=2 cycle=0 crown=(49.9%,63.9%) moon=(50.0%,20.0%) moonTop=12.2% gate=(50.1%,34.0%) apexTop=17.0% sides=17.4..83.2% bow=86.4% B=8.5
+t=333.7s state=GLIDE lit=13 stage=2 cycle=0 crown=(50.2%,63.5%) moon=(50.0%,20.0%) moonTop=12.2% gate=(50.1%,33.9%) apexTop=16.7% sides=17.1..83.4% bow=86.0% B=8.5
+t=339.9s state=ACTIVATE lit=14 stage=2 cycle=0 crown=(49.5%,58.4%) moon=(50.0%,20.0%) moonTop=12.2% gate=(51.2%,29.9%) apexTop=11.3% sides=22.4..80.3% bow=67.6% B=8.5
+t=344.8s state=ADVANCE lit=14 stage=2 cycle=0 crown=(49.9%,63.0%) moon=(50.0%,20.0%) moonTop=12.0% gate=(50.1%,31.4%) apexTop=9.6% sides=16.3..83.9% bow=109.7% B=14.3
+t=345.9s state=AIM lit=14 stage=2 cycle=0 crown=(50.0%,63.9%) moon=(50.0%,20.0%) moonTop=12.0% gate=(50.0%,32.0%) apexTop=10.4% sides=16.5..83.7% bow=99.5% B=14.3
+t=346.1s state=DRAG lit=14 stage=2 cycle=0 crown=(50.0%,64.2%) moon=(50.0%,20.0%) moonTop=12.0% gate=(50.0%,32.1%) apexTop=10.4% sides=16.5..83.7% bow=95.7% B=14.3
+t=346.9s state=GLIDE lit=14 stage=2 cycle=0 crown=(50.2%,63.8%) moon=(50.0%,20.0%) moonTop=12.0% gate=(50.0%,32.3%) apexTop=10.6% sides=16.5..83.7% bow=92.0% B=14.3
+t=353.7s state=CLIMAX lit=15 stage=3 cycle=0 crown=(50.0%,58.5%) moon=(50.0%,20.0%) moonTop=11.9% bow=85.9% B=14.3
+  screenshot 3
+t=376.3s state=AFTERGLOW lit=15 stage=3 cycle=0 crown=(50.2%,70.0%) moon=(50.0%,31.0%) moonTop=17.6% bow=78.0% B=7.8
+t=387.9s state=RESET lit=15 stage=3 cycle=0 crown=(50.1%,82.6%) moon=(50.0%,31.0%) moonTop=17.6% bow=106.1% B=7.8
+t=390.6s state=RESET lit=0 stage=0 cycle=1 crown=(50.0%,64.6%) moon=(50.0%,20.0%) moonTop=9.4% gate=(50.0%,36.1%) apexTop=18.5% sides=17.6..82.4% bow=83.8% B=8.5
+t=398.3s state=IDLE lit=0 stage=0 cycle=1 crown=(50.0%,64.9%) moon=(50.0%,20.0%) moonTop=14.1% gate=(50.0%,36.1%) apexTop=18.4% sides=17.5..82.4% bow=86.4% B=8.43
+t=398.6s state=AIM lit=0 stage=0 cycle=1 crown=(50.0%,65.3%) moon=(50.0%,20.0%) moonTop=14.1% gate=(50.0%,36.1%) apexTop=18.5% sides=17.5..82.4% bow=86.4% B=8.5
+replay started; visited=IDLE,AIM,DRAG,GLIDE,ACTIVATE,ADVANCE,STAGE_TRANSITION,CLIMAX,AFTERGLOW,RESET
+result 768x1024: __errors=[] consoleErrors=[] climaxCount=1 arrivedAtMoon=1 cycle=1 replayStarted=true
+composition: AIM violations 0/122, moon violations 0/1439, climax crown-out 0/150
+PASS
+ALL PASS
+
+# After the final bloom adjustment (mid/high only; low has no bloom, so the run above is unaffected):
+# load check 1024x768 ?q=mid / ?q=high / ?q=low : __ready=true, __errors=[], state IDLE, crown 50.0%,64.5%, moon 50.0%,20.0%, gate 50.0%,31.1%, apex top 10.2%, sides 28.6..71.4%
+
+# Real pointer input (Playwright mouse, not the autotest driver):
+# 1024x768 q=mid : corner tap -> AIM (start only, no launch); drag up 90px from the crown -> GLIDE; __errors=[], console errors 0
+# 390x844  q=low : crown 50.0%,64.7%; gate 50.0%,42.9%; apex top 29.5%; gate sides 9.0..90.9%; moon 50.0%,20.0%; corner tap -> AIM; drag up -> GLIDE; __errors=[], console errors 0

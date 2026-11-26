@@ -1308,7 +1308,7 @@ const qa = { win: [], acc: 0, frames: 0, lowT: 0, highT: 0, cool: 6, fps: 60 };
 function buildComposer() {
   composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  bloomPass = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.5, 0.45, 0.92);
+  bloomPass = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.45, 0.4, 0.92);
   composer.addPass(bloomPass);
   composer.addPass(new OutputPass());
 }
@@ -1383,7 +1383,7 @@ function applyPalette(p) {
   skyMat.uniforms.uHorGlow.value = clamp(p - 1.6, 0, 1.4);
   petalU.uIri.value = clamp((p - 1.0) * 0.32, 0, 0.62);
   renderer.toneMappingExposure = lerp(1.02, 1.14, clamp(p / 3, 0, 1));
-  if (bloomPass) bloomPass.strength = lerp(0.42, 0.82, clamp(p / 3, 0, 1));
+  if (bloomPass) { bloomPass.strength = lerp(0.42, 0.5, clamp(p / 3, 0, 1)); bloomPass.threshold = lerp(0.92, 1.05, clamp(p / 3, 0, 1)); }
   moonMat.uniforms.uWarm.value = clamp(p - 2.2, 0, 1);
 }
 let envStage = -1;
