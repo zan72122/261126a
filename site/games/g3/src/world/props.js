@@ -1,6 +1,7 @@
 import * as THREE from '../../lib/three.module.js';
 import { PALETTE, shared } from '../core/env.js';
 import { mulberry32 } from '../core/math.js';
+import { isSpotClear } from './colliders.js';
 
 export function createMaterials(textures = null, { lowQuality = false } = {}) {
   const nm = (t, sx = 0.6, sy = 0.6) =>
@@ -195,15 +196,15 @@ export function makeMediterraneanHouse(mats, {
 } = {}) {
   const g = new THREE.Group();
 
-  // Stone foundation plinth
-  const plinth = new THREE.Mesh(new THREE.BoxGeometry(w + 0.32, 0.58, d + 0.32), mats.stone);
-  plinth.position.y = 0.24;
+  // Stone foundation plinth (bottom flush at local y = 0.0)
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(w + 0.32, 0.50, d + 0.32), mats.stone);
+  plinth.position.y = 0.25;
   plinth.receiveShadow = castShadow;
   g.add(plinth);
 
   // Main whitewash plaster body
   const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mats.plaster);
-  body.position.y = 0.48 + h * 0.5;
+  body.position.y = 0.50 + h * 0.5;
   body.castShadow = castShadow;
   body.receiveShadow = castShadow;
   g.add(body);
@@ -393,7 +394,7 @@ export function makeOliveTree(mats, scale = 1, castShadow = true, seed = 17) {
   const g = new THREE.Group();
   const rand = mulberry32(seed);
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.25, 1.45, 7), mats.wood);
-  trunk.position.y = 0.72;
+  trunk.position.y = 0.76;
   trunk.rotation.z = 0.09;
   trunk.castShadow = castShadow;
   g.add(trunk);
@@ -437,7 +438,7 @@ export function makeLemonTree(mats, scale = 1, castShadow = true, seed = 29) {
   const g = new THREE.Group();
   const rand = mulberry32(seed);
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.17, 1.15, 7), mats.wood);
-  trunk.position.y = 0.57;
+  trunk.position.y = 0.585;
   trunk.castShadow = castShadow;
   g.add(trunk);
 
@@ -607,12 +608,12 @@ export function makeStoneBench(mats) {
 export function makeDryingNetRack(mats) {
   const g = new THREE.Group();
   for (const sx of [-1.15, 1.15]) {
-    const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 1.7, 6), mats.wood);
-    p1.position.set(sx, 0.78, -0.2);
+    const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 1.66, 6), mats.wood);
+    p1.position.set(sx, 0.85, -0.2);
     p1.rotation.x = 0.22;
     g.add(p1);
-    const p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 1.7, 6), mats.wood);
-    p2.position.set(sx, 0.78, 0.2);
+    const p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 1.66, 6), mats.wood);
+    p2.position.set(sx, 0.85, 0.2);
     p2.rotation.x = -0.22;
     g.add(p2);
   }
@@ -788,8 +789,8 @@ export function scatterCoastalFoliage(group, {
     const x = clumpX + (rand() - 0.5) * 3.4;
     const z = clumpZ + (rand() - 0.5) * 3.4;
     const info = getLand(x, z);
-    if (info.y < minY) continue;
-    dummy.position.set(x, info.y - 0.04, z);
+    if (info.y < minY || !isSpotClear(x, z, 0.42)) continue;
+    dummy.position.set(x, info.y - 0.02, z);
     dummy.rotation.set((rand() - 0.5) * 0.16, rand() * Math.PI * 2, (rand() - 0.5) * 0.16);
     const s = 0.68 + rand() * 1.05;
     dummy.scale.set(s * (0.85 + rand() * 0.35), s * (0.75 + rand() * 0.65), s * (0.85 + rand() * 0.35));
@@ -812,11 +813,11 @@ export function scatterCoastalFoliage(group, {
   const shrubIM = new THREE.InstancedMesh(shrubGeo, shrubMat, nShrub);
   const flowerPts = [];
   let si = 0;
-  for (let attempt = 0; attempt < nShrub * 6 && si < nShrub; attempt++) {
+  for (let attempt = 0; attempt < nShrub * 8 && si < nShrub; attempt++) {
     const x = centerX + (rand() * 2 - 1) * radiusX * 0.94;
     const z = centerZ + (rand() * 2 - 1) * radiusZ * 0.94;
     const info = getLand(x, z);
-    if (info.y < minY + 0.05) continue;
+    if (info.y < minY + 0.05 || !isSpotClear(x, z, 0.85)) continue;
     dummy.position.set(x, info.y + 0.06, z);
     dummy.rotation.set(rand() * 0.4, rand() * Math.PI * 2, rand() * 0.4);
     const sx = 0.72 + rand() * 1.05;
@@ -837,7 +838,7 @@ export function scatterCoastalFoliage(group, {
       for (let f = 0; f < countFl; f++) {
         flowerPts.push([
           x + (rand() - 0.5) * 0.55 * sx,
-          info.y + 0.28 * sy + 0.08 + rand() * 0.08,
+          info.y + 0.16 * sy + 0.05,
           z + (rand() - 0.5) * 0.55 * sz,
         ]);
       }
@@ -850,12 +851,12 @@ export function scatterCoastalFoliage(group, {
 
   // Additional scattered wildflowers across grass slopes
   const extraFl = lowQuality ? 18 : 48;
-  for (let attempt = 0; attempt < extraFl * 4 && flowerPts.length < 180; attempt++) {
+  for (let attempt = 0; attempt < extraFl * 5 && flowerPts.length < 180; attempt++) {
     const x = centerX + (rand() * 2 - 1) * radiusX * 0.9;
     const z = centerZ + (rand() * 2 - 1) * radiusZ * 0.9;
     const info = getLand(x, z);
-    if (info.y < minY + 0.05) continue;
-    flowerPts.push([x, info.y + 0.14 + rand() * 0.06, z]);
+    if (info.y < minY + 0.05 || !isSpotClear(x, z, 0.35)) continue;
+    flowerPts.push([x, info.y + 0.10 + rand() * 0.05, z]);
   }
 
   if (flowerPts.length > 0) {
@@ -891,11 +892,11 @@ export function scatterCoastalFoliage(group, {
   });
   const rockIM = new THREE.InstancedMesh(rockGeo, rockMat, nRock);
   let ri = 0;
-  for (let attempt = 0; attempt < nRock * 5 && ri < nRock; attempt++) {
+  for (let attempt = 0; attempt < nRock * 7 && ri < nRock; attempt++) {
     const x = centerX + (rand() * 2 - 1) * radiusX * 0.95;
     const z = centerZ + (rand() * 2 - 1) * radiusZ * 0.95;
     const info = getLand(x, z);
-    if (info.y < 0.28) continue;
+    if (info.y < 0.28 || !isSpotClear(x, z, 0.75)) continue;
     dummy.position.set(x, info.y + 0.02, z);
     dummy.rotation.set(rand() * 2, rand() * 3, rand() * 2);
     const sx = 0.55 + rand() * 1.15;

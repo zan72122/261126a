@@ -5,6 +5,7 @@ import { createSharedMaterials } from './core/palette.js';
 import { Input } from './core/input.js';
 import { Audio } from './core/audio.js';
 import { Post } from './core/post.js';
+import { PhysicsWorld } from './core/physics.js';
 import { Sky } from './world/sky.js';
 import { ValleyTerrain } from './world/terrain.js';
 import { TrackNetwork } from './world/tracks.js';
@@ -101,18 +102,21 @@ export class Game {
     this.bounceFill.position.set(-0.6, 0.4, 0.7).normalize().multiplyScalar(50);
     this.scene.add(this.bounceFill);
 
-    // Alpine Valley World
+    // Alpine Valley World & Physics
+    this.physics = new PhysicsWorld();
+    window.__physics = this.physics;
+
     this.terrain = new ValleyTerrain(this.mats, { segs: this.q.terrainSegs, low: this.q.low });
     this.scene.add(this.terrain.group);
 
-    this.tracks = new TrackNetwork(this.mats, { low: this.q.low });
+    this.tracks = new TrackNetwork(this.mats, { low: this.q.low, physics: this.physics });
     this.scene.add(this.tracks.group);
 
-    this.village = new VillageWorld(this.mats, { low: this.q.low });
-    this.scene.add(this.village.group);
-
-    this.stations = new StationsAndSummit(this.mats);
+    this.stations = new StationsAndSummit(this.mats, this.physics);
     this.scene.add(this.stations.group);
+
+    this.village = new VillageWorld(this.mats, { low: this.q.low, physics: this.physics });
+    this.scene.add(this.village.group);
 
     this.clouds = new CloudWorld({ maxPuffs: this.q.puffs, deckSegs: this.q.deckSegs });
     this.scene.add(this.clouds.group);

@@ -214,6 +214,7 @@ export class Girl {
     // Layered sea-breeze veil canopy for slow descent
     this.floatGroup = new THREE.Group();
     this.floatGroup.visible = false;
+    this.floatGroup.scale.setScalar(0.001);
     this.floatMat = new THREE.MeshBasicMaterial({
       color: 0xffdf9e,
       transparent: true,
@@ -272,6 +273,7 @@ export class Girl {
 
     if (this.isFloating) {
       this.floatGroup.visible = true;
+      this.floatGroup.scale.setScalar(1);
       this.floatMat.opacity = 0.24 + 0.08 * Math.sin(t * 3.2);
       this.bodyRoot.position.y = Math.sin(t * 2.4) * 0.04;
       this.legL.rotation.x = 0.12 + Math.sin(t * 1.9) * 0.08;
@@ -284,6 +286,7 @@ export class Girl {
     }
 
     this.floatGroup.visible = false;
+    this.floatGroup.scale.setScalar(0.001);
 
     if (this.isSeated) {
       this.bodyRoot.position.y = -0.24;

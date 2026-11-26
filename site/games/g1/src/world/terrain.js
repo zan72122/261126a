@@ -12,17 +12,7 @@ import {
   VILLAGE_POS,
 } from '../core/env.js';
 import { clamp, lerp, smoothstep } from '../core/math.js';
-import { TRACK_DEFS } from './trackData.js';
-
-const GROUND_RAIL_SPANS = [];
-for (const [id, def] of Object.entries(TRACK_DEFS)) {
-  if (id === 'seg5_viaduct') continue;
-  const pts = def.pts;
-  for (let i = 0; i < pts.length - 1; i++) {
-    if (id === 'seg0_home_village' && (i === 2 || i === 3)) continue;
-    GROUND_RAIL_SPANS.push([pts[i], pts[i + 1]]);
-  }
-}
+import { BUILDING_PADS, TRACK_POLYLINES } from './layout.js';
 
 function hash2(x, z) {
   const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453;
@@ -66,11 +56,7 @@ function flatten(h, targetY, dist, innerR, outerR) {
   return lerp(h, targetY, w);
 }
 
-/**
- * Deterministic terrain height at (x, z) across the Swiss alpine valley.
- * Keeps the Summit Ridge as a promontory dropping cleanly into the vast cloud sea behind it.
- */
-export function heightAt(x, z) {
+function baseHeightAt(x, z) {
   const valleyDist = Math.abs(x + 6) * 0.0085;
   let h = (fbm(x * 0.012 + 3.1, z * 0.012 + 1.7) - 0.45) * 9.0;
 
@@ -95,10 +81,10 @@ export function heightAt(x, z) {
     h = lerp(h, 36.5, gw * 0.75);
   }
 
-  // Keep valley floor LOW under the Grand Stone Viaduct AND open into a deep Cloud Sea basin north of the ridge!
+  // Keep valley floor LOW under the Grand Stone Viaduct AND open into a deep Cloud Sea basin north of the ridge
   const dViaduct = distToSeg(x, z, 30, -340, -10, -378);
-  if (dViaduct < 52) {
-    const carve = 1 - smoothstep(18, 52, dViaduct);
+  if (dViaduct < 54) {
+    const carve = 1 - smoothstep(18, 54, dViaduct);
     h = lerp(h, 14.0, carve);
   }
   if (z < -392) {
@@ -107,16 +93,16 @@ export function heightAt(x, z) {
   }
 
   // Summit Ridge Promontory Plateau (y = 75.75) overlooking the cloud sea
-  const summitD = Math.hypot((x - (SUMMIT_POS.x + 2)) * 0.76, (z - (SUMMIT_POS.z - 2)) * 1.05);
-  h = flatten(h, SUMMIT_POS.y - 0.25, summitD, 14, 29);
-
-  // Keep final viaduct approach clear
-  const dSummitTrack = distToSeg(x, z, -12, -380, 33, -393);
-  if (dSummitTrack < 8 && x < 36) {
-    const tApproach = clamp((x + 12) / 45, 0, 1);
-    const maxAllowed = lerp(60.0, SUMMIT_POS.y - 0.18, tApproach);
-    h = Math.min(h, maxAllowed);
+  // Kept strictly east of x=11 and south of z=-406 cliff edge so viaduct approach never gets buried
+  const summitD = Math.hypot((x - 22.5) * 0.82, (z + 398.5) * 1.15);
+  h = flatten(h, SUMMIT_POS.y - 0.25, summitD, 11.5, 22.0);
+  if (z < -405.8) {
+    const northDrop = smoothstep(-405.8, -418.0, z);
+    h = lerp(h, 16.0 + ridgeDetail * 0.45, northDrop * 0.9);
   }
+
+  // Keep general valley floor dry above water plane before flattening stations and carving river/lake
+  h = Math.max(0.32, h);
 
   // Home & Garden + Village Halt flat meadow (y = 0)
   h = flatten(h, 0.0, Math.hypot(x + 3, z - 1), 16, 36);
@@ -132,22 +118,47 @@ export function heightAt(x, z) {
   // Lake station shore (y = 0.25)
   h = flatten(h, LAKE_POS.y - 0.25, Math.hypot(x - LAKE_POS.x, z - LAKE_POS.z), 12, 28);
 
-  // Gently conform terrain under ground-level rail corridors
-  for (let i = 0; i < GROUND_RAIL_SPANS.length; i++) {
-    const [a, b] = GROUND_RAIL_SPANS[i];
-    const vx = b[0] - a[0];
-    const vz = b[2] - a[2];
-    const wx = x - a[0];
-    const wz = z - a[2];
-    const lenSq = vx * vx + vz * vz;
-    const t = lenSq > 1e-5 ? clamp((wx * vx + wz * vz) / lenSq, 0, 1) : 0;
-    const cx = a[0] + vx * t;
-    const cz = a[2] + vz * t;
-    const d = Math.hypot(x - cx, z - cz);
-    if (d < 8.5) {
-      const targetRailY = lerp(a[1], b[1], t) - 0.12;
-      const w = 1 - smoothstep(2.4, 8.5, d);
-      h = lerp(h, targetRailY, w * 0.92);
+  // Conform terrain cleanly under ground-level rail splines and keep viaduct approach carved clear
+  for (const poly of Object.values(TRACK_POLYLINES)) {
+    if (x < poly.minX - 18 || x > poly.maxX + 18 || z < poly.minZ - 18 || z > poly.maxZ + 18) {
+      continue;
+    }
+    let bestD = Infinity;
+    let bestY = 0;
+    let bestU = 0;
+    let bestIsBridge = false;
+    for (let i = 0; i < poly.spans.length; i++) {
+      const sp = poly.spans[i];
+      const vx = sp.bx - sp.ax;
+      const vz = sp.bz - sp.az;
+      const wx = x - sp.ax;
+      const wz = z - sp.az;
+      const lenSq = vx * vx + vz * vz;
+      const t = lenSq > 1e-5 ? clamp((wx * vx + wz * vz) / lenSq, 0, 1) : 0;
+      const d = Math.hypot(x - (sp.ax + vx * t), z - (sp.az + vz * t));
+      if (d < bestD) {
+        bestD = d;
+        bestY = lerp(sp.ay, sp.by, t);
+        bestU = lerp(sp.au, sp.bu, t);
+        bestIsBridge = sp.isBridge;
+      }
+    }
+
+    if (poly.id === 'seg5_viaduct') {
+      if (bestU < 0.84 && bestD < 16.0) {
+        const w = 1 - smoothstep(6.0, 16.0, bestD);
+        const drop = 3.2 * (1 - smoothstep(0.74, 0.84, bestU));
+        const maxAllowed = bestY - 0.14 - drop;
+        if (h > maxAllowed) {
+          h = lerp(h, maxAllowed, w);
+        }
+      } else if (bestU >= 0.84 && bestD < 8.5) {
+        const w = 1 - smoothstep(2.4, 8.5, bestD);
+        h = lerp(h, bestY - 0.14, w * 0.94);
+      }
+    } else if (!bestIsBridge && bestD < 8.5) {
+      const w = 1 - smoothstep(2.4, 8.5, bestD);
+      h = lerp(h, bestY - 0.14, w * 0.94);
     }
   }
 
@@ -181,6 +192,32 @@ export function heightAt(x, z) {
   return h;
 }
 
+// Precompute terraced pad elevations once so slope chalets and barns sit flush with zero buried corners
+const RESOLVED_PADS = BUILDING_PADS.map((p) => ({
+  ...p,
+  y: p.fixedY !== undefined ? p.fixedY : baseHeightAt(p.x, p.z),
+}));
+
+/**
+ * Deterministic terrain height at (x, z) across the Swiss alpine valley.
+ * Keeps the Summit Ridge as a promontory dropping cleanly into the vast cloud sea behind it,
+ * conforms smoothly under ground-level rail splines, and levels terraced building pads.
+ */
+export function heightAt(x, z) {
+  let h = baseHeightAt(x, z);
+  for (let i = 0; i < RESOLVED_PADS.length; i++) {
+    const pad = RESOLVED_PADS[i];
+    const dx = x - pad.x;
+    const dz = z - pad.z;
+    if (Math.abs(dx) > pad.outerR || Math.abs(dz) > pad.outerR) continue;
+    const d = Math.hypot(dx, dz);
+    if (d < pad.outerR) {
+      h = flatten(h, pad.y, d, pad.innerR, pad.outerR);
+    }
+  }
+  return h;
+}
+
 /**
  * Generates the alpine valley terrain with surface-aware procedural micro-detail
  * (meadow grass, stratified alpine granite, wind-sculpted snow), aerial perspective,
@@ -198,7 +235,6 @@ export class ValleyTerrain {
 
     const pos = geo.attributes.position;
     const colors = new Float32Array(pos.count * 3);
-    // Surface weights: x = rock, y = snow, z = sand/gravel
     const weights = new Float32Array(pos.count * 3);
 
     const cGrass = new THREE.Color('#5d7b47');
@@ -267,7 +303,6 @@ export class ValleyTerrain {
       metalness: 0.02,
     });
 
-    // Inject clean world-space procedural surface detail (no stretched UV grass lines on snow!)
     mat.onBeforeCompile = (shader) => {
       shader.vertexShader = shader.vertexShader
         .replace(
@@ -308,11 +343,8 @@ export class ValleyTerrain {
           float snowDrift = tNoise(wp * 0.25 + vec2(vTerrainWorld.y * 0.08, 0.0));
           float grassMask = clamp(1.0 - max(vSurfW.x, max(vSurfW.y, vSurfW.z)), 0.0, 1.0);
 
-          // Grass micro-mottling
           diffuseColor.rgb *= mix(1.0, 0.89 + (g1 * 0.55 + g2 * 0.45) * 0.22, grassMask);
-          // Stratified alpine rock grain
           diffuseColor.rgb *= mix(1.0, 0.82 + rockStrata * 0.34, vSurfW.x);
-          // Subtle wind-carved snow relief (pure pale blue-white, never green/dark dashes)
           diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.86, 0.91, 0.96), vec3(0.98, 0.99, 1.0), snowDrift), vSurfW.y * 0.36);`
         );
     };
@@ -321,10 +353,8 @@ export class ValleyTerrain {
     mesh.receiveShadow = true;
     this.group.add(mesh);
 
-    // Distant Alpine Snow Peaks rising far across the cloud sea (aerial perspective silhouettes)
     this._buildDistantPeaks();
 
-    // Turquoise Alpine River, Brook & Lake water plane with Fresnel sky, sun glitter & lantern reflections
     const waterGeo = new THREE.PlaneGeometry(360, 320, low ? 16 : 36, low ? 16 : 36);
     waterGeo.rotateX(-Math.PI / 2);
     this.waterMat = new THREE.ShaderMaterial({
@@ -369,7 +399,6 @@ export class ValleyTerrain {
         }
 
         void main() {
-          // Multi-directional wave ripples & analytic normal perturbation
           float px = vWorld.x;
           float pz = vWorld.z;
           float t = uTime;
@@ -386,17 +415,14 @@ export class ValleyTerrain {
           vec3 V = normalize(cameraPosition - vWorld);
           vec3 R = reflect(-V, N);
 
-          // Water body turquoise shading
           float waveVal = sin(px * 0.32 + pz * 0.68 + t * 1.1) * 0.5 + 0.5;
           vec3 bodyCol = mix(uDeep, uShallow, 0.32 + waveVal * 0.48);
 
-          // Fresnel sky reflection
           float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.4);
           fresnel = clamp(0.16 + fresnel * 0.72, 0.0, 0.88);
           vec3 skyRefl = mix(uSkyHorizon, uSkyTop, clamp(R.y * 1.4, 0.0, 1.0));
           vec3 col = mix(bodyCol, skyRefl, fresnel);
 
-          // Sun specular glitter path & elongated directional wave glints
           vec3 sunD = normalize(uSunDir);
           float specBroad = pow(max(dot(R, sunD), 0.0), 32.0) * 0.32;
           float specSharp = pow(max(dot(R, sunD), 0.0), 150.0) * 0.95;
@@ -405,7 +431,6 @@ export class ValleyTerrain {
           float sparkle = smoothstep(0.84, 0.98, (wA * wB) * 0.5 + 0.5);
           col += uSunGold * (specBroad + specSharp + sparkle * fresnel * 0.18);
 
-          // Warm station lantern & village window reflections on lake and river
           float lGlow =
             lanternGlint(vWorld, uLantern1, t, 14.0) * 0.48 +
             lanternGlint(vWorld, uLantern2, t, 16.0) * 0.38 +
@@ -422,8 +447,6 @@ export class ValleyTerrain {
   }
 
   _buildDistantPeaks() {
-    // Sculpted distant snow-capped Alpine mountain ranges far across the cloud sea
-    // (kept low and wide on the horizon so the layered backlit cloud sea dominates the summit vista)
     const ridgeGeo = new THREE.PlaneGeometry(1600, 320, 72, 16);
     ridgeGeo.rotateX(-Math.PI / 2);
     const pos = ridgeGeo.attributes.position;

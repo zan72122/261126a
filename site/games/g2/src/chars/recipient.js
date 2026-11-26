@@ -1,6 +1,7 @@
 // Welcoming recipient & waving Provençal villagers at Clock Tower Square & meadow
 import * as THREE from '../../lib/three.module.js';
 import { PALETTE } from '../core/palette.js';
+import { mergeColoredParts } from '../core/math.js';
 import { makeLinenBumpTexture } from '../core/textures.js';
 
 export class RecipientCharacter {
@@ -34,48 +35,42 @@ export class RecipientCharacter {
     const eyeMat = new THREE.MeshStandardMaterial({ color: PALETTE.eyeDark, roughness: 0.25 });
 
     const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.25, 0.68, 14), skirtMat);
-    skirt.position.y = 0.36;
+    skirt.position.y = 0.34;
     this.group.add(skirt);
 
     const apron = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.23, 0.56, 12, 1, false, -0.9, 1.8), apronMat);
-    apron.position.set(0, 0.36, 0.02);
+    apron.position.set(0, 0.34, 0.02);
     this.group.add(apron);
 
     const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.145, 0.42, 12), blouseMat);
     torso.position.y = 0.89;
     this.group.add(torso);
 
-    this.armL = new THREE.Group();
-    this.armL.position.set(-0.17, 1.06, 0);
-    const armLMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.044, 0.30, 4, 8), blouseMat);
-    armLMesh.position.y = -0.18;
-    this.armL.add(armLMesh);
-    const bouquet = new THREE.Group();
-    bouquet.position.set(0, -0.34, 0.08);
-    const wrap = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.16, 8), apronMat);
-    wrap.rotation.x = Math.PI;
-    bouquet.add(wrap);
+    const armLParts = [
+      { geo: new THREE.CapsuleGeometry(0.044, 0.30, 4, 8), mat: blouseMat, pos: new THREE.Vector3(0, -0.18, 0) },
+      { geo: new THREE.ConeGeometry(0.08, 0.16, 8), mat: apronMat, pos: new THREE.Vector3(0, -0.34, 0.08), rot: new THREE.Euler(Math.PI, 0, 0) },
+    ];
     for (const [bx, by, col] of [
       [-0.03, 0.09, PALETTE.lavender],
       [0.03, 0.10, PALETTE.apricotSoft],
       [0, 0.12, PALETTE.lavenderLight],
     ]) {
-      const fl = new THREE.Mesh(new THREE.SphereGeometry(0.042, 7, 6), new THREE.MeshStandardMaterial({ color: col, roughness: 0.75 }));
-      fl.position.set(bx, by, 0);
-      bouquet.add(fl);
+      armLParts.push({
+        geo: new THREE.SphereGeometry(0.042, 7, 6),
+        mat: new THREE.MeshStandardMaterial({ color: col, roughness: 0.75 }),
+        pos: new THREE.Vector3(bx, -0.34 + by, 0.08),
+      });
     }
-    this.armL.add(bouquet);
+    this.armL = mergeColoredParts(armLParts);
+    this.armL.position.set(-0.17, 1.06, 0);
     this.armL.rotation.x = -0.65;
     this.group.add(this.armL);
 
-    this.armR = new THREE.Group();
+    this.armR = mergeColoredParts([
+      { geo: new THREE.CapsuleGeometry(0.044, 0.30, 4, 8), mat: blouseMat, pos: new THREE.Vector3(0, -0.18, 0) },
+      { geo: new THREE.SphereGeometry(0.04, 7, 6), mat: skinMat, pos: new THREE.Vector3(0, -0.36, 0) },
+    ]);
     this.armR.position.set(0.17, 1.06, 0);
-    const armRMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.044, 0.30, 4, 8), blouseMat);
-    armRMesh.position.y = -0.18;
-    this.armR.add(armRMesh);
-    const handR = new THREE.Mesh(new THREE.SphereGeometry(0.04, 7, 6), skinMat);
-    handR.position.y = -0.36;
-    this.armR.add(handR);
     this.group.add(this.armR);
 
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.145, 14, 12), skinMat);
@@ -113,7 +108,7 @@ export class RecipientCharacter {
     kerchief.position.y = 1.11;
     this.group.add(kerchief);
 
-    this.receivedLetterSpot = new THREE.Group();
+    this.receivedLetterSpot = new THREE.Object3D();
     this.receivedLetterSpot.position.set(0, 0.85, 0.25);
     this.group.add(this.receivedLetterSpot);
 
@@ -139,6 +134,7 @@ export class RecipientCharacter {
 
 export function makeVillager({ coatColor = PALETTE.lavender, hatColor = PALETTE.creamWarm, hairColor = PALETTE.hairBrown, lowQuality = false } = {}) {
   const g = new THREE.Group();
+  g.name = 'villager';
   const linenBump = makeLinenBumpTexture(3, 3);
   const skinMat = new THREE.MeshStandardMaterial({ color: PALETTE.skin, roughness: 0.70 });
   const coatMat = new THREE.MeshStandardMaterial({
@@ -155,7 +151,7 @@ export function makeVillager({ coatColor = PALETTE.lavender, hatColor = PALETTE.
 
   for (const lx of [-0.08, 0.08]) {
     const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.052, 0.44, 4, 6), trousersMat);
-    leg.position.set(lx, 0.28, 0);
+    leg.position.set(lx, 0.275, 0);
     g.add(leg);
   }
   const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 0.48, 10), coatMat);
@@ -167,11 +163,10 @@ export function makeVillager({ coatColor = PALETTE.lavender, hatColor = PALETTE.
   armL.rotation.z = 0.14;
   g.add(armL);
 
-  const armR = new THREE.Group();
+  const armRGeo = new THREE.CapsuleGeometry(0.04, 0.28, 4, 6);
+  armRGeo.translate(0, -0.16, 0);
+  const armR = new THREE.Mesh(armRGeo, shirtMat);
   armR.position.set(0.17, 0.96, 0);
-  const armRMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.04, 0.28, 4, 6), shirtMat);
-  armRMesh.position.y = -0.16;
-  armR.add(armRMesh);
   armR.rotation.set(-2.25, 0, -0.2);
   g.add(armR);
 

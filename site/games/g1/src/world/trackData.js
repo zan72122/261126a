@@ -17,8 +17,8 @@ export const TRACK_DEFS = {
     switchId: 'sw1',
     next: ['seg1_main', 'seg1_flower'],
     nextS: [0, 0],
-    elevatedFrom: 0.42,
-    elevatedTo: 0.65,
+    elevatedFrom: 0.46,
+    elevatedTo: 0.66,
   },
   seg1_main: {
     pts: [

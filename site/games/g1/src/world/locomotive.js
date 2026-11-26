@@ -55,21 +55,23 @@ export class Locomotive {
       }
     }
 
-    const plow = new THREE.Mesh(new THREE.ConeGeometry(0.86, 0.55, 4), m.ironDark);
-    plow.rotation.y = Math.PI / 4;
+    // Sloped cowcatcher blade cleanly clear of rail heads (local y >= 0.12)
+    const plowGeo = new THREE.ConeGeometry(0.68, 0.52, 4);
+    plowGeo.rotateY(Math.PI / 4);
+    plowGeo.scale(1.18, 0.52, 0.44);
+    const plow = new THREE.Mesh(plowGeo, m.ironDark);
     plow.rotation.x = Math.PI / 2;
-    plow.scale.set(1.0, 0.7, 0.45);
-    plow.position.set(0, 0.3, 2.75);
+    plow.position.set(0, 0.34, 2.74);
     this.group.add(plow);
 
-    // 2. Coupled Spoked Driving Wheels with Counterweights + Guide Wheels
+    // 2. Coupled Spoked Driving Wheels with Counterweights + Guide Wheels (bottoms at local y = 0.0)
     const wheelZs = [1.05, -0.25];
     for (const wz of wheelZs) {
       for (const side of [-1, 1]) {
         const wGroup = new THREE.Group();
-        wGroup.position.set(side * 0.58, 0.42, wz);
+        wGroup.position.set(side * 0.56, 0.42, wz);
 
-        const tire = new THREE.Mesh(new THREE.TorusGeometry(0.39, 0.045, 8, 20), m.ironSteel);
+        const tire = new THREE.Mesh(new THREE.TorusGeometry(0.375, 0.045, 8, 20), m.ironSteel);
         tire.rotation.y = Math.PI / 2;
         tire.castShadow = true;
         wGroup.add(tire);
@@ -312,14 +314,11 @@ export class Locomotive {
     this.girlSeatLocal = new THREE.Vector3(0.28, 0.84, -1.52);
     this.puppySeatLocal = new THREE.Vector3(-0.34, 0.84, -1.4);
 
-    const hitBody = new THREE.Mesh(
-      new THREE.BoxGeometry(2.1, 2.6, 5.4),
-      new THREE.MeshBasicMaterial({ visible: false })
-    );
-    hitBody.position.set(0, 1.35, 0);
-    hitBody.userData.interact = 'loco';
-    this.group.add(hitBody);
-    this.interactables.push(hitBody);
+    // Tag visible body parts for tap raycasting (no oversized invisible hit mesh)
+    for (const part of [frame, runningBoard, boiler, smokebox, bulkhead, bunker, roofArc]) {
+      part.userData.interact = 'loco';
+      this.interactables.push(part);
+    }
   }
 
   getWorldPoint(localVec, out = new THREE.Vector3()) {

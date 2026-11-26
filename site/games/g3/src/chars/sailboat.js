@@ -12,6 +12,8 @@ export class Sailboat {
     this.speed = 0;
     this.heel = 0;
     this.pitch = 0;
+    this.waveRoll = 0;
+    this.wavePitch = 0;
     this.sailAngle = 0.12;
     this.billow = 0.18;
 
@@ -215,7 +217,7 @@ export class Sailboat {
 
     // Inviting ring around sailboat when docked/waiting
     this.boardRing = new THREE.Mesh(
-      new THREE.RingGeometry(2.5, 2.95, 36).rotateX(-Math.PI / 2),
+      new THREE.RingGeometry(1.45, 1.75, 36).rotateX(-Math.PI / 2),
       new THREE.MeshBasicMaterial({
         color: 0xffcf7a,
         transparent: true,
@@ -319,8 +321,12 @@ export class Sailboat {
     this.group.position.copy(this.pos);
     this.group.rotation.y = this.yaw;
 
-    const targetHeel = -steerX * 0.15 + Math.sin(t * 1.4) * 0.028 + breezeBoost * 0.05;
-    const targetPitch = Math.cos(t * 1.1) * 0.024 - Math.min(0.09, this.speed * 0.006);
+    const targetHeel = this.waveRoll !== 0 || this.wavePitch !== 0
+      ? this.waveRoll + breezeBoost * 0.04
+      : (-steerX * 0.15 + Math.sin(t * 1.4) * 0.028 + breezeBoost * 0.05);
+    const targetPitch = this.wavePitch !== 0
+      ? this.wavePitch - Math.min(0.08, this.speed * 0.005)
+      : (Math.cos(t * 1.1) * 0.024 - Math.min(0.09, this.speed * 0.006));
     this.heel += (targetHeel - this.heel) * Math.min(1, dt * 4);
     this.pitch += (targetPitch - this.pitch) * Math.min(1, dt * 4);
 

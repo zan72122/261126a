@@ -115,15 +115,9 @@ export class MountainDog {
     this.tail.add(tailMesh);
     this.bodyRoot.add(this.tail);
 
-    // Hit cylinder
-    const hit = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.34 * scale, 0.34 * scale, 0.68 * scale, 8),
-      new THREE.MeshBasicMaterial({ visible: false })
-    );
-    hit.position.y = 0.34 * scale;
-    hit.userData.interact = 'puppy';
-    this.group.add(hit);
-    this.interactables.push(hit);
+    torso.userData.interact = 'puppy';
+    skull.userData.interact = 'puppy';
+    this.interactables.push(torso, skull);
   }
 
   update(dt, time, { moving = false, excited = false } = {}) {

@@ -3,6 +3,7 @@
 // (stone walls, handcart, baskets, villager), and cohesive Clock Tower Square.
 import * as THREE from '../../lib/three.module.js';
 import { PALETTE } from '../core/palette.js';
+import { mergeColoredParts } from '../core/math.js';
 import {
   makeLimestoneTextures,
   makeRoofTileTextures,
@@ -13,10 +14,10 @@ import {
   makeAwningTexture,
 } from '../core/textures.js';
 import { SUN_DIR } from './sky.js';
-import { LANDMARKS, terrainHeight, riverCenterZ, WATER_Y } from './terrain.js';
+import { LANDMARKS, rawTerrainHeight, terrainHeight, riverCenterZ, WATER_Y } from './terrain.js';
 import { makeVillager } from '../chars/recipient.js';
 
-export function buildVillage(lowQuality = false) {
+export function buildVillage(lowQuality = false, colliders = null) {
   const root = new THREE.Group();
   root.name = 'village';
 
@@ -207,45 +208,49 @@ export function buildVillage(lowQuality = false) {
   }
 
   // Woven wicker basket prop (with lavender bundles or apricots)
-  function makeWickerBasket(fillType = 0, scale = 1.0) {
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.23, 0.32, 10), matWicker);
-    body.position.y = 0.16;
-    g.add(body);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.032, 6, 12), matWood);
+  function addWickerBasketParts(targetGroup, ox, oy, oz, fillType = 0, scale = 1.0) {
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.32 * scale, 0.23 * scale, 0.32 * scale, 10), matWicker);
+    body.position.set(ox, oy + 0.16 * scale, oz);
+    targetGroup.add(body);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.32 * scale, 0.032 * scale, 6, 12), matWood);
     rim.rotation.x = Math.PI / 2;
-    rim.position.y = 0.32;
-    g.add(rim);
+    rim.position.set(ox, oy + 0.32 * scale, oz);
+    targetGroup.add(rim);
 
     if (fillType === 0) {
       for (let i = 0; i < 5; i++) {
         const ang = (i / 5) * Math.PI * 2;
-        const sprig = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.26, 5), matLavender);
-        sprig.position.set(Math.cos(ang) * 0.11, 0.36, Math.sin(ang) * 0.11);
+        const sprig = new THREE.Mesh(new THREE.ConeGeometry(0.08 * scale, 0.26 * scale, 5), matLavender);
+        sprig.position.set(ox + Math.cos(ang) * 0.11 * scale, oy + 0.36 * scale, oz + Math.sin(ang) * 0.11 * scale);
         sprig.rotation.z = Math.cos(ang) * 0.25;
-        g.add(sprig);
+        targetGroup.add(sprig);
       }
     } else {
       const fruitMat = fillType === 1 ? matApricot : new THREE.MeshStandardMaterial({ color: PALETTE.apricotSoft, roughness: 0.7 });
       for (let i = 0; i < 5; i++) {
         const ang = (i / 5) * Math.PI * 2;
-        const fr = new THREE.Mesh(new THREE.SphereGeometry(0.085, 7, 6), fruitMat);
-        fr.position.set(Math.cos(ang) * 0.11, 0.32, Math.sin(ang) * 0.11);
-        g.add(fr);
+        const fr = new THREE.Mesh(new THREE.SphereGeometry(0.085 * scale, 7, 6), fruitMat);
+        fr.position.set(ox + Math.cos(ang) * 0.11 * scale, oy + 0.32 * scale, oz + Math.sin(ang) * 0.11 * scale);
+        targetGroup.add(fr);
       }
     }
-    g.scale.setScalar(scale);
+  }
+
+  function makeWickerBasket(fillType = 0, scale = 1.0) {
+    const g = new THREE.Group();
+    g.name = 'basket';
+    addWickerBasketParts(g, 0, 0, 0, fillType, scale);
     enableCast(g);
     return g;
   }
 
-  // Rustic 1970s Provençal wooden two-wheeled handcart loaded with harvest baskets
+  // Rustic 1970s Provençal wooden two-wheeled handcart loaded with harvest baskets (flat Mesh children)
   function makeWoodenHandcart() {
     const c = new THREE.Group();
+    c.name = 'handcart';
     const bed = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.10, 0.96), matWood);
     bed.position.y = 0.48;
     c.add(bed);
-    // Slatted side rails
     for (const sz of [-0.46, 0.46]) {
       const rail = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.28, 0.06), matWood);
       rail.position.set(0, 0.66, sz);
@@ -254,44 +259,34 @@ export function buildVillage(lowQuality = false) {
     const backBoard = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.28, 0.96), matWood);
     backBoard.position.set(-0.70, 0.66, 0);
     c.add(backBoard);
-    // Two pull handles extending forward (+X)
     for (const sz of [-0.34, 0.34]) {
       const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.06, 0.06), matWood);
       shaft.position.set(1.05, 0.42, sz);
       shaft.rotation.z = -0.14;
       c.add(shaft);
     }
-    // Rest leg at front
     const prop = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.38, 0.56), matWood);
     prop.position.set(0.65, 0.22, 0);
     c.add(prop);
 
-    // Two spoked wooden wheels with iron rims
     for (const wz of [-0.54, 0.54]) {
-      const wheel = new THREE.Group();
       const tire = new THREE.Mesh(new THREE.TorusGeometry(0.38, 0.04, 6, 16), matIron);
-      wheel.add(tire);
+      tire.position.set(-0.08, 0.39, wz);
+      c.add(tire);
       const felloe = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.032, 6, 16), matWood);
-      wheel.add(felloe);
+      felloe.position.set(-0.08, 0.39, wz);
+      c.add(felloe);
       for (let s = 0; s < 4; s++) {
         const spoke = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.66, 5), matWood);
         spoke.rotation.z = (s * Math.PI) / 4;
-        wheel.add(spoke);
+        spoke.position.set(-0.08, 0.39, wz);
+        c.add(spoke);
       }
-      wheel.position.set(-0.08, 0.39, wz);
-      c.add(wheel);
     }
 
-    // Harvest baskets resting inside the cart
-    const b1 = makeWickerBasket(0, 0.92);
-    b1.position.set(-0.34, 0.52, -0.15);
-    c.add(b1);
-    const b2 = makeWickerBasket(1, 0.85);
-    b2.position.set(0.24, 0.52, 0.16);
-    c.add(b2);
-    const b3 = makeWickerBasket(0, 0.78);
-    b3.position.set(-0.22, 0.52, 0.24);
-    c.add(b3);
+    addWickerBasketParts(c, -0.34, 0.52, -0.15, 0, 0.92);
+    addWickerBasketParts(c, 0.24, 0.52, 0.16, 1, 0.85);
+    addWickerBasketParts(c, -0.22, 0.52, 0.24, 0, 0.78);
 
     enableCast(c);
     return c;
@@ -356,7 +351,7 @@ export function buildVillage(lowQuality = false) {
     for (const px of [-1.22, 1.22]) {
       for (const pz of [-0.52, 0.52]) {
         const post = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.055, pz < 0 ? 2.45 : 2.18, 6), matWood);
-        post.position.set(px, pz < 0 ? 1.22 : 1.09, pz);
+        post.position.set(px, pz < 0 ? 1.225 : 1.095, pz);
         s.add(post);
       }
     }
@@ -481,46 +476,148 @@ export function buildVillage(lowQuality = false) {
     return g;
   }
 
+  function makeCottage({ w = 6.2, h = 4.2, d = 5.0, wallMat = matStone, roofMat = matRoof, shutterMat = matTurquoise, chimney = true, pergola = false, bakerySign = false }) {
+    const g = new THREE.Group();
+    g.name = 'cottage';
+
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(w + 0.22, 0.45, d + 0.22), matStoneTrim);
+    plinth.position.y = 0.225;
+    g.add(plinth);
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+    body.position.y = h / 2;
+    g.add(body);
+
+    const roofH = 1.72;
+    const roofGeo = new THREE.ConeGeometry(Math.hypot(w, d) * 0.59, roofH, 4);
+    roofGeo.rotateY(Math.PI / 4);
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.scale.set(w / Math.hypot(w, d) * 1.56, 1, d / Math.hypot(w, d) * 1.56);
+    roof.position.y = h + roofH / 2 - 0.12;
+    g.add(roof);
+
+    const eave = new THREE.Mesh(new THREE.BoxGeometry(w + 0.48, 0.12, d + 0.48), matWood);
+    eave.position.y = h - 0.04;
+    g.add(eave);
+
+    if (chimney) {
+      const ch = new THREE.Mesh(new THREE.BoxGeometry(0.65, 1.35, 0.65), matStoneWarm);
+      ch.position.set(w * 0.28, h + 0.9, -d * 0.22);
+      g.add(ch);
+      const chPot = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.19, 0.35, 8), matTerracotta);
+      chPot.position.set(w * 0.28, h + 1.72, -d * 0.22);
+      g.add(chPot);
+    }
+
+    const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.26, 2.22, 0.18), matStoneTrim);
+    doorFrame.position.set(0, 1.11, d / 2 + 0.02);
+    g.add(doorFrame);
+    const door = new THREE.Mesh(new THREE.BoxGeometry(1.02, 2.02, 0.14), shutterMat);
+    door.position.set(0, 1.04, d / 2 + 0.07);
+    g.add(door);
+
+    const step = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.22, 0.72), matStoneWarm);
+    step.position.set(0, 0.11, d / 2 + 0.36);
+    g.add(step);
+
+    for (const sx of [-w * 0.29, w * 0.29]) {
+      const sill = new THREE.Mesh(new THREE.BoxGeometry(1.08, 0.12, 0.26), matStoneTrim);
+      sill.position.set(sx, 1.76, d / 2 + 0.08);
+      g.add(sill);
+      const win = new THREE.Mesh(new THREE.BoxGeometry(0.86, 1.0, 0.12), matGlassWarm);
+      win.position.set(sx, 2.3, d / 2 + 0.05);
+      g.add(win);
+      for (const side of [-1, 1]) {
+        const sh = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.02, 0.1), shutterMat);
+        sh.position.set(sx + side * 0.6, 2.3, d / 2 + 0.06);
+        g.add(sh);
+      }
+      const box = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.22, 0.28), matTerracotta);
+      box.position.set(sx, 1.62, d / 2 + 0.18);
+      g.add(box);
+      const blooms = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18, 1), matLavender);
+      blooms.scale.set(2.3, 0.78, 0.9);
+      blooms.position.set(sx, 1.80, d / 2 + 0.20);
+      g.add(blooms);
+    }
+
+    if (pergola) {
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(w * 0.76, 0.12, 2.0), matWood);
+      frame.position.set(0, 2.55, d / 2 + 1.0);
+      g.add(frame);
+      const vine = new THREE.Mesh(new THREE.DodecahedronGeometry(0.55, 1), matOlive);
+      vine.scale.set(3.2, 0.35, 1.5);
+      vine.position.set(0, 2.72, d / 2 + 1.0);
+      g.add(vine);
+      for (const px of [-w * 0.34, w * 0.34]) {
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 2.55, 7), matWood);
+        post.position.set(px, 1.28, d / 2 + 1.9);
+        g.add(post);
+      }
+    }
+
+    if (bakerySign) {
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.06, 0.06), matIron);
+      arm.position.set(w * 0.5 + 0.45, 3.0, d * 0.2);
+      g.add(arm);
+      const croissant = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.09, 7, 14, Math.PI * 1.25), matApricot);
+      croissant.rotation.z = -Math.PI * 0.12;
+      croissant.position.set(w * 0.5 + 0.62, 2.68, d * 0.2);
+      g.add(croissant);
+    }
+
+    enableCast(g);
+    return g;
+  }
+
+  function registerCottage(x, z, rot, w, h, d, pergola = false, label = 'cottage') {
+    if (!colliders) return;
+    const y = terrainHeight(x, z);
+    const totalD = pergola ? d + 1.8 : d + 0.4;
+    const shiftZ = pergola ? 0.8 : 0.1;
+    const cx = x + Math.sin(rot) * shiftZ;
+    const cz = z + Math.cos(rot) * shiftZ;
+    colliders.addBox({
+      cx, cz,
+      w: w + 0.6,
+      d: totalD,
+      rotY: rot,
+      minY: y,
+      maxY: y + h + 1.85,
+      kind: 'building',
+      label,
+    });
+  }
+
   // 1. Home Cottage
   const home = makeCottage({ w: 6.8, h: 4.4, d: 5.4, wallMat: matStone, roofMat: matRoof, shutterMat: matTurquoise, pergola: true });
   home.position.set(LANDMARKS.homeHouse.x, terrainHeight(LANDMARKS.homeHouse.x, LANDMARKS.homeHouse.z), LANDMARKS.homeHouse.z);
   home.rotation.y = 0.72;
   root.add(home);
+  registerCottage(LANDMARKS.homeHouse.x, LANDMARKS.homeHouse.z, 0.72, 6.8, 4.4, 5.4, true, 'home');
 
   // 2. Neighboring houses & Bakery (varied shapes, orientations & bakery bracket)
   const neighbors = [
-    { x: -19, z: -6, rot: 0.45, w: 5.8, h: 4.0, d: 4.8, wall: matStoneWarm, roof: matRoofWarm, shut: matApricot, pergola: false },
-    { x: 18, z: -6, rot: -0.75, w: 6.2, h: 4.4, d: 5.0, wall: matStone, roof: matRoof, shut: matTurquoise, pergola: false },
-    { x: -16, z: -22, rot: 1.25, w: 5.4, h: 5.2, d: 4.6, wall: matStoneWarm, roof: matRoof, shut: matTurquoise, pergola: false },
+    { x: -19, z: -6, rot: 0.45, w: 5.8, h: 4.0, d: 4.8, wall: matStoneWarm, roof: matRoofWarm, shut: matApricot, pergola: false, bakerySign: false },
+    { x: 18, z: -6, rot: -0.75, w: 6.2, h: 4.4, d: 5.0, wall: matStone, roof: matRoof, shut: matTurquoise, pergola: false, bakerySign: false },
+    { x: -16, z: -22, rot: 1.25, w: 5.4, h: 5.2, d: 4.6, wall: matStoneWarm, roof: matRoof, shut: matTurquoise, pergola: false, bakerySign: true },
   ];
   neighbors.forEach((n, idx) => {
     const c = makeCottage({
       w: n.w, h: n.h, d: n.d,
-      wallMat: n.wall, roofMat: n.roof, shutterMat: n.shut, pergola: n.pergola,
+      wallMat: n.wall, roofMat: n.roof, shutterMat: n.shut, pergola: n.pergola, bakerySign: n.bakerySign,
     });
     c.position.set(n.x, terrainHeight(n.x, n.z), n.z);
     c.rotation.y = n.rot;
     root.add(c);
-
-    if (idx === 2) {
-      const signGroup = new THREE.Group();
-      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.06, 0.06), matIron);
-      arm.position.set(0.45, 0, 0);
-      signGroup.add(arm);
-      const croissant = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.09, 7, 14, Math.PI * 1.25), matApricot);
-      croissant.rotation.z = -Math.PI * 0.12;
-      croissant.position.set(0.62, -0.32, 0);
-      signGroup.add(croissant);
-      signGroup.position.set(n.x + 2.8, terrainHeight(n.x, n.z) + 3.0, n.z + 1.2);
-      signGroup.rotation.y = 0.25;
-      root.add(signGroup);
-    }
+    registerCottage(n.x, n.z, n.rot, n.w, n.h, n.d, n.pergola, 'neighbor' + idx);
   });
 
   // 3. Home Garden Details: stone table, wordless mailbox, well, bicycle, bench, planters, wall & gate
   const yHome = terrainHeight(0, 0);
 
   const tableGroup = new THREE.Group();
+  tableGroup.name = 'letterTable';
   const tBase = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.36, 0.68, 10), matStoneWarm);
   tBase.position.y = 0.34;
   tableGroup.add(tBase);
@@ -530,21 +627,37 @@ export function buildVillage(lowQuality = false) {
   tableGroup.position.set(LANDMARKS.letterPedestal.x, terrainHeight(LANDMARKS.letterPedestal.x, LANDMARKS.letterPedestal.z), LANDMARKS.letterPedestal.z);
   enableCast(tableGroup);
   root.add(tableGroup);
+  if (colliders) {
+    colliders.addCylinder({
+      x: LANDMARKS.letterPedestal.x,
+      z: LANDMARKS.letterPedestal.z,
+      r: 0.72,
+      minY: yHome,
+      maxY: yHome + 0.85,
+      kind: 'prop',
+      label: 'letterTable',
+    });
+  }
 
   const gardenBench = makeBench();
-  gardenBench.position.set(-4.6, terrainHeight(-4.6, 1.4), 1.4);
-  gardenBench.rotation.y = 0.85;
+  gardenBench.position.set(2.8, terrainHeight(2.8, 1.2), 1.2);
+  gardenBench.rotation.y = -0.65;
   root.add(gardenBench);
+  if (colliders) {
+    colliders.addBox({ cx: 2.8, cz: 1.2, w: 1.85, d: 0.65, rotY: -0.65, minY: yHome, maxY: yHome + 1.05, kind: 'prop', label: 'gardenBench' });
+  }
 
-  for (const [px, pz, v] of [[-5.6, -5.8, 0], [4.2, -5.4, 1], [-2.5, 2.2, 1]]) {
+  for (const [pxPot, pzPot, v] of [[-5.6, -5.4, 0], [4.2, -5.2, 1], [-0.2, 2.6, 1]]) {
     const pl = makePlanter(v);
-    pl.position.set(px, terrainHeight(px, pz), pz);
+    const py = terrainHeight(pxPot, pzPot);
+    pl.position.set(pxPot, py, pzPot);
     root.add(pl);
+    if (colliders) colliders.addCylinder({ x: pxPot, z: pzPot, r: 0.48, minY: py, maxY: py + 1.4, kind: 'prop', label: 'gardenPlanter' });
   }
 
   const mailbox = new THREE.Group();
   const mbPost = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1.05, 0.38), matStoneWarm);
-  mbPost.position.y = 0.52;
+  mbPost.position.y = 0.525;
   mailbox.add(mbPost);
   const mbBox = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.32, 0.52), matTurquoise);
   mbBox.position.y = 1.18;
@@ -554,10 +667,11 @@ export function buildVillage(lowQuality = false) {
   mbCap.rotation.y = Math.PI / 2;
   mbCap.position.y = 1.34;
   mailbox.add(mbCap);
-  mailbox.position.set(-4.2, yHome, -5.8);
+  mailbox.position.set(-4.0, yHome, -5.6);
   mailbox.rotation.y = 0.25;
   enableCast(mailbox);
   root.add(mailbox);
+  if (colliders) colliders.addCylinder({ x: -4.0, z: -5.6, r: 0.4, minY: yHome, maxY: yHome + 1.55, kind: 'prop', label: 'mailbox' });
 
   const well = new THREE.Group();
   const wRim = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.9, 0.78, 12), matStoneWarm);
@@ -578,11 +692,12 @@ export function buildVillage(lowQuality = false) {
   well.position.set(8.2, yHome, -1.6);
   enableCast(well);
   root.add(well);
+  if (colliders) colliders.addCylinder({ x: 8.2, z: -1.6, r: 1.05, minY: yHome, maxY: yHome + 2.7, kind: 'prop', label: 'well' });
 
   const bike = new THREE.Group();
   for (const wx of [-0.48, 0.48]) {
     const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.035, 7, 16), matIron);
-    wheel.position.set(wx, 0.34, 0);
+    wheel.position.set(wx, 0.355, 0);
     bike.add(wheel);
   }
   const frameBar = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.045, 0.045), matTurquoise);
@@ -595,36 +710,42 @@ export function buildVillage(lowQuality = false) {
   const basket = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.18, 0.28), matWicker);
   basket.position.set(0.52, 0.72, 0);
   bike.add(basket);
-  bike.position.set(-4.6, yHome, -1.8);
+  bike.position.set(-4.8, yHome, -2.8);
   bike.rotation.y = -0.35;
-  bike.rotation.x = 0.14;
   enableCast(bike);
   root.add(bike);
+  if (colliders) colliders.addBox({ cx: -4.8, cz: -2.8, w: 1.65, d: 0.6, rotY: -0.35, minY: yHome, maxY: yHome + 1.0, kind: 'prop', label: 'bike' });
 
   for (const seg of [
     { x: -7.2, z: -7.2, w: 6.4, rot: 0.08 },
     { x: 7.4, z: -6.8, w: 6.8, rot: -0.06 },
   ]) {
+    const wy = terrainHeight(seg.x, seg.z);
     const wall = new THREE.Mesh(new THREE.BoxGeometry(seg.w, 0.82, 0.55), matStoneWarm);
-    wall.position.set(seg.x, terrainHeight(seg.x, seg.z) + 0.41, seg.z);
+    wall.position.set(seg.x, wy + 0.41, seg.z);
     wall.rotation.y = seg.rot;
     enableCast(wall);
     root.add(wall);
+    if (colliders) colliders.addBox({ cx: seg.x, cz: seg.z, w: seg.w, d: 0.65, rotY: seg.rot, minY: wy, maxY: wy + 0.85, kind: 'wall', label: 'homeWall' });
   }
   for (const gx of [-1.4, 1.8]) {
+    const gateUnit = new THREE.Group();
     const pil = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.25, 0.45), matStone);
-    pil.position.set(gx, yHome + 0.62, -7.1);
-    enableCast(pil);
-    root.add(pil);
+    pil.position.set(0, 0.625, 0);
+    gateUnit.add(pil);
     const wing = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.92, 0.06), matIron);
-    wing.position.set(gx + (gx < 0 ? -0.45 : 0.45), yHome + 0.55, -7.85);
+    wing.position.set(gx < 0 ? -0.45 : 0.45, 0.55, -0.75);
     wing.rotation.y = gx < 0 ? 1.15 : -1.15;
-    root.add(wing);
+    gateUnit.add(wing);
+    gateUnit.position.set(gx, yHome, -7.1);
+    enableCast(gateUnit);
+    root.add(gateUnit);
+    if (colliders) colliders.addCylinder({ x: gx, z: -7.1, r: 0.38, minY: yHome, maxY: yHome + 1.25, kind: 'wall', label: 'gatePillar' });
   }
 
   const stoneGeo = new THREE.CylinderGeometry(0.42, 0.46, 0.07, 7);
   const steps = [
-    [-4.2, 2.2], [-3.0, 0.9], [-1.9, -0.2], [-0.4, -2.5], [0.5, -5.0], [1.4, -7.8], [2.4, -10.3],
+    [0.6, 0.2], [0.5, -1.6], [0.6, -3.5], [0.5, -5.4], [1.0, -7.8], [2.2, -10.2],
   ];
   for (const [sx, sz] of steps) {
     const st = new THREE.Mesh(stoneGeo, matStoneWarm);
@@ -676,6 +797,12 @@ export function buildVillage(lowQuality = false) {
   bridgeGroup.position.set(bx, 0, bz);
   enableCast(bridgeGroup);
   root.add(bridgeGroup);
+  if (colliders) {
+    // Bridge side rails block falling off sides while leaving deck walkable
+    for (const side of [-1.55, 1.55]) {
+      colliders.addBox({ cx: bx + side, cz: bz, w: 0.25, d: 17.2, rotY: 0, minY: WATER_Y, maxY: WATER_Y + 3.8, kind: 'bridgeRail', label: 'bridgeRail' });
+    }
+  }
 
   const px = LANDMARKS.pier.x;
   const pz = riverCenterZ(px) + 7.2;
@@ -715,21 +842,23 @@ export function buildVillage(lowQuality = false) {
     return b;
   }
   const boatConfigs = [
-    { x: px - 2.6, z: riverCenterZ(px - 2.6) + 4.2, rot: 0.35, mat: matTurquoise },
-    { x: px + 2.8, z: riverCenterZ(px + 2.8) + 3.6, rot: -0.2, mat: matApricot },
-    { x: px + 9.0, z: riverCenterZ(px + 9.0) + 1.8, rot: 0.55, mat: matTurquoise },
+    { x: px - 3.3, z: riverCenterZ(px - 3.3) + 4.2, rot: 0.35, mat: matTurquoise },
+    { x: px + 3.3, z: riverCenterZ(px + 3.3) + 3.6, rot: -0.2, mat: matApricot },
+    { x: px + 9.2, z: riverCenterZ(px + 9.2) + 1.8, rot: 0.55, mat: matTurquoise },
   ];
   boatConfigs.forEach((bc, i) => {
     const bm = makeRowboat(bc.mat);
-    bm.position.set(bc.x, WATER_Y - 0.04, bc.z);
+    const baseY = WATER_Y - 0.22;
+    bm.position.set(bc.x, baseY, bc.z);
     bm.rotation.y = bc.rot;
     root.add(bm);
-    boats.push({ mesh: bm, baseY: WATER_Y - 0.04, phase: i * 2.1, baseRot: bc.rot });
+    boats.push({ mesh: bm, baseY, phase: i * 2.1, baseRot: bc.rot });
+    if (colliders) {
+      colliders.addBox({ cx: bc.x, cz: bc.z, w: 1.5, d: 3.1, rotY: bc.rot, minY: WATER_Y - 0.3, maxY: WATER_Y + 0.6, kind: 'boat', label: 'rowboat' + i });
+    }
   });
 
   // 5. Enriched Riverside Landing Meadow (LANDMARKS.meadowLanding: -22, -182)
-  // Stone cottage, dry-stone low gate walls, wooden handcart, woven baskets, flower stall,
-  // stone spring trough, benches, planters, stepping stones & friendly meadow villager.
   const mlX = LANDMARKS.meadowLanding.x;
   const mlZ = LANDMARKS.meadowLanding.z;
   const meadowProps = new THREE.Group();
@@ -741,68 +870,94 @@ export function buildVillage(lowQuality = false) {
   meadowCottage.position.set(mlX - 9.8, terrainHeight(mlX - 9.8, mlZ - 7.8), mlZ - 7.8);
   meadowCottage.rotation.y = 0.62;
   root.add(meadowCottage);
+  registerCottage(mlX - 9.8, mlZ - 7.8, 0.62, 5.4, 3.8, 4.5, true, 'meadowCottage');
 
   const meadowStall = makeMarketStall(awningApricotTex, 0);
-  meadowStall.position.set(mlX + 6.4, terrainHeight(mlX + 6.4, mlZ - 5.2), mlZ - 5.2);
+  const msX = mlX + 6.4;
+  const msZ = mlZ - 5.2;
+  const msY = terrainHeight(msX, msZ);
+  meadowStall.position.set(msX, msY, msZ);
   meadowStall.rotation.y = -0.52;
   meadowProps.add(meadowStall);
+  if (colliders) colliders.addBox({ cx: msX, cz: msZ, w: 2.85, d: 1.5, rotY: -0.52, minY: msY, maxY: msY + 2.5, kind: 'prop', label: 'meadowStall' });
 
-  // Friendly villager beside the meadow flower stall (clearly visible in land shot)
   const meadowVillager = makeVillager({
     coatColor: PALETTE.turquoise,
     hatColor: PALETTE.creamWarm,
     hairColor: PALETTE.hairBrown,
     lowQuality,
   });
-  meadowVillager.group.position.set(mlX + 4.9, terrainHeight(mlX + 4.9, mlZ - 4.1), mlZ - 4.1);
+  const mvX = mlX + 3.8;
+  const mvZ = mlZ - 3.2;
+  const mvY = terrainHeight(mvX, mvZ);
+  meadowVillager.group.position.set(mvX, mvY, mvZ);
   meadowVillager.group.rotation.y = -0.45;
   meadowProps.add(meadowVillager.group);
+  if (colliders) colliders.addCylinder({ x: mvX, z: mvZ, r: 0.42, minY: mvY, maxY: mvY + 1.45, kind: 'npc', label: 'meadowVillager' });
 
-  // Wooden two-wheeled handcart + extra woven wicker baskets filled with lavender & apricots
   const handcart = makeWoodenHandcart();
-  handcart.position.set(mlX + 4.6, terrainHeight(mlX + 4.6, mlZ - 1.2), mlZ - 1.2);
+  const hcX = mlX + 4.8;
+  const hcZ = mlZ - 0.2;
+  const hcY = terrainHeight(hcX, hcZ);
+  handcart.position.set(hcX, hcY, hcZ);
   handcart.rotation.y = 2.45;
   meadowProps.add(handcart);
+  if (colliders) colliders.addBox({ cx: hcX, cz: hcZ, w: 1.85, d: 1.25, rotY: 2.45, minY: hcY, maxY: hcY + 1.0, kind: 'prop', label: 'handcart' });
 
   for (const [bxOff, bzOff, fType, sc] of [
-    [5.8, -4.1, 0, 1.05],
-    [6.6, -3.7, 1, 0.92],
-    [-4.3, -4.9, 0, 1.0],
-    [3.8, -8.5, 2, 0.95],
+    [8.8, -4.4, 0, 1.05],
+    [8.7, -5.6, 1, 0.92],
+    [-3.0, -4.2, 0, 1.0],
+    [5.2, -8.5, 2, 0.95],
   ]) {
     const bsk = makeWickerBasket(fType, sc);
-    bsk.position.set(mlX + bxOff, terrainHeight(mlX + bxOff, mlZ + bzOff), mlZ + bzOff);
+    const bxW = mlX + bxOff;
+    const bzW = mlZ + bzOff;
+    const byW = terrainHeight(bxW, bzW);
+    bsk.position.set(bxW, byW, bzW);
     meadowProps.add(bsk);
+    if (colliders) colliders.addCylinder({ x: bxW, z: bzW, r: 0.42 * sc, minY: byW, maxY: byW + 0.5, kind: 'prop', label: 'meadowBasket' });
   }
 
-  // Dry-stone meadow enclosure walls & stone gate pillars
   for (const [wx, wz, len, rot] of [
-    [-7.8, 7.6, 5.8, 0.16],
-    [7.5, 7.4, 6.2, -0.18],
-    [10.8, -2.6, 5.2, 1.38],
+    [-8.4, 8.2, 5.4, 0.14],
+    [8.2, 8.0, 5.6, -0.16],
+    [11.2, -2.6, 5.2, 1.38],
   ]) {
+    const mwx = mlX + wx;
+    const mwz = mlZ + wz;
+    const mwy = terrainHeight(mwx, mwz);
     const sw = new THREE.Mesh(new THREE.BoxGeometry(len, 0.78, 0.56), matStoneWarm);
-    sw.position.set(mlX + wx, terrainHeight(mlX + wx, mlZ + wz) + 0.36, mlZ + wz);
+    sw.position.set(mwx, mwy + 0.39, mwz);
     sw.rotation.y = rot;
     enableCast(sw);
     meadowProps.add(sw);
+    if (colliders) colliders.addBox({ cx: mwx, cz: mwz, w: len, d: 0.62, rotY: rot, minY: mwy, maxY: mwy + 0.8, kind: 'wall', label: 'meadowWall' });
   }
-  for (const gx of [-3.6, 3.6]) {
+  for (const gx of [-4.4, 4.4]) {
+    const gpx = mlX + gx;
+    const gpz = mlZ + 8.2;
+    const gpy = terrainHeight(gpx, gpz);
     const post = new THREE.Mesh(new THREE.BoxGeometry(0.52, 1.15, 0.52), matStone);
-    post.position.set(mlX + gx, terrainHeight(mlX + gx, mlZ + 7.2) + 0.55, mlZ + 7.2);
+    post.position.set(gpx, gpy + 0.575, gpz);
     enableCast(post);
     meadowProps.add(post);
+    if (colliders) colliders.addCylinder({ x: gpx, z: gpz, r: 0.38, minY: gpy, maxY: gpy + 1.15, kind: 'wall', label: 'meadowGatePost' });
   }
 
   const mBench1 = makeBench();
-  mBench1.position.set(mlX - 5.6, terrainHeight(mlX - 5.6, mlZ + 4.2), mlZ + 4.2);
+  const mb1x = mlX - 5.6, mb1z = mlZ + 4.2, mb1y = terrainHeight(mb1x, mb1z);
+  mBench1.position.set(mb1x, mb1y, mb1z);
   mBench1.rotation.y = 0.72;
   meadowProps.add(mBench1);
+  if (colliders) colliders.addBox({ cx: mb1x, cz: mb1z, w: 1.8, d: 0.65, rotY: 0.72, minY: mb1y, maxY: mb1y + 1.0, kind: 'prop', label: 'meadowBench1' });
 
   const mBench2 = makeBench();
-  mBench2.position.set(mlX + 6.4, terrainHeight(mlX + 6.4, mlZ + 4.0), mlZ + 4.0);
+  const mb2x = mlX + 6.4, mb2z = mlZ + 4.0, mb2y = terrainHeight(mb2x, mb2z);
+  mBench2.position.set(mb2x, mb2y, mb2z);
   mBench2.rotation.y = -0.65;
   meadowProps.add(mBench2);
+  if (colliders) colliders.addBox({ cx: mb2x, cz: mb2z, w: 1.8, d: 0.65, rotY: -0.65, minY: mb2y, maxY: mb2y + 1.0, kind: 'prop', label: 'meadowBench2' });
 
   const springGroup = new THREE.Group();
   const trough = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.25, 0.62, 8), matStone);
@@ -814,27 +969,32 @@ export function buildVillage(lowQuality = false) {
   const spoutPillar = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.35, 0.45), matStoneWarm);
   spoutPillar.position.set(0, 0.68, -0.95);
   springGroup.add(spoutPillar);
-  springGroup.position.set(mlX + 2.8, terrainHeight(mlX + 2.8, mlZ - 8.6), mlZ - 8.6);
+  const spX = mlX + 2.4, spZ = mlZ - 8.6, spY = terrainHeight(spX, spZ);
+  springGroup.position.set(spX, spY, spZ);
   springGroup.rotation.y = -0.25;
   enableCast(springGroup);
   meadowProps.add(springGroup);
+  if (colliders) colliders.addCylinder({ x: spX, z: spZ, r: 1.35, minY: spY, maxY: spY + 1.4, kind: 'prop', label: 'meadowSpring' });
 
-  for (const [ox, oz, v] of [[-4.2, -5.6, 0], [5.4, 2.2, 1], [-7.2, 1.8, 1], [1.4, -7.8, 0]]) {
+  for (const [ox, oz, v] of [[-3.8, -6.2, 0], [6.4, 2.2, 1], [-7.2, 1.8, 1], [-0.4, -8.2, 0]]) {
     const pl = makePlanter(v);
-    pl.position.set(mlX + ox, terrainHeight(mlX + ox, mlZ + oz), mlZ + oz);
+    const pxW = mlX + ox, pzW = mlZ + oz, pyW = terrainHeight(pxW, pzW);
+    pl.position.set(pxW, pyW, pzW);
     meadowProps.add(pl);
+    if (colliders) colliders.addCylinder({ x: pxW, z: pzW, r: 0.48, minY: pyW, maxY: pyW + 1.4, kind: 'prop', label: 'meadowPlanter' });
   }
-  for (let i = 0; i < 6; i++) {
-    const sx = mlX - 2.0 + i * 1.45;
-    const sz = mlZ + 3.2 - i * 1.25;
+  for (let i = 0; i < 5; i++) {
+    const sx = mlX - 2.6 + i * 1.15;
+    const sz = mlZ + 3.2 - i * 1.05;
     const st = new THREE.Mesh(stoneGeo, matStoneWarm);
     st.position.set(sx, terrainHeight(sx, sz) + 0.035, sz);
     meadowProps.add(st);
   }
   root.add(meadowProps);
 
-  // 6. Stone Windmill on the western ridge
+  // 6. Stone Windmill on the western ridge (flat Mesh children via mergeColoredParts)
   const windmill = new THREE.Group();
+  windmill.name = 'windmill';
   const wmY = terrainHeight(LANDMARKS.windmill.x, LANDMARKS.windmill.z);
   const wmTower = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 3.1, 9.2, 14), matStone);
   wmTower.position.y = 4.6;
@@ -846,11 +1006,6 @@ export function buildVillage(lowQuality = false) {
   wmDoor.position.set(0, 1.05, 2.95);
   windmill.add(wmDoor);
 
-  const sailHub = new THREE.Group();
-  sailHub.position.set(0, 8.2, 2.45);
-  const hubCap = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.6, 10), matWood);
-  hubCap.rotation.x = Math.PI / 2;
-  sailHub.add(hubCap);
   const matCanvas = new THREE.MeshStandardMaterial({
     color: PALETTE.cream,
     bumpMap: linenBump,
@@ -858,22 +1013,41 @@ export function buildVillage(lowQuality = false) {
     roughness: 0.85,
     side: THREE.DoubleSide,
   });
+  const sailParts = [
+    {
+      geo: new THREE.CylinderGeometry(0.28, 0.28, 0.6, 10),
+      mat: matWood,
+      rot: new THREE.Euler(Math.PI / 2, 0, 0),
+    },
+  ];
+  const sparGeo = new THREE.BoxGeometry(0.14, 5.2, 0.12);
+  const sailGeo = new THREE.PlaneGeometry(1.15, 4.0);
   for (let i = 0; i < 4; i++) {
-    const arm = new THREE.Group();
-    arm.rotation.z = (i * Math.PI) / 2;
-    const spar = new THREE.Mesh(new THREE.BoxGeometry(0.14, 5.2, 0.12), matWood);
-    spar.position.y = 2.6;
-    arm.add(spar);
-    const sail = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 4.0), matCanvas);
-    sail.position.set(0.62, 3.0, 0.03);
-    arm.add(sail);
-    sailHub.add(arm);
+    const ang = (i * Math.PI) / 2;
+    const cos = Math.cos(ang), sin = Math.sin(ang);
+    sailParts.push({
+      geo: sparGeo,
+      mat: matWood,
+      pos: new THREE.Vector3(-sin * 2.6, cos * 2.6, 0),
+      rot: new THREE.Euler(0, 0, ang),
+    });
+    sailParts.push({
+      geo: sailGeo,
+      mat: matCanvas,
+      pos: new THREE.Vector3(cos * 0.62 - sin * 3.0, sin * 0.62 + cos * 3.0, 0.03),
+      rot: new THREE.Euler(0, 0, ang),
+    });
   }
+  const sailHub = mergeColoredParts(sailParts);
+  sailHub.position.set(0, 8.2, 2.45);
   windmill.add(sailHub);
   windmill.position.set(LANDMARKS.windmill.x, wmY, LANDMARKS.windmill.z);
   windmill.rotation.y = 0.52;
   enableCast(windmill);
   root.add(windmill);
+  if (colliders) {
+    colliders.addCylinder({ x: LANDMARKS.windmill.x, z: LANDMARKS.windmill.z, r: 3.35, minY: wmY, maxY: wmY + 12.6, kind: 'building', label: 'windmill' });
+  }
 
   // 7. Eastern Detour Village Cluster
   const detourOffsets = [
@@ -882,7 +1056,7 @@ export function buildVillage(lowQuality = false) {
     { dx: 1, dz: 9, rot: 2.6, shut: matTurquoise, roof: matRoofWarm },
     { dx: -8, dz: 8, rot: 1.3, shut: matApricot, roof: matRoof },
   ];
-  detourOffsets.forEach((d) => {
+  detourOffsets.forEach((d, idx) => {
     const vx = LANDMARKS.detourVillage.x + d.dx;
     const vz = LANDMARKS.detourVillage.z + d.dz;
     const vc = makeCottage({
@@ -892,47 +1066,50 @@ export function buildVillage(lowQuality = false) {
     vc.position.set(vx, terrainHeight(vx, vz), vz);
     vc.rotation.y = d.rot;
     root.add(vc);
+    registerCottage(vx, vz, d.rot, 5.4, 3.9, 4.5, false, 'detourHouse' + idx);
   });
 
   // 8. Clock Tower Square (Goal at LANDMARKS.towerPlaza: x=6, z=-330)
-  // Cohesive foreground reunion layout so close arrival shot frames girl + recipient + balloon + tower!
+  // Terrace sits flush on rawTerrainHeight (28.50 .. 28.56) and all props sit at top (28.56), ZERO overlap!
   const plaza = new THREE.Group();
+  plaza.name = 'plaza';
   const tx = LANDMARKS.towerPlaza.x;
   const tz = LANDMARKS.towerPlaza.z;
-  const ty = terrainHeight(tx, tz);
+  const ty = rawTerrainHeight(tx, tz);
+  const deckLocalY = 0.06;
 
-  const terrace = new THREE.Mesh(new THREE.CylinderGeometry(18.8, 19.8, 0.52, 32), matCobble);
-  terrace.position.y = 0.26;
+  const terrace = new THREE.Mesh(new THREE.CylinderGeometry(16.2, 16.6, deckLocalY, 32), matCobble);
+  terrace.position.y = deckLocalY * 0.5;
   terrace.receiveShadow = !lowQuality;
   plaza.add(terrace);
 
-  const curbRing = new THREE.Mesh(new THREE.TorusGeometry(18.7, 0.24, 6, 36), matStoneTrim);
-  curbRing.rotation.x = Math.PI / 2;
-  curbRing.position.y = 0.50;
-  plaza.add(curbRing);
-
-  // Landing circle set cozy-close in front-left of Clock Tower
-  const landingPadLocal = new THREE.Vector3(-2.1, 0.52, 2.2);
+  const landingPadLocal = new THREE.Vector3(-2.1, deckLocalY, 2.2);
   const landingRing = new THREE.Mesh(
     new THREE.RingGeometry(2.1, 2.6, 32).rotateX(-Math.PI / 2),
     new THREE.MeshBasicMaterial({ color: PALETTE.apricotSoft, transparent: true, opacity: 0.72 })
   );
-  landingRing.position.copy(landingPadLocal);
+  landingRing.position.set(landingPadLocal.x, deckLocalY + 0.004, landingPadLocal.z);
   plaza.add(landingRing);
 
   for (let i = 0; i < 12; i++) {
     const a = -Math.PI * 0.92 + (i / 11) * Math.PI * 0.84;
+    const pxPost = Math.cos(a) * 15.5;
+    const pzPost = Math.sin(a) * 15.5;
     const post = new THREE.Mesh(new THREE.BoxGeometry(0.56, 1.05, 0.56), matStoneWarm);
-    post.position.set(Math.cos(a) * 17.9, 0.98, Math.sin(a) * 17.9);
+    post.position.set(pxPost, deckLocalY + 0.525, pzPost);
     plaza.add(post);
+    if (colliders) {
+      colliders.addCylinder({ x: tx + pxPost, z: tz + pzPost, r: 0.38, minY: ty + deckLocalY, maxY: ty + deckLocalY + 1.05, kind: 'wall', label: 'plazaPost' });
+    }
   }
 
-  // Clock Tower anchored right behind the reunion spot (local z = -7.6)
+  // Clock Tower (ONE flat Group of Meshes — NO nested Groups!)
   const tower = new THREE.Group();
-  tower.position.set(1.1, 0.52, -7.6);
+  tower.name = 'clockTower';
+  tower.position.set(1.1, deckLocalY, -7.6);
 
   const towerPlinth = new THREE.Mesh(new THREE.BoxGeometry(4.9, 0.65, 4.9), matStoneTrim);
-  towerPlinth.position.y = 0.32;
+  towerPlinth.position.y = 0.325;
   tower.add(towerPlinth);
 
   const base = new THREE.Mesh(new THREE.BoxGeometry(4.4, 3.6, 4.4), matStoneWarm);
@@ -957,30 +1134,24 @@ export function buildVillage(lowQuality = false) {
   const matClockFace = new THREE.MeshStandardMaterial({ color: PALETTE.cream, roughness: 0.45 });
   const matBronze = new THREE.MeshStandardMaterial({ color: PALETTE.bronze, roughness: 0.35, metalness: 0.72 });
   for (const [fx, fz, ry] of [[0, 1.94, 0], [1.94, 0, Math.PI / 2], [-1.94, 0, -Math.PI / 2]]) {
-    const dialGroup = new THREE.Group();
-    const bezel = new THREE.Mesh(new THREE.TorusGeometry(0.98, 0.09, 8, 24), matTurquoise);
-    dialGroup.add(bezel);
-    const face = new THREE.Mesh(new THREE.CircleGeometry(0.94, 24), matClockFace);
-    face.position.z = 0.02;
-    dialGroup.add(face);
+    const dialParts = [
+      { geo: new THREE.TorusGeometry(0.98, 0.09, 8, 24), mat: matTurquoise },
+      { geo: new THREE.CircleGeometry(0.94, 24), mat: matClockFace, pos: new THREE.Vector3(0, 0, 0.02) },
+      { geo: new THREE.BoxGeometry(0.08, 0.45, 0.04), mat: matIron, pos: new THREE.Vector3(0.11, 0.14, 0.05), rot: new THREE.Euler(0, 0, -0.65) },
+      { geo: new THREE.BoxGeometry(0.055, 0.68, 0.04), mat: matIron, pos: new THREE.Vector3(-0.17, 0.22, 0.06), rot: new THREE.Euler(0, 0, 0.72) },
+    ];
     for (let h = 0; h < 12; h++) {
       const ang = (h / 12) * Math.PI * 2;
-      const dot = new THREE.Mesh(new THREE.CircleGeometry(h % 3 === 0 ? 0.062 : 0.038, 8), matIron);
-      dot.position.set(Math.sin(ang) * 0.74, Math.cos(ang) * 0.74, 0.04);
-      dialGroup.add(dot);
+      dialParts.push({
+        geo: new THREE.CircleGeometry(h % 3 === 0 ? 0.062 : 0.038, 8),
+        mat: matIron,
+        pos: new THREE.Vector3(Math.sin(ang) * 0.74, Math.cos(ang) * 0.74, 0.04),
+      });
     }
-    const hourHand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 0.04), matIron);
-    hourHand.position.set(0.11, 0.14, 0.05);
-    hourHand.rotation.z = -0.65;
-    dialGroup.add(hourHand);
-    const minHand = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.68, 0.04), matIron);
-    minHand.position.set(-0.17, 0.22, 0.06);
-    minHand.rotation.z = 0.72;
-    dialGroup.add(minHand);
-
-    dialGroup.position.set(fx, 6.05, fz);
-    dialGroup.rotation.y = ry;
-    tower.add(dialGroup);
+    const dialMesh = mergeColoredParts(dialParts);
+    dialMesh.position.set(fx, 6.05, fz);
+    dialMesh.rotation.y = ry;
+    tower.add(dialMesh);
   }
 
   const belfryY = 7.5;
@@ -991,16 +1162,12 @@ export function buildVillage(lowQuality = false) {
       tower.add(col);
     }
   }
-  const bellPivot = new THREE.Group();
+  const bellPivot = mergeColoredParts([
+    { geo: new THREE.BoxGeometry(1.6, 0.18, 0.22), mat: matWood, pos: new THREE.Vector3(0, 0, 0) },
+    { geo: new THREE.CylinderGeometry(0.38, 0.72, 0.95, 14), mat: matBronze, pos: new THREE.Vector3(0, -0.60, 0) },
+    { geo: new THREE.SphereGeometry(0.13, 8, 8), mat: matBronze, pos: new THREE.Vector3(0, -1.10, 0) },
+  ]);
   bellPivot.position.set(0, belfryY + 2.0, 0);
-  const bellYoke = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.18, 0.22), matWood);
-  bellPivot.add(bellYoke);
-  const bellBody = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.72, 0.95, 14), matBronze);
-  bellBody.position.y = -0.60;
-  bellPivot.add(bellBody);
-  const bellClapper = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), matBronze);
-  bellClapper.position.y = -1.10;
-  bellPivot.add(bellClapper);
   tower.add(bellPivot);
 
   const spire = new THREE.Mesh(new THREE.ConeGeometry(2.9, 2.45, 4), matRoofWarm);
@@ -1011,12 +1178,16 @@ export function buildVillage(lowQuality = false) {
   finial.position.y = belfryY + 5.15;
   tower.add(finial);
   plaza.add(tower);
+  if (colliders) {
+    colliders.addBox({ cx: tx + 1.1, cz: tz - 7.6, w: 5.0, d: 5.0, rotY: 0, minY: ty + deckLocalY, maxY: ty + deckLocalY + 13.3, kind: 'building', label: 'clockTower' });
+  }
 
   // Octagonal Provençal Stone Fountain (right-midground of square)
   const fountain = new THREE.Group();
-  fountain.position.set(6.4, 0.52, -0.6);
+  fountain.name = 'fountain';
+  fountain.position.set(6.6, deckLocalY, -0.6);
   const fBase = new THREE.Mesh(new THREE.CylinderGeometry(1.95, 2.15, 0.65, 8), matStone);
-  fBase.position.y = 0.32;
+  fBase.position.y = 0.325;
   fountain.add(fBase);
   const fWater = new THREE.Mesh(new THREE.CircleGeometry(1.64, 8).rotateX(-Math.PI / 2), riverMat);
   fWater.position.y = 0.58;
@@ -1031,59 +1202,72 @@ export function buildVillage(lowQuality = false) {
   fTopJet.position.y = 2.28;
   fountain.add(fTopJet);
   plaza.add(fountain);
+  if (colliders) {
+    colliders.addCylinder({ x: tx + 6.6, z: tz - 0.6, r: 2.2, minY: ty + deckLocalY, maxY: ty + deckLocalY + 2.6, kind: 'prop', label: 'fountain' });
+  }
 
   // 3 Wordless Market Stalls framing the square
   const stalls = [
-    { x: -7.8, z: -3.2, rot: 0.62, tex: awningApricotTex, type: 0 },
+    { x: -8.2, z: -3.2, rot: 0.62, tex: awningApricotTex, type: 0 },
     { x: -9.8, z: 3.6, rot: 1.25, tex: awningTurqTex, type: 1 },
-    { x: 9.8, z: -5.0, rot: -0.78, tex: awningTurqTex, type: 2 },
+    { x: 10.6, z: -5.0, rot: -0.78, tex: awningTurqTex, type: 2 },
   ];
-  stalls.forEach((st) => {
+  stalls.forEach((st, idx) => {
     const m = makeMarketStall(st.tex, st.type);
-    m.position.set(st.x, 0.52, st.z);
+    m.position.set(st.x, deckLocalY, st.z);
     m.rotation.y = st.rot;
     plaza.add(m);
+    if (colliders) {
+      colliders.addBox({ cx: tx + st.x, cz: tz + st.z, w: 2.85, d: 1.5, rotY: st.rot, minY: ty + deckLocalY, maxY: ty + deckLocalY + 2.5, kind: 'prop', label: 'plazaStall' + idx });
+    }
   });
 
   const plazaBenches = [
-    { x: -4.4, z: -6.4, rot: 0.35 },
-    { x: 6.2, z: -6.8, rot: -0.45 },
-    { x: 8.6, z: 3.6, rot: -1.15 },
-    { x: -8.4, z: 8.6, rot: 2.35 },
+    { x: -5.6, z: -7.6, rot: 0.35 },
+    { x: 7.4, z: -7.4, rot: -0.45 },
+    { x: 9.4, z: 3.6, rot: -1.15 },
+    { x: -7.2, z: 8.6, rot: 2.35 },
   ];
-  plazaBenches.forEach((pb) => {
+  plazaBenches.forEach((pb, idx) => {
     const b = makeBench();
-    b.position.set(pb.x, 0.52, pb.z);
+    b.position.set(pb.x, deckLocalY, pb.z);
     b.rotation.y = pb.rot;
     plaza.add(b);
+    if (colliders) {
+      colliders.addBox({ cx: tx + pb.x, cz: tz + pb.z, w: 1.8, d: 0.65, rotY: pb.rot, minY: ty + deckLocalY, maxY: ty + deckLocalY + 1.0, kind: 'prop', label: 'plazaBench' + idx });
+    }
   });
 
   const potCoords = [
-    [-5.2, 0.2, 0], [-6.2, 6.2, 1], [4.1, -1.6, 1],
-    [10.2, 1.0, 0], [-2.2, -7.8, 0], [4.8, -7.8, 1],
+    [-5.6, 0.2, 0], [-5.6, 6.2, 1], [3.2, -1.6, 1],
+    [10.6, 1.0, 0], [-4.2, -10.8, 0], [6.4, -10.8, 1],
   ];
-  potCoords.forEach(([pxPot, pzPot, v]) => {
+  potCoords.forEach(([pxPot, pzPot, v], idx) => {
     const p = makePlanter(v);
-    p.position.set(pxPot, 0.52, pzPot);
+    p.position.set(pxPot, deckLocalY, pzPot);
     plaza.add(p);
+    if (colliders) {
+      colliders.addCylinder({ x: tx + pxPot, z: tz + pzPot, r: 0.48, minY: ty + deckLocalY, maxY: ty + deckLocalY + 1.4, kind: 'prop', label: 'plazaPot' + idx });
+    }
   });
 
-  // Waving Villagers positioned so the celebration is visible in the close reunion shot
   const villagers = [];
   const villagerSpecs = [
-    { x: -5.4, z: -1.4, rot: 0.65, coat: PALETTE.apricot, hat: PALETTE.creamWarm, hair: PALETTE.hairBrown },
-    { x: 4.5, z: -1.8, rot: -0.55, coat: PALETTE.lavender, hat: PALETTE.cream, hair: PALETTE.hairSilver },
-    { x: 6.8, z: 2.4, rot: -0.95, coat: PALETTE.turquoise, hat: PALETTE.creamWarm, hair: PALETTE.hairBrown },
-    { x: -8.0, z: 4.4, rot: 1.05, coat: PALETTE.meadowSage, hat: PALETTE.cream, hair: PALETTE.hairSilver },
+    { x: -5.6, z: -1.6, rot: 0.65, coat: PALETTE.apricot, hat: PALETTE.creamWarm, hair: PALETTE.hairBrown },
+    { x: 3.6, z: -2.8, rot: -0.55, coat: PALETTE.lavender, hat: PALETTE.cream, hair: PALETTE.hairSilver },
+    { x: 7.6, z: 2.4, rot: -0.95, coat: PALETTE.turquoise, hat: PALETTE.creamWarm, hair: PALETTE.hairBrown },
+    { x: -7.6, z: 4.4, rot: 1.05, coat: PALETTE.meadowSage, hat: PALETTE.cream, hair: PALETTE.hairSilver },
   ];
   villagerSpecs.forEach((vs, idx) => {
     const v = makeVillager({ coatColor: vs.coat, hatColor: vs.hat, hairColor: vs.hair, lowQuality });
-    v.group.position.set(vs.x, 0.52, vs.z);
+    v.group.position.set(vs.x, deckLocalY, vs.z);
     v.group.rotation.y = vs.rot;
     plaza.add(v.group);
     villagers.push({ ...v, phase: idx * 1.4 });
+    if (colliders) {
+      colliders.addCylinder({ x: tx + vs.x, z: tz + vs.z, r: 0.4, minY: ty + deckLocalY, maxY: ty + deckLocalY + 1.45, kind: 'npc', label: 'plazaVillager' + idx });
+    }
   });
-  // Register meadow villager into waving list
   villagers.push({ ...meadowVillager, phase: 0.8 });
 
   plaza.position.set(tx, ty, tz);
@@ -1091,22 +1275,23 @@ export function buildVillage(lowQuality = false) {
   root.add(plaza);
 
   const plazaHouses = [
-    { dx: -17.5, dz: -13.5, rot: 0.68, w: 6.0, h: 4.6, d: 5.0, shut: matTurquoise, roof: matRoof },
-    { dx: 17.5, dz: -12.5, rot: -0.72, w: 6.2, h: 4.4, d: 4.8, shut: matApricot, roof: matRoofWarm },
-    { dx: -19.5, dz: 1.5, rot: 1.38, w: 5.6, h: 4.1, d: 4.6, shut: matApricot, roof: matRoofWarm },
-    { dx: 19.5, dz: 2.0, rot: -1.38, w: 5.8, h: 4.2, d: 4.6, shut: matTurquoise, roof: matRoof },
-    { dx: -8.5, dz: -20.5, rot: 0.25, w: 5.4, h: 4.0, d: 4.4, shut: matTurquoise, roof: matRoofWarm },
+    { dx: -23.0, dz: -17.5, rot: 0.68, w: 6.0, h: 4.6, d: 5.0, shut: matTurquoise, roof: matRoof },
+    { dx: 23.0, dz: -16.5, rot: -0.72, w: 6.2, h: 4.4, d: 4.8, shut: matApricot, roof: matRoofWarm },
+    { dx: -23.5, dz: 2.0, rot: 1.38, w: 5.6, h: 4.1, d: 4.6, shut: matApricot, roof: matRoofWarm },
+    { dx: 23.5, dz: 2.5, rot: -1.38, w: 5.8, h: 4.2, d: 4.6, shut: matTurquoise, roof: matRoof },
+    { dx: -4.0, dz: -23.5, rot: 0.25, w: 5.4, h: 4.0, d: 4.4, shut: matTurquoise, roof: matRoofWarm },
   ];
-  plazaHouses.forEach((ph) => {
+  plazaHouses.forEach((ph, idx) => {
     const hx = tx + ph.dx;
     const hz = tz + ph.dz;
     const hc = makeCottage({
       w: ph.w, h: ph.h, d: ph.d,
       wallMat: matStoneWarm, roofMat: ph.roof, shutterMat: ph.shut, chimney: true,
     });
-    hc.position.set(hx, terrainHeight(hx, hz), hz);
+    hc.position.set(hx, rawTerrainHeight(hx, hz), hz);
     hc.rotation.y = ph.rot;
     root.add(hc);
+    registerCottage(hx, hz, ph.rot, ph.w, ph.h, ph.d, false, 'plazaHouse' + idx);
   });
 
   return {

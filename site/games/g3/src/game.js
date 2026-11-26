@@ -100,6 +100,9 @@ export class Game {
 
     this.archipelago = new Archipelago(mats, { lowQuality: this.lowQuality });
     this.scene.add(this.archipelago.group);
+    if (this.archipelago.lighthouseBeam) {
+      this.scene.add(this.archipelago.lighthouseBeam);
+    }
 
     this.girl = new Girl({ lowQuality: this.lowQuality, textures: this.textures });
     this.scene.add(this.girl.group);

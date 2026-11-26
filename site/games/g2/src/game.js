@@ -1,17 +1,19 @@
 // Main game orchestrator: world setup, 1-finger input, flight & float physics, 20s assist, ?autotest, ?q=low
 import * as THREE from '../lib/three.module.js';
 import { PALETTE } from './core/palette.js';
-import { clamp, damp, angleDiff, wrapAngle } from './core/math.js';
+import { clamp, damp, angleDiff, wrapAngle, smoothstep } from './core/math.js';
 import { SoundEngine } from './core/audio.js';
 import {
   LANDMARKS,
   WATER_Y,
   terrainHeight,
   isOverRiver,
+  isOnBridgeOrPier,
   riverCenterZ,
   riverHalfWidth,
   makeTerrainMesh,
 } from './world/terrain.js';
+import { ColliderWorld } from './world/colliders.js';
 import { SkyDome, SUN_DIR } from './world/sky.js';
 import { ValleyClouds } from './world/clouds.js';
 import { buildVillage } from './world/village.js';
@@ -144,10 +146,11 @@ export class Game {
     this.clouds = new ValleyClouds(this.lowQuality);
     this.scene.add(this.clouds.group);
 
-    this.village = buildVillage(this.lowQuality);
+    this.colliders = new ColliderWorld();
+    this.village = buildVillage(this.lowQuality, this.colliders);
     this.scene.add(this.village.group);
 
-    this.nature = buildNature(this.lowQuality);
+    this.nature = buildNature(this.lowQuality, this.colliders);
     this.scene.add(this.nature.group);
 
     this.sunbeams = new MorningSunbeams(this.lowQuality);
@@ -177,15 +180,14 @@ export class Game {
     );
     this.scene.add(this.letterBeacon);
 
-    // Characters & Hot Air Balloon & Dandelion Float
+    // Characters & Hot Air Balloon & Dandelion Float (dandelion attached to scene so girl's Box3 stays accurate)
     this.girl = new GirlCharacter(this.lowQuality);
     this.girl.group.position.copy(this.girlPos);
     this.girl.group.rotation.y = this.girlYaw;
     this.scene.add(this.girl.group);
 
     this.dandelion = new DandelionFloat();
-    this.dandelion.group.position.set(0.18, 1.32, 0.06);
-    this.girl.group.add(this.dandelion.group);
+    this.scene.add(this.dandelion.group);
 
     this.balloon = new HotAirBalloon(this.lowQuality);
     this.balloon.group.position.copy(this.balloonPos);
@@ -195,9 +197,19 @@ export class Game {
     this.recipient = new RecipientCharacter(this.lowQuality);
     const recX = LANDMARKS.towerPlaza.x + 1.35;
     const recZ = LANDMARKS.towerPlaza.z + 2.65;
-    this.recipient.group.position.set(recX, terrainHeight(recX, recZ) + 0.52, recZ);
+    const recY = terrainHeight(recX, recZ);
+    this.recipient.group.position.set(recX, recY, recZ);
     this.recipient.group.rotation.y = -0.72;
     this.scene.add(this.recipient.group);
+    this.colliders.addCylinder({
+      x: recX,
+      z: recZ,
+      r: 0.42,
+      minY: recY,
+      maxY: recY + 1.45,
+      kind: 'npc',
+      label: 'recipient',
+    });
 
     this.actionBtn = document.getElementById('action-btn');
     this.iconDandelion = document.getElementById('icon-dandelion');
@@ -404,7 +416,7 @@ export class Game {
   }
 
   _walkToPickLetter(andThenBoard) {
-    this.girlWalkTarget = new THREE.Vector3(LANDMARKS.letterPedestal.x + 0.65, 0, LANDMARKS.letterPedestal.z + 0.65);
+    this.girlWalkTarget = new THREE.Vector3(LANDMARKS.letterPedestal.x + 0.92, 0, LANDMARKS.letterPedestal.z + 0.92);
     this.girlWalkTarget.y = terrainHeight(this.girlWalkTarget.x, this.girlWalkTarget.z);
     this.pendingPickAfterWalk = true;
     this.pendingBoardAfterWalk = andThenBoard;
@@ -435,11 +447,22 @@ export class Game {
     if (this.state !== 'fly') return;
     this.state = 'float';
     this.girlPos.set(
-      this.balloonPos.x + Math.cos(this.balloonYaw) * 3.2,
+      this.balloonPos.x + Math.cos(this.balloonYaw) * 3.4,
       this.balloonPos.y + 1.1,
-      this.balloonPos.z - Math.sin(this.balloonYaw) * 3.2
+      this.balloonPos.z - Math.sin(this.balloonYaw) * 3.4
     );
     this.floatVel.set(0, -2.2, 0);
+    this.colliders.resolveFloatGirl(this.girlPos, this.floatVel, {
+      radius: 0.48,
+      height: 2.0,
+      terrainHeight,
+      isOverRiver,
+      riverCenterZ,
+      riverHalfWidth,
+      isOnDeck: isOnBridgeOrPier,
+      waterY: WATER_Y,
+      dt: 0.016,
+    });
     this.balloonGrounded = false;
     this.sound.playFloatOpen();
     this._setMoment('float');
@@ -448,7 +471,18 @@ export class Game {
   _callBalloonToGirl() {
     this.balloonSummoning = true;
     this.balloonGrounded = false;
-    this.balloonSummonTarget = new THREE.Vector3(this.girlPos.x + 2.4, 0, this.girlPos.z - 1.6);
+    const target = new THREE.Vector3(this.girlPos.x + 2.4, terrainHeight(this.girlPos.x + 2.4, this.girlPos.z - 1.6), this.girlPos.z - 1.6);
+    this.colliders.resolveWalker(target, {
+      radius: 1.15,
+      height: 2.0,
+      terrainHeight,
+      isOverRiver,
+      riverCenterZ,
+      riverHalfWidth,
+      isOnDeck: isOnBridgeOrPier,
+      waterY: WATER_Y,
+    });
+    this.balloonSummonTarget = target;
   }
 
   _loop(now) {
@@ -529,14 +563,30 @@ export class Game {
         const targetZ = summon.z;
         this.balloonPos.x = damp(this.balloonPos.x, targetX, 1.8, dt);
         this.balloonPos.z = damp(this.balloonPos.z, targetZ, 1.8, dt);
-        const gY = Math.max(WATER_Y + 0.5, terrainHeight(this.balloonPos.x, this.balloonPos.z));
+        const gY = Math.max(WATER_Y + 0.14, terrainHeight(this.balloonPos.x, this.balloonPos.z));
         this.balloonPos.y = damp(this.balloonPos.y, gY, 2.2, dt);
-        if (Math.abs(this.balloonPos.y - gY) < 0.15 && Math.hypot(this.balloonPos.x - targetX, this.balloonPos.z - targetZ) < 0.8) {
-          this.balloonPos.y = gY;
+        this.colliders.resolveBalloon(this.balloonPos, this.balloonVel, {
+          inFlight: true,
+          terrainHeight,
+          isOverRiver,
+          isOnDeck: isOnBridgeOrPier,
+          waterY: WATER_Y,
+        });
+        const settledY = Math.max(WATER_Y + 0.14, terrainHeight(this.balloonPos.x, this.balloonPos.z));
+        if (Math.abs(this.balloonPos.y - settledY) < 0.15 && Math.hypot(this.balloonPos.x - targetX, this.balloonPos.z - targetZ) < 0.8) {
+          this.balloonPos.y = settledY;
           this.balloonGrounded = true;
           this.balloonSummoning = false;
           this.balloonSummonTarget = null;
         }
+      } else {
+        this.colliders.resolveBalloon(this.balloonPos, this.balloonVel, {
+          inFlight: false,
+          terrainHeight,
+          isOverRiver,
+          isOnDeck: isOnBridgeOrPier,
+          waterY: WATER_Y,
+        });
       }
 
       if (this.girlWalkTarget) {
@@ -546,17 +596,12 @@ export class Game {
         const dx = this.girlWalkTarget.x - this.girlPos.x;
         const dz = this.girlWalkTarget.z - this.girlPos.z;
         const dist = Math.hypot(dx, dz);
-        if (dist > 0.35) {
+        const stopDist = (this.pendingBoardAfterWalk && !this.pendingPickAfterWalk) ? 1.35 : 0.35;
+        if (dist > stopDist) {
           walking = true;
           const step = Math.min(dist, 3.6 * dt);
           this.girlPos.x += (dx / dist) * step;
           this.girlPos.z += (dz / dist) * step;
-          if (isOverRiver(this.girlPos.x, this.girlPos.z) && Math.abs(this.girlPos.x - LANDMARKS.bridge.x) > 2.2) {
-            const rz = riverCenterZ(this.girlPos.x);
-            const rw = riverHalfWidth(this.girlPos.x) + 1.2;
-            this.girlPos.z = this.girlPos.z < rz ? rz - rw : rz + rw;
-          }
-          this.girlPos.y = terrainHeight(this.girlPos.x, this.girlPos.z);
           this.girlYaw = wrapAngle(this.girlYaw + angleDiff(this.girlYaw, Math.atan2(dx, dz)) * Math.min(1, dt * 10));
         } else {
           this.girlWalkTarget = null;
@@ -589,6 +634,18 @@ export class Game {
           this._walkToBoardBalloon();
         }
       }
+
+      // Always resolve solid collisions for the girl (handles walking slides + push-in tests)
+      this.colliders.resolveWalker(this.girlPos, {
+        radius: 0.36,
+        height: 1.32,
+        terrainHeight,
+        isOverRiver,
+        riverCenterZ,
+        riverHalfWidth,
+        isOnDeck: isOnBridgeOrPier,
+        waterY: WATER_Y,
+      });
 
       this.girl.setPose({
         mode: walking ? 'walk' : 'idle',
@@ -628,7 +685,7 @@ export class Game {
       this.thermalLiftTimer = Math.max(0, this.thermalLiftTimer - dt);
 
       const steer = this.autotest ? this.autoSteer : this.steerInput;
-      const groundHere = Math.max(WATER_Y + 0.3, terrainHeight(this.balloonPos.x, this.balloonPos.z));
+      const groundHere = Math.max(WATER_Y + 0.14, terrainHeight(this.balloonPos.x, this.balloonPos.z));
 
       const towerCenter = this.village.landingCenter;
       const distToTower = Math.hypot(this.balloonPos.x - towerCenter.x, this.balloonPos.z - towerCenter.z);
@@ -656,17 +713,37 @@ export class Game {
 
       const altRatio = clamp((this.balloonPos.y - 12) / 52, 0, 1);
       const cruiseSpeed = (8.6 + altRatio * 5.6) * (this.autotest ? 1.25 : 1.0);
-      const vx = -Math.sin(this.balloonYaw) * cruiseSpeed;
-      const vz = -Math.cos(this.balloonYaw) * cruiseSpeed;
+      // Gentle morning valley breeze increasing smoothly above ground (consistent with thermal air flow)
+      const windMask = smoothstep(groundHere + 2.5, groundHere + 14.0, this.balloonPos.y);
+      const windX = 0.22 * windMask;
+      const windZ = -0.48 * windMask;
+      const vx = -Math.sin(this.balloonYaw) * cruiseSpeed + windX;
+      const vz = -Math.cos(this.balloonYaw) * cruiseSpeed + windZ;
 
       this.balloonPos.x = clamp(this.balloonPos.x + vx * dt, -200, 200);
       this.balloonPos.z = clamp(this.balloonPos.z + vz * dt, -385, 65);
 
-      const newGround = Math.max(WATER_Y + 0.2, terrainHeight(this.balloonPos.x, this.balloonPos.z));
+      const newGround = Math.max(WATER_Y + 0.14, terrainHeight(this.balloonPos.x, this.balloonPos.z));
       const prevY = this.balloonPos.y;
-      this.balloonPos.y = damp(this.balloonPos.y, Math.max(newGround, this.balloonTargetAlt), 2.2, dt);
+      const desiredY = Math.max(newGround, this.balloonTargetAlt);
+      const liftAcc = (desiredY - this.balloonPos.y) * 5.2 - this.balloonVel.y * 2.8;
+      this.balloonVel.y = clamp(this.balloonVel.y + liftAcc * dt, -10, 14);
+      this.balloonPos.y += this.balloonVel.y * dt;
+
+      // Full-envelope & basket solid collision + terrain heightfield + water buoyancy
+      const lifted = this.colliders.resolveBalloon(this.balloonPos, this.balloonVel, {
+        inFlight: true,
+        terrainHeight,
+        isOverRiver,
+        isOnDeck: isOnBridgeOrPier,
+        waterY: WATER_Y,
+      });
+      if (lifted > 0.02) {
+        this.balloonTargetAlt = Math.max(this.balloonTargetAlt, this.balloonPos.y + 0.65);
+      }
+
       climbRate = (this.balloonPos.y - prevY) / dt;
-      airSpeed = Math.hypot(vx, vz);
+      airSpeed = Math.hypot(vx - windX, vz - windZ);
 
       // Thermal updraft rings surge the balloon cleanly ABOVE the y=28..35 cloud stratum!
       const balloonCenter = new THREE.Vector3(this.balloonPos.x, this.balloonPos.y + 3.6, this.balloonPos.z);
@@ -717,67 +794,118 @@ export class Game {
         this.sound.playTowerBell();
         this.bellSwing = 1.6;
         this._setMoment('tower');
-      } else if (
-        this.riseTimer > 2.4 &&
-        !isOverRiver(this.balloonPos.x, this.balloonPos.z) &&
-        newGround > WATER_Y + 0.6 &&
-        this.balloonPos.y - newGround < 1.1 &&
-        this.balloonTargetAlt - newGround < 1.5 &&
-        (!this.autotest || (this.autoStep === 4 && Math.hypot(this.balloonPos.x - LANDMARKS.meadowLanding.x, this.balloonPos.z - LANDMARKS.meadowLanding.z) < 9.5))
-      ) {
-        this.balloonPos.y = newGround;
-        this.balloonGrounded = true;
-        this.state = 'walk';
-        let bestGX = this.balloonPos.x + 2.0;
-        let bestGZ = this.balloonPos.z + 1.85;
-        let bestGY = terrainHeight(bestGX, bestGZ);
-        for (const [ox, oz] of [[2.0, 1.85], [-2.0, 1.85], [0, 2.3], [2.1, 0.2]]) {
-          const cx = this.balloonPos.x + ox;
-          const cz = this.balloonPos.z + oz;
-          const cy = terrainHeight(cx, cz);
-          if (!isOverRiver(cx, cz) && cy > bestGY - 0.1) {
-            bestGX = cx;
-            bestGZ = cz;
-            bestGY = cy;
+      } else {
+        const landGround = terrainHeight(this.balloonPos.x, this.balloonPos.z);
+        if (
+          this.riseTimer > 2.4 &&
+          !isOverRiver(this.balloonPos.x, this.balloonPos.z) &&
+          landGround > WATER_Y + 0.6 &&
+          this.balloonPos.y - landGround < 1.1 &&
+          this.balloonTargetAlt - landGround < 1.5 &&
+          (!this.autotest || (this.autoStep === 4 && Math.hypot(this.balloonPos.x - LANDMARKS.meadowLanding.x, this.balloonPos.z - LANDMARKS.meadowLanding.z) < 9.5))
+        ) {
+          this.balloonPos.y = landGround;
+          this.balloonVel.set(0, 0, 0);
+          this.balloonGrounded = true;
+          this.state = 'walk';
+          let bestPos = new THREE.Vector3(this.balloonPos.x + 2.0, landGround, this.balloonPos.z + 1.85);
+          let bestScore = -1e9;
+          for (const [ox, oz] of [[2.0, 1.85], [-2.0, 1.85], [0, 2.3], [2.1, 0.2], [-2.1, 0.2]]) {
+            const cand = new THREE.Vector3(this.balloonPos.x + ox, terrainHeight(this.balloonPos.x + ox, this.balloonPos.z + oz), this.balloonPos.z + oz);
+            this.colliders.resolveWalker(cand, {
+              radius: 0.36,
+              height: 1.32,
+              terrainHeight,
+              isOverRiver,
+              riverCenterZ,
+              riverHalfWidth,
+              isOnDeck: isOnBridgeOrPier,
+              waterY: WATER_Y,
+            });
+            const dBal = Math.hypot(cand.x - this.balloonPos.x, cand.z - this.balloonPos.z);
+            if (!isOverRiver(cand.x, cand.z) && dBal > 1.35 && cand.y > bestScore) {
+              bestScore = cand.y;
+              bestPos = cand;
+            }
           }
+          this.girlPos.copy(bestPos);
+          this.girlYaw = 0.25;
+          this._setMoment('land');
         }
-        this.girlPos.set(bestGX, bestGY, bestGZ);
-        this.girlYaw = 0.25;
-        this._setMoment('land');
       }
     } else if (this.state === 'float') {
       const steer = this.autotest ? this.autoSteer : this.steerInput;
-      this.floatVel.x = damp(this.floatVel.x, steer.turn * -3.5, 2.5, dt);
-      this.floatVel.z = damp(this.floatVel.z, -2.2 + steer.climb * -2.0, 2.5, dt);
-      this.floatVel.y = -2.2; // Gentle slow descent
+      this.floatVel.x = damp(this.floatVel.x, steer.turn * -3.5 + 0.18, 2.5, dt);
+      this.floatVel.z = damp(this.floatVel.z, -2.2 + steer.climb * -2.0 - 0.35, 2.5, dt);
+      this.floatVel.y = -2.2;
 
       this.girlPos.x = clamp(this.girlPos.x + this.floatVel.x * dt, -195, 195);
       this.girlPos.z = clamp(this.girlPos.z + this.floatVel.z * dt, -365, 55);
       this.girlPos.y += this.floatVel.y * dt;
       this.girlYaw = wrapAngle(this.girlYaw + steer.turn * 1.4 * dt);
 
-      if (isOverRiver(this.girlPos.x, this.girlPos.z) && this.girlPos.y < WATER_Y + 4.5) {
-        const rz = riverCenterZ(this.girlPos.x);
-        this.girlPos.z += (this.girlPos.z < rz ? -5.0 : 5.0) * dt;
-      }
+      this.colliders.resolveFloatGirl(this.girlPos, this.floatVel, {
+        radius: 0.48,
+        height: 2.0,
+        terrainHeight,
+        isOverRiver,
+        riverCenterZ,
+        riverHalfWidth,
+        isOnDeck: isOnBridgeOrPier,
+        waterY: WATER_Y,
+        dt,
+      });
 
-      const groundY = terrainHeight(this.girlPos.x, this.girlPos.z);
-      if (this.girlPos.y <= groundY + 0.05) {
+      const groundY = Math.max(WATER_Y + 0.08, terrainHeight(this.girlPos.x, this.girlPos.z));
+      if (this.girlPos.y <= groundY + 0.06) {
         this.girlPos.y = groundY;
         this.state = 'walk';
+        this.colliders.resolveWalker(this.girlPos, {
+          radius: 0.36,
+          height: 1.32,
+          terrainHeight,
+          isOverRiver,
+          riverCenterZ,
+          riverHalfWidth,
+          isOnDeck: isOnBridgeOrPier,
+          waterY: WATER_Y,
+        });
         this.dandelion.update(this.time, false);
         this._callBalloonToGirl();
       } else {
+        const cosY = Math.cos(this.girlYaw);
+        const sinY = Math.sin(this.girlYaw);
+        this.dandelion.group.position.set(
+          this.girlPos.x + 0.18 * cosY + 0.06 * sinY,
+          this.girlPos.y + 1.32,
+          this.girlPos.z - 0.18 * sinY + 0.06 * cosY
+        );
         this.dandelion.update(this.time, true);
       }
 
       if (!this.balloonGrounded) {
-        const targetBY = terrainHeight(this.balloonPos.x, this.balloonPos.z);
+        const targetBY = Math.max(WATER_Y + 0.14, terrainHeight(this.balloonPos.x, this.balloonPos.z));
         this.balloonPos.y = damp(this.balloonPos.y, targetBY, 0.36, dt);
-        if (Math.abs(this.balloonPos.y - targetBY) < 0.2) {
-          this.balloonPos.y = targetBY;
+        this.colliders.resolveBalloon(this.balloonPos, this.balloonVel, {
+          inFlight: true,
+          terrainHeight,
+          isOverRiver,
+          isOnDeck: isOnBridgeOrPier,
+          waterY: WATER_Y,
+        });
+        const settledBY = Math.max(WATER_Y + 0.14, terrainHeight(this.balloonPos.x, this.balloonPos.z));
+        if (Math.abs(this.balloonPos.y - settledBY) < 0.2) {
+          this.balloonPos.y = settledBY;
           this.balloonGrounded = true;
         }
+      } else {
+        this.colliders.resolveBalloon(this.balloonPos, this.balloonVel, {
+          inFlight: false,
+          terrainHeight,
+          isOverRiver,
+          isOnDeck: isOnBridgeOrPier,
+          waterY: WATER_Y,
+        });
       }
       this.balloon.update(this.time, { burnerLevel: 0.05, showBeacon: this.balloonGrounded });
 
@@ -1042,7 +1170,7 @@ export class Game {
       const rp = this.recipient.group.position;
       const tx = LANDMARKS.towerPlaza.x + 1.1;
       const tz = LANDMARKS.towerPlaza.z - 7.6;
-      const ty = terrainHeight(LANDMARKS.towerPlaza.x, LANDMARKS.towerPlaza.z) + 0.52;
+      const ty = terrainHeight(LANDMARKS.towerPlaza.x, LANDMARKS.towerPlaza.z);
 
       const points = [
         new THREE.Vector3(bp.x - 2.35, bp.y, bp.z + 0.8),

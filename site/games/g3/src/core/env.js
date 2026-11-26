@@ -33,13 +33,13 @@ export const PALETTE = {
 
 // Key World Coordinates (X, Z in meters, Y=0 is mean sea level)
 export const HARBOR_ORIGIN = new THREE.Vector3(0, 0, -132);
-export const SHELL_MAP_POS = new THREE.Vector3(2.1, 0.95, -118.2);
-export const HARBOR_BOAT_POS = new THREE.Vector3(6.2, 0, -110.2);
+export const SHELL_MAP_POS = new THREE.Vector3(2.1, 1.04, -118.2);
+export const HARBOR_BOAT_POS = new THREE.Vector3(8.2, 0, -108.5);
 
 // Starlit Cove Pavilion arranged so moored sailboat floats cleanly in front-left water beside terrace,
 // with girl and welcomer standing clearly side-by-side at the open front terrace edge.
 export const PAVILION_POS = new THREE.Vector3(0, 0, 190);
-export const PAVILION_DOCK_POS = new THREE.Vector3(-5.2, 0, 177.2);
+export const PAVILION_DOCK_POS = new THREE.Vector3(-5.8, 0, 176.6);
 export const WELCOMER_POS = new THREE.Vector3(1.55, 1.07, 183.6);
 
 export const ISLANDS = [
@@ -50,7 +50,7 @@ export const ISLANDS = [
     radius: 26,
     peakY: 6.2,
     dockPos: new THREE.Vector3(-27.2, 0, -29.5),
-    dockYaw: -Math.PI * 0.55,
+    dockYaw: 0.14,
     walkLanding: new THREE.Vector3(-37.0, 0.85, -30.2),
     detourPos: new THREE.Vector3(-73, 3.8, -37),
     landmarkPos: new THREE.Vector3(-60, 5.2, -33),
@@ -62,7 +62,7 @@ export const ISLANDS = [
     radius: 28,
     peakY: 7.4,
     dockPos: new THREE.Vector3(28.2, 0, 23.0),
-    dockYaw: Math.PI * 0.52,
+    dockYaw: -0.14,
     walkLanding: new THREE.Vector3(38.5, 0.85, 24.0),
     detourPos: new THREE.Vector3(63, 2.2, 46),
     landmarkPos: new THREE.Vector3(61, 6.8, 24),
@@ -74,7 +74,7 @@ export const ISLANDS = [
     radius: 27,
     peakY: 5.8,
     dockPos: new THREE.Vector3(-12.2, 0, 92.5),
-    dockYaw: -Math.PI * 0.5,
+    dockYaw: 0.14,
     walkLanding: new THREE.Vector3(-22.2, 0.85, 93.0),
     altDockPos: new THREE.Vector3(-37.5, 0, 66.5),
     detourPos: new THREE.Vector3(-52, 4.6, 104),

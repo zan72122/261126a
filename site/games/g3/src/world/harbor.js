@@ -1,7 +1,8 @@
 import * as THREE from '../../lib/three.module.js';
 import { PALETTE, SHELL_MAP_POS } from '../core/env.js';
 import { mulberry32 } from '../core/math.js';
-import { getGroundY, getLandInfo } from './terrain.js';
+import { addBoxObstacle, addCircleObstacle, addObjectObstacle, resetObstacles } from './colliders.js';
+import { getGroundY, getLandInfo, HARBOR_DECKS } from './terrain.js';
 import {
   makeAmphora,
   makeCypress,
@@ -23,6 +24,7 @@ import {
 
 export class HarborTown {
   constructor(mats, { lowQuality = false } = {}) {
+    resetObstacles();
     this.group = new THREE.Group();
     this.group.name = 'harbor';
     this.lanternMats = [];
@@ -30,151 +32,102 @@ export class HarborTown {
 
     const castShadow = !lowQuality;
 
-    // 1. Stone quay seawall, cobble promenade & side quay wings embracing the harbor cove
-    const quayWall = new THREE.Mesh(new THREE.BoxGeometry(62, 2.02, 4.5), mats.stoneWall);
-    quayWall.position.set(0, -0.05, -116.5);
-    quayWall.receiveShadow = castShadow;
-    this.group.add(quayWall);
+    // 1. Non-overlapping stone quay, wing, jetty & breakwater top deck slabs (resting on terrain foundations)
+    for (const dk of HARBOR_DECKS) {
+      const mat = dk.name === 'promenade' ? mats.cobblePlaza : dk.name.startsWith('bw') ? mats.stoneWall : mats.cobble;
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(dk.w, dk.deckThick, dk.d), mat);
+      const topY = dk.topY - 0.005;
+      slab.position.set(dk.x, topY - dk.deckThick * 0.5, dk.z);
+      slab.receiveShadow = castShadow;
+      this.group.add(slab);
+      addBoxObstacle(dk.x, dk.z, dk.w, dk.d, 0, dk.baseBottom, dk.topY, 'deck', true);
+    }
 
-    const leftWing = new THREE.Mesh(new THREE.BoxGeometry(11, 2.02, 18), mats.stoneWall);
-    leftWing.position.set(-18.5, -0.02, -108.5);
-    leftWing.receiveShadow = castShadow;
-    this.group.add(leftWing);
+    // Breakwater beacon lantern seated cleanly at getGroundY(-10.8, -88.2) = 0.90
+    const bwBeacon = makeLanternPost(mats, 3.0, this.lanternMats);
+    bwBeacon.position.set(-10.8, getGroundY(-10.8, -88.2), -88.2);
+    this.group.add(bwBeacon);
+    addObjectObstacle(bwBeacon, 'lantern', 0.04, true);
 
-    const rightWing = new THREE.Mesh(new THREE.BoxGeometry(12, 2.02, 18), mats.stoneWall);
-    rightWing.position.set(20.5, -0.02, -108.5);
-    rightWing.receiveShadow = castShadow;
-    this.group.add(rightWing);
-
-    // Textured cobblestone quay promenade surface (top at y = 1.04, cleanly above quayWall & terrain)
-    const promenade = new THREE.Mesh(new THREE.BoxGeometry(60, 0.28, 17.8), mats.cobblePlaza);
-    promenade.position.set(0, 0.90, -124.1);
-    promenade.receiveShadow = castShadow;
-    this.group.add(promenade);
-
-    // Cobble tops on side wings
-    const leftWingTop = new THREE.Mesh(new THREE.BoxGeometry(10.8, 0.14, 17.8), mats.cobble);
-    leftWingTop.position.set(-18.5, 1.02, -108.5);
-    leftWingTop.receiveShadow = castShadow;
-    this.group.add(leftWingTop);
-
-    const rightWingTop = new THREE.Mesh(new THREE.BoxGeometry(11.8, 0.14, 17.8), mats.cobble);
-    rightWingTop.position.set(20.5, 1.02, -108.5);
-    rightWingTop.receiveShadow = castShadow;
-    this.group.add(rightWingTop);
-
-    // Raised stone sea-edge coping stones along quay
+    // Raised stone sea-edge coping curbs (non-overlapping, clear of houses, bollards & jetty mouth)
     for (const [cx, cz, cw, cd] of [
-      [-12.5, -114.6, 11.5, 0.58],
-      [0.1, -114.6, 5.2, 0.58],
-      [12.5, -114.6, 11.5, 0.58],
-      [-13.4, -106.5, 0.58, 14.0],
-      [14.8, -106.5, 0.58, 14.0],
+      [-9.5, -114.55, 11.6, 0.50], // x in [-15.3, -3.7]
+      [-0.4, -114.55, 3.8, 0.50],  // x in [-2.3, 1.5]
+      [10.2, -114.55, 7.2, 0.50],  // x in [6.6, 13.8]
+      [-13.3, -106.8, 0.50, 14.0],
+      [14.8, -106.8, 0.50, 14.0],
     ]) {
-      const curb = new THREE.Mesh(new THREE.BoxGeometry(cw, 0.26, cd), mats.stoneLight);
-      curb.position.set(cx, 1.12, cz);
+      const curb = new THREE.Mesh(new THREE.BoxGeometry(cw, 0.24, cd), mats.stoneLight);
+      curb.position.set(cx, 1.04 + 0.12, cz);
       curb.receiveShadow = castShadow;
       this.group.add(curb);
+      addBoxObstacle(cx, cz, cw, cd, 0, 1.04, 1.28, 'curb', false);
     }
 
-    // Subtle organic stepping stones leading to seashell map & jetty
-    const rand = mulberry32(42);
-    const flagstones = [];
-    for (let s = 0; s < 10; s++) {
-      const t = s / 9;
-      const px = -1.2 + t * 4.4 + (rand() - 0.5) * 0.22;
-      const pz = -124.5 + t * 9.5;
-      flagstones.push([px, 1.045, pz, (rand() - 0.5) * 0.25, 0.92 + rand() * 0.22, 0.85 + rand() * 0.2]);
-    }
-    for (const [fx, fz] of [
-      [-6.5, -119.0], [-5.2, -121.0], [-3.2, -122.4], [5.8, -119.5], [7.8, -118.2],
-    ]) {
-      flagstones.push([fx, 1.045, fz, (rand() - 0.5) * 0.2, 1.05, 0.92]);
-    }
-    scatterFlagstones(this.group, flagstones, mats.stoneLight);
-
-    // Stone jetty extending out to the waiting sailboat
-    const jetty = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.45, 9.4), mats.stoneWall);
-    jetty.position.set(3.8, 0.24, -112.0);
-    jetty.receiveShadow = castShadow;
-    this.group.add(jetty);
-
-    const jettyTop = new THREE.Mesh(new THREE.BoxGeometry(3.15, 0.16, 9.2), mats.cobble);
-    jettyTop.position.set(3.8, 0.98, -112.0);
-    jettyTop.receiveShadow = castShadow;
-    this.group.add(jettyTop);
-
-    // 2. Outer stone breakwater on left side of harbor
-    const bw1 = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.5, 19), mats.stoneWall);
-    bw1.position.set(-22, 0.15, -96);
-    bw1.receiveShadow = castShadow;
-    this.group.add(bw1);
-    const bw2 = new THREE.Mesh(new THREE.BoxGeometry(12, 1.5, 3.4), mats.stoneWall);
-    bw2.position.set(-16, 0.15, -88);
-    bw2.receiveShadow = castShadow;
-    this.group.add(bw2);
-    const bwBeacon = makeLanternPost(mats, 3.0, this.lanternMats);
-    bwBeacon.position.set(-10.8, 0.85, -88);
-    this.group.add(bwBeacon);
-
-    // Mooring bollards along quay, wings, and jetty
+    // Mooring bollards (strictly clear of curbs, lanterns, clusters & jetty walkway)
     const bollardGeo = new THREE.CylinderGeometry(0.14, 0.20, 0.54, 8);
     for (const [bx, bz] of [
-      [-13.0, -112.0], [-13.0, -104.5], [-7.5, -114.6], [-2.0, -114.6],
-      [2.5, -110.5], [5.1, -108.5], [9.5, -114.6], [15.2, -111.5], [15.2, -103.5],
+      [-13.9, -112.0], [-13.9, -104.5], [-7.8, -115.2], [-2.2, -115.2],
+      [2.45, -110.5], [5.15, -108.5], [10.6, -115.2], [15.4, -111.5], [15.4, -102.0],
     ]) {
       const b = new THREE.Mesh(bollardGeo, mats.stone);
-      b.position.set(bx, 1.24, bz);
+      b.position.set(bx, 1.04 + 0.27, bz);
       this.group.add(b);
+      addCircleObstacle(bx, bz, 0.22, 1.04, 1.58, 'bollard');
     }
 
-    // 3. Harbor plaza focal details filling foreground & center cleanly (never blocking girl or shell map!)
+    // 2. Harbor plaza focal details (clear of girl, shell pedestal & stepping path)
     const basin = makeHarborBasin(mats);
-    basin.position.set(-3.2, 1.04, -120.2);
+    basin.position.set(-4.2, 1.04, -120.8);
     this.group.add(basin);
+    addCircleObstacle(-4.2, -120.8, 1.56, 1.04, 2.0, 'prop');
 
-    // Wooden pergola arbor framing the left quay café terrace
+    // Wooden pergola arbor on the left quay café terrace
     const arbor = new THREE.Group();
-    arbor.position.set(-9.2, 1.0, -121.2);
-    arbor.rotation.y = 0.24;
-    for (const ax of [-1.6, 1.6]) {
-      for (const az of [-1.1, 1.1]) {
+    arbor.position.set(-9.6, 1.04, -120.8);
+    arbor.rotation.y = 0.20;
+    for (const ax of [-1.5, 1.5]) {
+      for (const az of [-1.0, 1.0]) {
         const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 2.3, 7), mats.wood);
         post.position.set(ax, 1.15, az);
         arbor.add(post);
       }
     }
     for (let i = 0; i < 5; i++) {
-      const beam = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.1, 0.12), mats.woodLight);
-      beam.position.set(0, 2.32, -1.1 + i * 0.55);
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.1, 0.12), mats.woodLight);
+      beam.position.set(0, 2.32, -1.0 + i * 0.5);
       arbor.add(beam);
     }
-    for (const [vx, vz, vm] of [[-0.9, -0.3, mats.olive], [0.2, 0.2, mats.bougainvillea], [1.1, -0.1, mats.bougainvillea]]) {
-      const vine = new THREE.Mesh(new THREE.IcosahedronGeometry(0.62, 1), vm);
-      vine.scale.set(1.4, 0.45, 1.1);
+    for (const [vx, vz, vm] of [[-0.9, -0.3, mats.olive], [0.2, 0.2, mats.bougainvillea], [1.0, -0.1, mats.bougainvillea]]) {
+      const vine = new THREE.Mesh(new THREE.IcosahedronGeometry(0.58, 1), vm);
+      vine.scale.set(1.35, 0.44, 1.05);
       vine.position.set(vx, 2.46, vz);
       arbor.add(vine);
     }
     this.group.add(arbor);
+    addObjectObstacle(arbor, 'prop', 0.05);
 
-    // 4. Wrap-around Mediterranean whitewashed houses (left wing, right wing, and tiered hillside)
+    // 3. Wrap-around Mediterranean whitewashed houses (well-spaced, seated on flat terraces/plaza)
     const houseConfigs = [
-      { x: -19.2, z: -108.5, ry: Math.PI * 0.48, w: 4.8, d: 3.8, h: 3.3, balcony: true, pergola: true, door: mats.coralDoor, annex: true },
-      { x: -19.6, z: -116.0, ry: Math.PI * 0.35, w: 4.6, d: 3.8, h: 4.0, stairs: true, door: mats.bluePaint },
-      { x: 20.6, z: -109.2, ry: -Math.PI * 0.48, w: 4.6, d: 3.8, h: 3.4, balcony: true, pergola: true, door: mats.bluePaint, annex: true },
-      { x: 21.4, z: -116.8, ry: -Math.PI * 0.34, w: 4.8, d: 4.0, h: 4.1, stairs: true, door: mats.coralDoor },
-      { x: -7.0, z: -127.8, ry: 0.15, w: 5.0, d: 4.2, h: 3.4, balcony: true, stairs: true, pergola: true, door: mats.coralDoor },
-      { x: -15.5, z: -126.5, ry: 0.28, w: 4.4, d: 3.8, h: 4.2, balcony: true, door: mats.bluePaint },
-      { x: -24.0, z: -133.0, ry: 0.12, w: 5.4, d: 4.4, h: 3.8, stairs: true, door: mats.shutter, annex: true },
-      { x: 10.5, z: -128.5, ry: -0.2, w: 4.8, d: 4.0, h: 3.5, pergola: true, door: mats.bluePaint },
-      { x: 18.2, z: -126.0, ry: -0.35, w: 4.2, d: 3.6, h: 4.4, balcony: true, door: mats.coralDoor },
-      { x: 26.0, z: -133.5, ry: -0.15, w: 5.2, d: 4.2, h: 3.3, stairs: true, door: mats.wood },
+      // Left wing
+      { x: -21.8, z: -104.5, ry: Math.PI * 0.48, w: 3.8, d: 3.0, h: 3.2, balcony: true, door: mats.coralDoor },
+      { x: -22.2, z: -116.5, ry: Math.PI * 0.32, w: 4.0, d: 3.2, h: 3.9, stairs: true, door: mats.bluePaint },
+      // Right wing
+      { x: 22.8, z: -105.0, ry: -Math.PI * 0.48, w: 3.8, d: 3.0, h: 3.3, balcony: true, door: mats.bluePaint },
+      { x: 23.5, z: -116.8, ry: -Math.PI * 0.32, w: 4.0, d: 3.3, h: 4.0, stairs: true, door: mats.coralDoor },
+      // Plaza back row
+      { x: -7.2, z: -131.0, ry: 0.10, w: 4.4, d: 3.5, h: 3.4, balcony: true, pergola: true, door: mats.coralDoor },
+      { x: -17.8, z: -128.5, ry: 0.22, w: 4.0, d: 3.2, h: 4.1, balcony: true, door: mats.bluePaint },
+      { x: -28.0, z: -133.5, ry: 0.08, w: 4.2, d: 3.5, h: 3.7, stairs: true, door: mats.shutter },
+      { x: 9.5, z: -131.0, ry: -0.14, w: 4.4, d: 3.5, h: 3.5, pergola: true, door: mats.bluePaint },
+      { x: 20.2, z: -127.8, ry: -0.26, w: 4.0, d: 3.2, h: 4.3, balcony: true, door: mats.coralDoor },
+      { x: 31.2, z: -133.5, ry: -0.12, w: 4.2, d: 3.5, h: 3.3, stairs: true, door: mats.wood },
       // Upper hillside tier
-      { x: -18.5, z: -138.0, ry: 0.18, w: 5.2, d: 4.2, h: 3.8, balcony: true, door: mats.bluePaint },
-      { x: -11.0, z: -139.5, ry: 0.08, w: 5.6, d: 4.4, h: 4.0, balcony: true, door: mats.coralDoor },
-      { x: 2.5, z: -141.0, ry: -0.05, w: 4.8, d: 4.0, h: 4.5, stairs: true, door: mats.shutter },
-      { x: 15.5, z: -140.0, ry: -0.18, w: 5.0, d: 4.2, h: 3.7, door: mats.bluePaint, annex: true },
-      { x: 25.0, z: -142.0, ry: -0.22, w: 4.6, d: 3.8, h: 4.1, balcony: true, door: mats.coralDoor },
+      { x: -22.2, z: -143.5, ry: 0.14, w: 4.4, d: 3.4, h: 3.8, balcony: true, door: mats.bluePaint },
+      { x: -10.0, z: -142.8, ry: 0.06, w: 4.6, d: 3.6, h: 4.0, balcony: true, door: mats.coralDoor },
+      { x: 3.0, z: -143.5, ry: -0.04, w: 4.2, d: 3.4, h: 4.4, stairs: true, door: mats.shutter },
+      { x: 15.2, z: -142.5, ry: -0.14, w: 4.2, d: 3.4, h: 3.7, door: mats.bluePaint, annex: true },
+      { x: 26.8, z: -144.2, ry: -0.20, w: 4.2, d: 3.4, h: 4.1, balcony: true, door: mats.coralDoor },
     ];
     for (const hc of houseConfigs) {
       const h = makeMediterraneanHouse(mats, {
@@ -182,50 +135,61 @@ export class HarborTown {
         balcony: !!hc.balcony, stairs: !!hc.stairs, pergola: !!hc.pergola, annex: !!hc.annex,
         doorMat: hc.door, castShadow,
       });
-      const gy = Math.max(0.95, getGroundY(hc.x, hc.z));
-      h.position.set(hc.x, gy - 0.15, hc.z);
+      const gy = getGroundY(hc.x, hc.z);
+      h.position.set(hc.x, gy, hc.z);
       h.rotation.y = hc.ry;
       this.group.add(h);
+      addObjectObstacle(h, 'building', 0.05);
     }
 
-    // 5. Stone arches & hillside stairways
+    // 4. Stone arches & hillside stairways (spaced clear of houses & arbor)
     const arch1 = makeStoneArch(mats, { span: 3.0, height: 3.2, depth: 1.0, castShadow });
-    arch1.position.set(2.0, 0.9, -129.5);
+    arch1.position.set(2.0, getGroundY(2.0, -130.0), -130.0);
     this.group.add(arch1);
+    addBoxObstacle(0.14, -130.0, 0.72, 1.0, 0, 1.04, 4.3, 'arch');
+    addBoxObstacle(3.86, -130.0, 0.72, 1.0, 0, 1.04, 4.3, 'arch');
 
-    const arch2 = makeStoneArch(mats, { span: 2.6, height: 2.9, depth: 0.95, castShadow });
-    arch2.position.set(-14.0, 0.9, -120.5);
+    const arch2 = makeStoneArch(mats, { span: 2.4, height: 2.9, depth: 0.9, castShadow });
+    arch2.position.set(-14.6, getGroundY(-14.6, -121.8), -121.8);
     arch2.rotation.y = 0.65;
     this.group.add(arch2);
+    addObjectObstacle(arch2, 'arch', 0.04);
 
-    const arch3 = makeStoneArch(mats, { span: 2.6, height: 2.9, depth: 0.95, castShadow });
-    arch3.position.set(16.0, 0.9, -119.0);
+    const arch3 = makeStoneArch(mats, { span: 2.4, height: 2.9, depth: 0.9, castShadow });
+    arch3.position.set(16.2, getGroundY(16.2, -120.2), -120.2);
     arch3.rotation.y = -0.58;
     this.group.add(arch3);
+    addObjectObstacle(arch3, 'arch', 0.04);
 
+    // Non-overlapping stone steps along hillside ramp (x = 2.0, z = -131.5 .. -136.4)
     for (let s = 0; s < 8; s++) {
-      const step = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.34, 0.68), mats.stoneLight);
-      step.position.set(2.0, 0.98 + s * 0.28, -131.5 - s * 0.62);
+      const sz = -131.5 - s * 0.70;
+      const sy = getGroundY(2.0, sz);
+      const step = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.24, 0.64), mats.stoneLight);
+      step.position.set(2.0, sy + 0.06, sz);
+      step.receiveShadow = castShadow;
       this.group.add(step);
+      addBoxObstacle(2.0, sz, 2.6, 0.64, 0, sy - 0.06, sy + 0.18, 'stair');
     }
 
-    // Dry-stone garden walls framing the harbor edge
+    // Dry-stone garden walls (clear of houses, trees & arches)
     for (const [wx, wz, ry, len] of [
-      [-10.2, -120.8, 0.08, 4.4],
-      [-15.0, -112.5, Math.PI * 0.48, 3.6],
-      [15.8, -113.0, Math.PI * 0.52, 3.6],
-      [10.2, -121.0, -0.1, 4.0],
+      [-11.4, -124.0, 0.06, 3.2],
+      [-14.6, -112.2, Math.PI * 0.48, 3.2],
+      [16.8, -112.5, Math.PI * 0.52, 3.2],
+      [12.2, -124.2, -0.08, 3.2],
     ]) {
       const wseg = makeStoneWallSegment(mats, len, 0.72);
-      wseg.position.set(wx, 0.96, wz);
+      wseg.position.set(wx, getGroundY(wx, wz), wz);
       wseg.rotation.y = ry;
       this.group.add(wseg);
+      addObjectObstacle(wseg, 'wall', 0.04);
     }
 
-    // 6. Wordless blue mailbox (zero text or numbers)
+    // 5. Wordless blue mailbox
     const mailbox = new THREE.Group();
     const mbPost = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 1.05, 8), mats.wood);
-    mbPost.position.y = 0.52;
+    mbPost.position.y = 0.525;
     mailbox.add(mbPost);
     const mbBox = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 0.3), mats.bluePaint);
     mbBox.position.y = 1.08;
@@ -239,148 +203,175 @@ export class HarborTown {
     const mbSlot = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 0.32), mats.plaster);
     mbSlot.position.y = 1.13;
     mailbox.add(mbSlot);
-    mailbox.position.set(-2.2, 1.04, -121.6);
+    mailbox.position.set(-1.6, 1.04, -122.4);
     this.group.add(mailbox);
+    addCircleObstacle(-1.6, -122.4, 0.34, 1.04, 2.45, 'prop');
 
-    // 7. Open-air harbor fruit market stall (framing right side of initial harbor view)
+    // 6. Open-air harbor fruit market stall (placed clear of curbs, lanterns & clusters)
     const market = new THREE.Group();
-    market.position.set(9.4, 1.04, -117.0);
-    market.rotation.y = -0.68;
+    market.position.set(10.2, 1.04, -120.6);
+    market.rotation.y = -0.58;
     for (let s = 0; s < 2; s++) {
       const stall = new THREE.Group();
-      stall.position.x = s * 2.9;
-      const table = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.78, 1.1), mats.woodLight);
+      stall.position.x = s * 2.75;
+      const table = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.78, 1.05), mats.woodLight);
       table.position.y = 0.39;
       stall.add(table);
-      for (const px of [-1.05, 1.05]) {
+      for (const px of [-1.0, 1.0]) {
         const p = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.2, 6), mats.wood);
-        p.position.set(px, 1.1, -0.48);
+        p.position.set(px, 1.1, -0.45);
         stall.add(p);
       }
       for (let i = 0; i < 5; i++) {
         const stripe = new THREE.Mesh(
-          new THREE.BoxGeometry(0.48, 0.05, 1.45),
+          new THREE.BoxGeometry(0.46, 0.05, 1.40),
           i % 2 === 0 ? mats.terracotta : mats.canvas
         );
-        stripe.position.set(-0.96 + i * 0.48, 2.08, 0.05);
+        stripe.position.set(-0.92 + i * 0.46, 2.08, 0.05);
         stripe.rotation.x = 0.22;
         stall.add(stripe);
       }
       for (let c = 0; c < 3; c++) {
-        const crate = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.18, 0.46), mats.wood);
-        crate.position.set(-0.68 + c * 0.68, 0.87, 0.05);
+        const crate = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.18, 0.44), mats.wood);
+        crate.position.set(-0.65 + c * 0.65, 0.87, 0.05);
         stall.add(crate);
         const fMat = c === 0 ? mats.lemon : c === 1 ? mats.citrus : mats.olive;
         for (let k = 0; k < 4; k++) {
-          const fruit = new THREE.Mesh(new THREE.SphereGeometry(0.085, 7, 6), fMat);
-          fruit.position.set(-0.76 + c * 0.68 + (k % 2) * 0.16, 0.98, -0.02 + Math.floor(k / 2) * 0.16);
+          const fruit = new THREE.Mesh(new THREE.SphereGeometry(0.08, 7, 6), fMat);
+          fruit.position.set(-0.73 + c * 0.65 + (k % 2) * 0.16, 0.98, -0.02 + Math.floor(k / 2) * 0.16);
           stall.add(fruit);
         }
       }
       market.add(stall);
     }
     this.group.add(market);
+    addObjectObstacle(market, 'prop', 0.05);
 
-    // 8. Olive trees, lemon trees, cypresses, terracotta planters, amphorae, benches & drying nets
+    // 7. Olive trees, lemon trees & cypresses (verified clear of all houses, arches, walls & props)
     const oliveSpots = [
-      [-15.2, -115.2, 1.05], [-16.2, -104.2, 0.95], [16.5, -105.0, 1.0],
-      [-20.5, -123.5, 1.15], [7.2, -121.6, 0.95], [22.5, -121.0, 1.1],
-      [-18.0, -138.0, 1.25], [21.0, -138.0, 1.2],
+      [-15.8, -100.5, 0.90], [17.0, -100.5, 0.90],
+      [-24.2, -122.2, 1.0], [6.8, -123.0, 0.88], [28.2, -122.0, 1.0],
+      [-28.8, -142.0, 1.12], [22.4, -137.0, 1.05],
     ];
     oliveSpots.forEach(([tx, tz, ts], idx) => {
       const tree = makeOliveTree(mats, ts, castShadow, 100 + idx * 13);
-      tree.position.set(tx, Math.max(0.95, getGroundY(tx, tz)) - 0.1, tz);
+      tree.position.set(tx, getGroundY(tx, tz), tz);
       this.group.add(tree);
+      addObjectObstacle(tree, 'tree', 0.02);
     });
 
     const lemonSpots = [
-      [-6.2, -118.2, 0.88], [14.8, -114.2, 0.9], [-2.8, -124.4, 0.9], [16.5, -123.5, 0.92],
+      [-7.2, -118.2, 0.84], [15.4, -115.6, 0.86], [-0.4, -126.2, 0.84], [19.0, -109.6, 0.84],
     ];
     lemonSpots.forEach(([tx, tz, ts], idx) => {
       const tree = makeLemonTree(mats, ts, castShadow, 200 + idx * 17);
-      tree.position.set(tx, Math.max(0.95, getGroundY(tx, tz)) - 0.1, tz);
+      tree.position.set(tx, getGroundY(tx, tz), tz);
       this.group.add(tree);
+      addObjectObstacle(tree, 'tree', 0.02);
     });
 
     [
-      [-25, -112, 5.2], [25, -110, 5.4], [-26, -126, 5.4], [-5, -145, 6.2], [9, -144, 5.8], [28, -128, 5.2],
+      [-23.2, -110.2, 5.0], [25.6, -110.5, 5.2], [-27.8, -126.2, 5.2],
+      [-4.2, -146.5, 6.0], [9.5, -146.0, 5.8], [30.8, -127.0, 5.0],
     ].forEach(([cx, cz, ch], idx) => {
       const cyp = makeCypress(mats, ch, castShadow, 300 + idx * 19);
-      cyp.position.set(cx, Math.max(0.95, getGroundY(cx, cz)) - 0.1, cz);
+      cyp.position.set(cx, getGroundY(cx, cz), cz);
       this.group.add(cyp);
+      addObjectObstacle(cyp, 'tree', 0.02);
     });
 
-    // Terracotta flower planters & amphorae along quay, basin & jetty
+    // Terracotta flower planters & amphorae along quay & jetty (leaving wide center aisle on jetty)
     for (const [px, pz, sc] of [
-      [-5.8, -116.2, 1.0], [-1.0, -116.0, 0.95], [5.8, -116.0, 1.0],
-      [-14.2, -110.2, 1.05], [15.5, -109.5, 1.0], [-10.5, -118.5, 1.0],
-      [2.8, -115.6, 0.88], [4.9, -115.6, 0.88],
+      [-5.1, -115.6, 0.90], [-0.8, -115.8, 0.90], [6.2, -116.0, 0.92],
+      [-14.8, -108.0, 0.92], [16.0, -109.5, 0.92], [-10.4, -117.6, 0.92],
+      [2.55, -113.4, 0.72], [5.05, -113.4, 0.72],
     ]) {
       const pot = makeTerracottaPlanter(mats, true, sc);
-      pot.position.set(px, 1.04, pz);
+      pot.position.set(px, getGroundY(px, pz), pz);
       this.group.add(pot);
+      addObjectObstacle(pot, 'prop', 0.04);
     }
 
     for (const [ax, az, sc] of [
-      [-5.2, -120.2, 1.0], [5.5, -120.6, 0.92], [11.8, -115.8, 1.05], [-13.6, -114.6, 0.95],
+      [-5.6, -123.6, 0.92], [4.5, -121.2, 0.90], [13.2, -115.8, 0.92], [-14.2, -115.8, 0.92],
     ]) {
       const amp = makeAmphora(mats, sc);
-      amp.position.set(ax, 1.04, az);
+      amp.position.set(ax, getGroundY(ax, az), az);
       this.group.add(amp);
+      addObjectObstacle(amp, 'prop', 0.04);
     }
 
     // Stone benches on quay
-    for (const [bx, bz, ry] of [[-7.2, -117.4, 0.22], [5.8, -119.2, -0.45]]) {
+    for (const [bx, bz, ry] of [[-6.8, -123.0, 0.22], [5.8, -118.8, -0.45]]) {
       const bench = makeStoneBench(mats);
-      bench.position.set(bx, 1.04, bz);
+      bench.position.set(bx, getGroundY(bx, bz), bz);
       bench.rotation.y = ry;
       this.group.add(bench);
+      addObjectObstacle(bench, 'prop', 0.04);
     }
 
     // Drying net racks on left & right quay arms
-    for (const [nx, nz, ry] of [[-15.2, -108.0, 1.35], [16.8, -107.2, -1.25]]) {
+    for (const [nx, nz, ry] of [[-16.2, -109.6, 1.35], [17.0, -106.4, -1.25]]) {
       const rack = makeDryingNetRack(mats);
-      rack.position.set(nx, 1.02, nz);
+      rack.position.set(nx, getGroundY(nx, nz), nz);
       rack.rotation.y = ry;
       this.group.add(rack);
+      addObjectObstacle(rack, 'prop', 0.04);
     }
 
-    // Bougainvillea clusters
-    for (const [bx, bz] of [[-5.0, -124.8], [-13.2, -124.8], [8.8, -125.8], [16.2, -124.2], [-15.8, -109.8], [16.8, -111.5]]) {
-      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.68, 1), mats.bougainvillea);
-      b.scale.set(1.25, 0.85, 0.95);
-      b.position.set(bx, 1.5, bz);
+    // Bougainvillea shrubs grounded cleanly on plaza/wings (clear of houses & trees)
+    for (const [bx, bz] of [[-4.2, -124.2], [-18.2, -122.8], [5.4, -124.6], [14.8, -123.2], [-16.0, -106.2], [18.2, -112.5]]) {
+      const gy = getGroundY(bx, bz);
+      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.54, 1), mats.bougainvillea);
+      b.scale.set(1.15, 0.8, 0.9);
+      b.position.set(bx, gy + 0.42, bz);
       this.group.add(b);
+      addObjectObstacle(b, 'prop', 0.04);
     }
 
-    // 9. Harbor lanterns
+    // 8. Harbor lanterns (clear of curbs, bollards, trees & props)
     for (const [lx, lz] of [
-      [-13.2, -102.0], [-9.2, -115.6], [-1.8, -115.6], [7.2, -115.6], [15.0, -114.6], [15.0, -102.5],
+      [-14.2, -102.0], [-9.2, -115.6], [-1.5, -115.6], [7.2, -115.6], [15.4, -114.0], [15.8, -102.2],
     ]) {
       const post = makeLanternPost(mats, 2.5, this.lanternMats);
-      post.position.set(lx, 1.04, lz);
+      post.position.set(lx, getGroundY(lx, lz), lz);
       this.group.add(post);
+      addObjectObstacle(post, 'lantern', 0.04);
     }
 
-    // 10. Nets, barrels, crates & citrus baskets along quay & jetty
+    // 9. Nets, barrels, crates & citrus baskets along quay & jetty (clear of curbs, bollards & path)
     for (const [px, pz, ry] of [
-      [-6.8, -115.8, 0.4], [-3.0, -115.6, -0.3], [1.6, -114.6, -0.5],
-      [9.4, -115.8, 1.1], [-14.2, -105.5, 0.7], [15.8, -104.8, -0.8],
-      [3.8, -113.4, 0.25],
+      [-7.2, -116.8, 0.4], [-3.5, -116.6, -0.3], [0.8, -115.8, -0.5],
+      [8.8, -116.6, 1.1], [-15.8, -104.2, 0.7], [16.8, -104.0, -0.8],
+      [12.0, -114.2, 0.25],
     ]) {
       const cl = makeHarborPropsCluster(mats);
-      cl.position.set(px, 1.04, pz);
+      cl.position.set(px, getGroundY(px, pz), pz);
       cl.rotation.y = ry;
       this.group.add(cl);
+      addObjectObstacle(cl, 'prop', 0.04);
     }
 
-    // 11. Moored small wooden fishing boats gently bobbing in harbor (clear of sailboat berth)
+    // Stepping flagstones along walking path (placed clear of props, pedestal & girl start)
+    const rand = mulberry32(42);
+    const flagstones = [];
+    for (let s = 0; s < 6; s++) {
+      const t = s / 5;
+      const px = -0.3 + t * 3.8 + (rand() - 0.5) * 0.12;
+      const pz = -124.2 + t * 8.0;
+      if (Math.hypot(px - SHELL_MAP_POS.x, pz - SHELL_MAP_POS.z) < 1.75) continue;
+      if (Math.hypot(px - 0.6, pz - (-120.8)) < 1.35) continue;
+      flagstones.push([px, 1.06, pz, (rand() - 0.5) * 0.2, 0.85, 0.78]);
+    }
+    scatterFlagstones(this.group, flagstones, mats.stoneLight);
+
+    // 10. Moored small wooden fishing boats gently bobbing in harbor (clear of sailboat berth & wings)
     const boatSpecs = [
       { x: -9.8, z: -102.5, ry: 0.35, color: mats.bluePaint },
       { x: -7.2, z: -108.5, ry: -0.18, color: mats.terracotta },
-      { x: -4.2, z: -111.4, ry: 0.12, color: mats.shutter },
-      { x: 11.4, z: -106.5, ry: -0.45, color: mats.shutter },
-      { x: 12.2, z: -100.5, ry: -0.22, color: mats.bluePaint },
+      { x: -3.2, z: -111.0, ry: 0.12, color: mats.shutter },
+      { x: 12.6, z: -103.5, ry: -0.45, color: mats.shutter },
+      { x: 12.2, z: -98.0, ry: -0.22, color: mats.bluePaint },
     ];
     for (const bs of boatSpecs) {
       const fb = makeFishingBoat(mats, bs.color);
@@ -389,27 +380,12 @@ export class HarborTown {
       fb.userData = { baseY: 0, phase: bs.x * 0.4, baseRz: 0 };
       this.group.add(fb);
       this.fishingBoats.push(fb);
+      addCircleObstacle(bs.x, bs.z, 1.65, -0.5, 1.5, 'fishingBoat', true);
     }
 
-    // 12. Dense coastal grass tufts, wildflowers, scrub shrubs & pebbles on hillside & wings
-    scatterCoastalFoliage(this.group, {
-      centerX: 0,
-      centerZ: -136,
-      radiusX: 48,
-      radiusZ: 24,
-      getLand: getLandInfo,
-      mats,
-      seed: 103,
-      countGrass: 520,
-      countShrub: 76,
-      countRock: 52,
-      minY: 1.05,
-      lowQuality,
-    });
-
-    // 13. Glowing Seashell Map on carved stone pedestal at harbor edge
+    // 11. Glowing Seashell Map on carved stone pedestal at harbor edge
     this.shellPedestal = new THREE.Group();
-    this.shellPedestal.position.set(SHELL_MAP_POS.x, 1.04, SHELL_MAP_POS.z);
+    this.shellPedestal.position.set(SHELL_MAP_POS.x, getGroundY(SHELL_MAP_POS.x, SHELL_MAP_POS.z), SHELL_MAP_POS.z);
     const pedBase = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.54, 0.16, 10), mats.stone);
     pedBase.position.y = 0.08;
     this.shellPedestal.add(pedBase);
@@ -428,6 +404,23 @@ export class HarborTown {
     this.shellRing.position.y = 0.04;
     this.shellPedestal.add(this.shellRing);
     this.group.add(this.shellPedestal);
+    addCircleObstacle(SHELL_MAP_POS.x, SHELL_MAP_POS.z, 0.85, 1.04, 2.2, 'pedestal');
+
+    // 12. Dense coastal grass tufts, wildflowers, scrub shrubs & pebbles on hillside (avoiding obstacles!)
+    scatterCoastalFoliage(this.group, {
+      centerX: 0,
+      centerZ: -138,
+      radiusX: 48,
+      radiusZ: 22,
+      getLand: getLandInfo,
+      mats,
+      seed: 103,
+      countGrass: 520,
+      countShrub: 76,
+      countRock: 52,
+      minY: 1.08,
+      lowQuality,
+    });
   }
 
   _buildSeashellMap(mats) {

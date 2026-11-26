@@ -10,7 +10,7 @@ export const WATER_Y = 1.35;
 export const LANDMARKS = {
   homeGarden: { x: 0, z: 0 },
   homeHouse: { x: -7.5, z: 4.5 },
-  letterPedestal: { x: -1.6, z: -1.0 },
+  letterPedestal: { x: -0.8, z: -1.8 },
   balloonPad: { x: 3.6, z: -13.0 },
   bridge: { x: -8, z: -157.5 },
   pier: { x: 14, z: -149.5 },
@@ -48,7 +48,7 @@ function hillRidge(x, z) {
   return a * b * 3.8 + r1 * r1 * 4.2;
 }
 
-export function terrainHeight(x, z) {
+export function rawTerrainHeight(x, z) {
   let h = 6.2;
 
   // Natural valley undulation + organic limestone hill crests
@@ -79,15 +79,56 @@ export function terrainHeight(x, z) {
   const riverCarve = 1 - smoothstep(rw * 0.6, rw + 28.0, dRiver);
   h = lerp(h, 0.2, riverCarve);
 
-  // Smooth flat plateaus for settlements & landing meadows
-  h = lerp(h, 5.0, plateauBlend(x, z, 0, -4, 22, 42));
-  h = lerp(h, 18.0, plateauBlend(x, z, LANDMARKS.windmill.x, LANDMARKS.windmill.z, 15, 34));
-  h = lerp(h, 13.5, plateauBlend(x, z, LANDMARKS.detourVillage.x, LANDMARKS.detourVillage.z, 19, 38));
-  h = lerp(h, 7.2, plateauBlend(x, z, LANDMARKS.meadowLanding.x, LANDMARKS.meadowLanding.z, 17, 34));
+  // Smooth flat plateaus for settlements & landing meadows (wide enough for all perimeter buildings)
+  h = lerp(h, 5.0, plateauBlend(x, z, 0, -4, 28, 50));
+  h = lerp(h, 18.0, plateauBlend(x, z, LANDMARKS.windmill.x, LANDMARKS.windmill.z, 16, 34));
+  h = lerp(h, 13.5, plateauBlend(x, z, LANDMARKS.detourVillage.x, LANDMARKS.detourVillage.z, 20, 38));
+  h = lerp(h, 7.2, plateauBlend(x, z, LANDMARKS.meadowLanding.x, LANDMARKS.meadowLanding.z, 22, 42));
   h = lerp(h, 10.5, plateauBlend(x, z, LANDMARKS.flowerClearing.x, LANDMARKS.flowerClearing.z, 14, 30));
-  h = lerp(h, 28.5, plateauBlend(x, z, LANDMARKS.towerPlaza.x, LANDMARKS.towerPlaza.z, 24, 48));
+  h = lerp(h, 28.5, plateauBlend(x, z, LANDMARKS.towerPlaza.x, LANDMARKS.towerPlaza.z, 36, 60));
 
   return h;
+}
+
+export function deckHeight(x, z) {
+  // Arched wooden bridge deck
+  const bx = LANDMARKS.bridge.x;
+  const bz = riverCenterZ(bx);
+  if (Math.abs(x - bx) <= 1.65 && Math.abs(z - bz) <= 8.9) {
+    const t = clamp((z - bz) / 17.0, -0.5, 0.5);
+    const archY = Math.cos(t * Math.PI) * 1.65;
+    return WATER_Y + 0.65 + 0.08 + archY;
+  }
+
+  // Timber pier deck
+  const px = LANDMARKS.pier.x;
+  const pz = riverCenterZ(px) + 7.2;
+  if (Math.abs(x - px) <= 1.35 && z >= pz - 3.45 && z <= pz + 1.05) {
+    return WATER_Y + 0.42 + 0.09;
+  }
+
+  // Clock Tower Square cobble terrace top
+  const tx = LANDMARKS.towerPlaza.x;
+  const tz = LANDMARKS.towerPlaza.z;
+  if (Math.hypot(x - tx, z - tz) <= 16.6) {
+    return 28.5 + 0.06;
+  }
+
+  return -Infinity;
+}
+
+export function isOnBridgeOrPier(x, z) {
+  const bx = LANDMARKS.bridge.x;
+  const bz = riverCenterZ(bx);
+  if (Math.abs(x - bx) <= 1.65 && Math.abs(z - bz) <= 8.9) return true;
+  const px = LANDMARKS.pier.x;
+  const pz = riverCenterZ(px) + 7.2;
+  if (Math.abs(x - px) <= 1.35 && z >= pz - 3.45 && z <= pz + 1.05) return true;
+  return false;
+}
+
+export function terrainHeight(x, z) {
+  return Math.max(rawTerrainHeight(x, z), deckHeight(x, z));
 }
 
 export function terrainNormal(x, z, out = new THREE.Vector3()) {
@@ -125,7 +166,7 @@ export function makeTerrainMesh(lowQuality = false) {
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i);
     const z = pos.getZ(i);
-    const y = terrainHeight(x, z);
+    const y = rawTerrainHeight(x, z);
     pos.setY(i, y);
 
     terrainNormal(x, z, normTmp);

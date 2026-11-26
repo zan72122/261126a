@@ -4,7 +4,7 @@ import * as THREE from '../../lib/three.module.js';
 import { PALETTE } from '../core/palette.js';
 import { mulberry32, smoothstep } from '../core/math.js';
 import { makeLimestoneTextures } from '../core/textures.js';
-import { LANDMARKS, terrainHeight, isOverRiver } from './terrain.js';
+import { LANDMARKS, rawTerrainHeight, terrainHeight, isOverRiver, riverCenterZ, riverHalfWidth } from './terrain.js';
 
 function makeGrassTuftGeometry() {
   // 3-blade curved tuft (2 segs/blade = 12 tris) for dense lush coverage at high FPS on iPad Safari
@@ -112,7 +112,7 @@ function makeLavenderPanicleGeometry() {
   return geo;
 }
 
-export function buildNature(lowQuality = false) {
+export function buildNature(lowQuality = false, colliders = null) {
   const root = new THREE.Group();
   root.name = 'nature';
   const rng = mulberry32(1974);
@@ -122,7 +122,7 @@ export function buildNature(lowQuality = false) {
   // 1. Dense Instanced Swaying Meadow Grass Tufts with root-to-tip shading
   const grassSpots = [];
   const grassZones = [
-    { cx: 0, cz: -4, r: 24, count: lowQuality ? 260 : 720, keepClear: [[-1.6, -1.0, 1.5], [3.6, -13.0, 2.2]] },
+    { cx: 0, cz: -4, r: 24, count: lowQuality ? 260 : 720, keepClear: [[LANDMARKS.letterPedestal.x, LANDMARKS.letterPedestal.z, 1.5], [3.6, -13.0, 2.2]] },
     { cx: LANDMARKS.meadowLanding.x, cz: LANDMARKS.meadowLanding.z, r: 23, count: lowQuality ? 280 : 780, keepClear: [[-22, -182, 2.2]] },
     { cx: LANDMARKS.flowerClearing.x, cz: LANDMARKS.flowerClearing.z, r: 19, count: lowQuality ? 160 : 400, keepClear: [] },
     { cx: LANDMARKS.windmill.x, cz: LANDMARKS.windmill.z, r: 20, count: lowQuality ? 100 : 220, keepClear: [[LANDMARKS.windmill.x, LANDMARKS.windmill.z, 4.5]] },
@@ -282,33 +282,97 @@ export function buildNature(lowQuality = false) {
   if (lavSpikes.instanceColor) lavSpikes.instanceColor.needsUpdate = true;
   root.add(lavBases, lavSpikes);
 
-  // 3. Sculpted Multi-Tier Cypress Trees (varied size, lean, and deep green tone)
-  const cypressCoords = [
-    [-12, -2], [-14, -14], [11, -9], [15, -18], [-22, -32], [22, -36],
+  // 3 & 4. Clearance-verified Multi-Tier Cypress & Gnarled Olive Trees (zero overlap with houses/walls/other trees)
+  const placedTrees = [];
+  const wallSpots = [
+    [-26, -62, 0.12], [-42, -78, -0.08], [28, -72, -0.15],
+    [-32, -222, 0.08], [30, -218, -0.1], [-46, -245, 0.14],
+  ];
+
+  function isTreeClear(x, z, canopyR) {
+    // Keep away from river channel & steep banks
+    if (Math.abs(z - riverCenterZ(x)) < riverHalfWidth(x) + 3.8 + canopyR) return false;
+    // Keep landing pads, home courtyard, and plaza terrace AABB clear
+    if (Math.hypot(x - 0, z + 4) < 12.5) return false;
+    if (Math.hypot(x - LANDMARKS.balloonPad.x, z - LANDMARKS.balloonPad.z) < 6.0 + canopyR) return false;
+    if (Math.hypot(x - LANDMARKS.meadowLanding.x, z - LANDMARKS.meadowLanding.z) < 15.0 + canopyR) return false;
+    if (Math.abs(x - LANDMARKS.towerPlaza.x) < 17.0 + canopyR && Math.abs(z - LANDMARKS.towerPlaza.z) < 17.0 + canopyR) return false;
+    // Keep clear of bridge & pier approaches
+    if (Math.hypot(x - LANDMARKS.bridge.x, z - riverCenterZ(LANDMARKS.bridge.x)) < 13.0) return false;
+    if (Math.hypot(x - LANDMARKS.pier.x, z - (riverCenterZ(LANDMARKS.pier.x) + 7.2)) < 8.0) return false;
+    // Keep main thermal flight line to tower open
+    if (Math.abs(x - 4.0) < 6.5 && z < -275 && z > -325) return false;
+
+    // Check against all village buildings, walls, and props (exact box AABB + circle clearance)
+    if (colliders) {
+      for (const b of colliders.boxes) {
+        const hw = Math.abs(b.hx * b.cos) + Math.abs(b.hz * b.sin);
+        const hd = Math.abs(b.hx * b.sin) + Math.abs(b.hz * b.cos);
+        if (Math.abs(x - b.cx) < hw + canopyR + 0.6 && Math.abs(z - b.cz) < hd + canopyR + 0.6) {
+          return false;
+        }
+      }
+      for (const c of colliders.treeClearanceCircles) {
+        if (Math.hypot(x - c.x, z - c.z) < c.r + canopyR + 1.2) return false;
+      }
+    }
+    // Check against hillside terrace walls
+    for (const [wx, wz] of wallSpots) {
+      if (Math.hypot(x - wx, z - wz) < 6.2 + canopyR) return false;
+    }
+    // Check against previously placed trees
+    for (const t of placedTrees) {
+      if (Math.hypot(x - t.x, z - t.z) < t.r + canopyR + 0.9) return false;
+    }
+    return true;
+  }
+
+  function findClearTreePos(x, z, canopyR, allowNudge) {
+    if (isTreeClear(x, z, canopyR)) return [x, z];
+    if (!allowNudge) return null;
+    for (const rad of [3.5, 5.5, 8.0, 11.0]) {
+      for (let k = 0; k < 12; k++) {
+        const a = (k / 12) * Math.PI * 2;
+        const cx = x + Math.cos(a) * rad;
+        const cz = z + Math.sin(a) * rad;
+        if (isTreeClear(cx, cz, canopyR)) return [cx, cz];
+      }
+    }
+    return null;
+  }
+
+  const cypressData = [];
+  const cypressCandidates = [
+    [-12, -2], [-15, -14], [11, -10], [15, -18], [-22, -32], [22, -36],
     [-12, -75], [14, -84], [-18, -125], [22, -135],
-    [LANDMARKS.meadowLanding.x - 16, LANDMARKS.meadowLanding.z + 9],
-    [LANDMARKS.meadowLanding.x + 15, LANDMARKS.meadowLanding.z - 10],
-    [LANDMARKS.meadowLanding.x - 15, LANDMARKS.meadowLanding.z - 12],
-    [LANDMARKS.meadowLanding.x + 14, LANDMARKS.meadowLanding.z + 10],
+    [LANDMARKS.meadowLanding.x - 16, LANDMARKS.meadowLanding.z + 11],
+    [LANDMARKS.meadowLanding.x + 17, LANDMARKS.meadowLanding.z - 12],
+    [LANDMARKS.meadowLanding.x - 17, LANDMARKS.meadowLanding.z - 14],
+    [LANDMARKS.meadowLanding.x + 16, LANDMARKS.meadowLanding.z + 11],
     [LANDMARKS.windmill.x - 14, LANDMARKS.windmill.z + 8],
     [LANDMARKS.windmill.x + 12, LANDMARKS.windmill.z - 11],
     [LANDMARKS.detourVillage.x - 16, LANDMARKS.detourVillage.z - 8],
     [LANDMARKS.detourVillage.x + 15, LANDMARKS.detourVillage.z + 10],
-    [LANDMARKS.towerPlaza.x - 20, LANDMARKS.towerPlaza.z + 4],
-    [LANDMARKS.towerPlaza.x + 20, LANDMARKS.towerPlaza.z + 3],
-    [LANDMARKS.towerPlaza.x - 17, LANDMARKS.towerPlaza.z - 15],
-    [LANDMARKS.towerPlaza.x + 18, LANDMARKS.towerPlaza.z - 14],
-    [LANDMARKS.towerPlaza.x - 6, LANDMARKS.towerPlaza.z - 22],
-    [LANDMARKS.towerPlaza.x + 10, LANDMARKS.towerPlaza.z - 21],
+    [LANDMARKS.towerPlaza.x - 22, LANDMARKS.towerPlaza.z + 11],
+    [LANDMARKS.towerPlaza.x + 22, LANDMARKS.towerPlaza.z + 10],
+    [LANDMARKS.towerPlaza.x - 16, LANDMARKS.towerPlaza.z - 22],
+    [LANDMARKS.towerPlaza.x + 16, LANDMARKS.towerPlaza.z - 21],
+    [LANDMARKS.towerPlaza.x - 11, LANDMARKS.towerPlaza.z - 26],
+    [LANDMARKS.towerPlaza.x + 11, LANDMARKS.towerPlaza.z - 24],
   ];
   for (let i = 0; i < (lowQuality ? 18 : 38); i++) {
-    const cx = (rng() - 0.5) * 280;
-    const cz = -35 - rng() * 320;
-    if (isOverRiver(cx, cz)) continue;
-    if (Math.hypot(cx - LANDMARKS.towerPlaza.x, cz - LANDMARKS.towerPlaza.z) < 25) continue;
-    if (Math.hypot(cx - LANDMARKS.meadowLanding.x, cz - LANDMARKS.meadowLanding.z) < 15) continue;
-    cypressCoords.push([cx, cz]);
+    cypressCandidates.push([(rng() - 0.5) * 280, -35 - rng() * 320]);
   }
+  cypressCandidates.forEach(([cx, cz], idx) => {
+    const s = 0.78 + rng() * 0.56;
+    const ry = rng() * 6;
+    const tilt = (rng() - 0.5) * 0.04;
+    const canopyR = 1.35 * s;
+    const pos = findClearTreePos(cx, cz, canopyR, idx < 24);
+    if (!pos) return;
+    placedTrees.push({ x: pos[0], z: pos[1], r: canopyR });
+    cypressData.push({ x: pos[0], z: pos[1], s, ry, tilt });
+  });
 
   const cypTrunkGeo = new THREE.CylinderGeometry(0.16, 0.24, 1.8, 6);
   const cypTrunkMat = new THREE.MeshStandardMaterial({ color: PALETTE.woodWarm, roughness: 0.9 });
@@ -317,13 +381,10 @@ export function buildNature(lowQuality = false) {
   const cypCrownMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.88 });
   const cypTones = [PALETTE.cypressLeaf, 0x526b44, 0x667f55];
 
-  const cypTrunks = new THREE.InstancedMesh(cypTrunkGeo, cypTrunkMat, cypressCoords.length);
-  const cypTiers = new THREE.InstancedMesh(cypTierGeo, cypCrownMat, cypressCoords.length * 3);
-  cypressCoords.forEach(([x, z], i) => {
-    const y = terrainHeight(x, z);
-    const s = 0.78 + rng() * 0.56;
-    const ry = rng() * 6;
-    const tilt = (rng() - 0.5) * 0.04;
+  const cypTrunks = new THREE.InstancedMesh(cypTrunkGeo, cypTrunkMat, cypressData.length);
+  const cypTiers = new THREE.InstancedMesh(cypTierGeo, cypCrownMat, cypressData.length * 3);
+  cypressData.forEach(({ x, z, s, ry, tilt }, i) => {
+    const y = rawTerrainHeight(x, z);
     dummy.position.set(x, y + 0.9 * s, z);
     dummy.rotation.set(tilt, ry, -tilt);
     dummy.scale.setScalar(s);
@@ -345,6 +406,9 @@ export function buildNature(lowQuality = false) {
       colVar.setHex(tone);
       cypTiers.setColorAt(i * 3 + ti, colVar);
     });
+    if (colliders) {
+      colliders.addCylinder({ x, z, r: 0.85 * s, minY: y, maxY: y + 7.6 * s, kind: 'tree', label: 'cypress' + i, blockTrees: false });
+    }
   });
   cypTrunks.castShadow = !lowQuality;
   cypTiers.castShadow = !lowQuality;
@@ -352,37 +416,41 @@ export function buildNature(lowQuality = false) {
   root.add(cypTrunks, cypTiers);
 
   // 4. Gnarled Provençal Olive Trees (silver-sage canopies with natural variation)
-  const oliveCoords = [
-    [-11, 8], [10, 6], [-24, 6], [24, -14],
-    [LANDMARKS.meadowLanding.x - 13, LANDMARKS.meadowLanding.z - 8],
-    [LANDMARKS.meadowLanding.x + 12, LANDMARKS.meadowLanding.z + 8],
-    [LANDMARKS.meadowLanding.x + 13, LANDMARKS.meadowLanding.z - 9],
-    [LANDMARKS.meadowLanding.x - 11, LANDMARKS.meadowLanding.z + 11],
+  const oliveData = [];
+  const oliveCandidates = [
+    [-14, 9], [11, 7], [-24, 6], [24, -14],
+    [LANDMARKS.meadowLanding.x - 16, LANDMARKS.meadowLanding.z - 11],
+    [LANDMARKS.meadowLanding.x + 15, LANDMARKS.meadowLanding.z + 10],
+    [LANDMARKS.meadowLanding.x + 16, LANDMARKS.meadowLanding.z - 10],
+    [LANDMARKS.meadowLanding.x - 14, LANDMARKS.meadowLanding.z + 13],
     [-28, -148], [26, -162], [-34, -210], [-14, -238],
     [42, -96], [-48, -82], [52, -235],
-    [LANDMARKS.towerPlaza.x - 18, LANDMARKS.towerPlaza.z + 10],
-    [LANDMARKS.towerPlaza.x + 18, LANDMARKS.towerPlaza.z + 9],
+    [LANDMARKS.towerPlaza.x - 20, LANDMARKS.towerPlaza.z + 14],
+    [LANDMARKS.towerPlaza.x + 20, LANDMARKS.towerPlaza.z + 13],
   ];
   for (let i = 0; i < (lowQuality ? 16 : 32); i++) {
-    const ox = (rng() - 0.5) * 260;
-    const oz = -30 - rng() * 300;
-    if (isOverRiver(ox, oz)) continue;
-    if (Math.hypot(ox - LANDMARKS.towerPlaza.x, oz - LANDMARKS.towerPlaza.z) < 25) continue;
-    if (Math.hypot(ox - LANDMARKS.meadowLanding.x, oz - LANDMARKS.meadowLanding.z) < 14) continue;
-    oliveCoords.push([ox, oz]);
+    oliveCandidates.push([(rng() - 0.5) * 260, -30 - rng() * 300]);
   }
+  oliveCandidates.forEach(([ox, oz], idx) => {
+    const s = 0.84 + rng() * 0.52;
+    const ry = rng() * 6;
+    const canopyR = 3.55 * s;
+    const pos = findClearTreePos(ox, oz, canopyR, idx < 17);
+    if (!pos) return;
+    placedTrees.push({ x: pos[0], z: pos[1], r: canopyR });
+    oliveData.push({ x: pos[0], z: pos[1], s, ry });
+  });
+
   const olTrunkGeo = new THREE.CylinderGeometry(0.21, 0.36, 2.3, 6);
   const olCrownGeo = new THREE.IcosahedronGeometry(1.40, 1);
   olCrownGeo.scale(1.25, 0.76, 1.15);
   const olCrownMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.88 });
   const olTones = [PALETTE.oliveLeaf, 0x7d9767, 0x6a8455];
 
-  const olTrunks = new THREE.InstancedMesh(olTrunkGeo, cypTrunkMat, oliveCoords.length);
-  const olCrowns = new THREE.InstancedMesh(olCrownGeo, olCrownMat, oliveCoords.length * 4);
-  oliveCoords.forEach(([x, z], i) => {
-    const y = terrainHeight(x, z);
-    const s = 0.84 + rng() * 0.52;
-    const ry = rng() * 6;
+  const olTrunks = new THREE.InstancedMesh(olTrunkGeo, cypTrunkMat, oliveData.length);
+  const olCrowns = new THREE.InstancedMesh(olCrownGeo, olCrownMat, oliveData.length * 4);
+  oliveData.forEach(({ x, z, s, ry }, i) => {
+    const y = rawTerrainHeight(x, z);
     dummy.position.set(x, y + 1.05 * s, z);
     dummy.rotation.set(0.08, ry, -0.06);
     dummy.scale.setScalar(s);
@@ -405,6 +473,10 @@ export function buildNature(lowQuality = false) {
       colVar.setHex(tone);
       olCrowns.setColorAt(i * 4 + li, colVar);
     });
+    if (colliders) {
+      colliders.addCylinder({ x, z, r: 0.48 * s, minY: y, maxY: y + 2.2 * s, kind: 'treeTrunk', label: 'oliveTrunk' + i, blockTrees: false });
+      colliders.addSphere({ x, y: y + 2.9 * s, z, r: 2.25 * s, kind: 'treeCanopy', label: 'oliveCrown' + i });
+    }
   });
   olTrunks.castShadow = !lowQuality;
   olCrowns.castShadow = !lowQuality;
@@ -474,11 +546,12 @@ export function buildNature(lowQuality = false) {
   if (flBlooms.instanceColor) flBlooms.instanceColor.needsUpdate = true;
   root.add(flStems, flBlooms);
 
-  // 6. Weathered Dry-Stone Hillside Terrace Walls (with procedural limestone bumpMap)
+  // 6. Weathered Dry-Stone Hillside Terrace Walls (contour-aligned segments hugging terrain)
   const wallTex = makeLimestoneTextures();
-  wallTex.map.repeat.set(3, 1);
-  wallTex.bumpMap.repeat.set(3, 1);
-  const wallGeo = new THREE.BoxGeometry(11, 0.88, 0.58);
+  wallTex.map.repeat.set(1.0, 1);
+  wallTex.bumpMap.repeat.set(1.0, 1);
+  const wallSegLen = 1.95;
+  const wallGeo = new THREE.BoxGeometry(wallSegLen, 0.88, 0.58);
   const wallMat = new THREE.MeshStandardMaterial({
     color: PALETTE.limestone,
     map: wallTex.map,
@@ -486,23 +559,31 @@ export function buildNature(lowQuality = false) {
     bumpScale: 0.04,
     roughness: 0.92,
   });
-  const wallSpots = [
-    [-26, -62, 0.12], [-42, -78, -0.08], [28, -72, -0.15],
-    [-34, -206, 0.08], [30, -218, -0.1], [-46, -245, 0.14],
-    // Enclosing dry-stone walls bordering the riverside landing meadow
-    [LANDMARKS.meadowLanding.x - 13.5, LANDMARKS.meadowLanding.z + 2.5, 1.38],
-    [LANDMARKS.meadowLanding.x + 12.5, LANDMARKS.meadowLanding.z - 2.0, -1.28],
-    [LANDMARKS.meadowLanding.x - 2.5, LANDMARKS.meadowLanding.z - 13.8, 0.14],
-  ];
-  wallSpots.forEach(([wx, wz, rot]) => {
-    const m = new THREE.Mesh(wallGeo, wallMat);
-    m.position.set(wx, terrainHeight(wx, wz) + 0.36, wz);
-    m.rotation.y = rot;
-    if (!lowQuality) {
-      m.castShadow = true;
-      m.receiveShadow = true;
+  wallSpots.forEach(([wx, wz], wIdx) => {
+    // Orient wall perpendicular to local hillside gradient: tangent (cos, -sin) . (dhx, dhz) = 0 => rot = atan2(dhx, dhz)
+    const dhx = rawTerrainHeight(wx + 1.0, wz) - rawTerrainHeight(wx - 1.0, wz);
+    const dhz = rawTerrainHeight(wx, wz + 1.0) - rawTerrainHeight(wx, wz - 1.0);
+    const rot = Math.atan2(dhx, dhz);
+    const cos = Math.cos(rot), sin = Math.sin(rot);
+    for (let s = 0; s < 3; s++) {
+      const along = (s - 1) * (wallSegLen + 1.15);
+      const sx = wx + cos * along;
+      const sz = wz - sin * along;
+      const hA = rawTerrainHeight(sx - cos * 0.9, sz + sin * 0.9);
+      const hB = rawTerrainHeight(sx + cos * 0.9, sz - sin * 0.9);
+      const baseH = Math.min(hA, hB, rawTerrainHeight(sx, sz));
+      const m = new THREE.Mesh(wallGeo, wallMat);
+      m.position.set(sx, baseH + 0.44, sz);
+      m.rotation.y = rot;
+      if (!lowQuality) {
+        m.castShadow = true;
+        m.receiveShadow = true;
+      }
+      root.add(m);
+      if (colliders) {
+        colliders.addBox({ cx: sx, cz: sz, w: wallSegLen, d: 0.62, rotY: rot, minY: baseH, maxY: baseH + 0.88, kind: 'wall', label: 'terraceWall' + wIdx });
+      }
     }
-    root.add(m);
   });
 
   return {

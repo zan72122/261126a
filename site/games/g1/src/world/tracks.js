@@ -12,13 +12,12 @@ const _q = new THREE.Quaternion();
 const _s = new THREE.Vector3();
 
 function makeArchSpanGeometry() {
-  // Unit span in X (-0.5..0.5), Y (-1.0..0.0), extruded in Z (-0.98..0.98)
+  // Unit span in X (-0.5..0.5), Y (-1.0..0.0), extruded in Z (-1.28..1.28)
   const shape = new THREE.Shape();
   shape.moveTo(-0.5, 0);
   shape.lineTo(0.5, 0);
   shape.lineTo(0.5, -1.0);
   shape.lineTo(0.39, -1.0);
-  // Semicircular masonry arch underside peaking cleanly at y = -0.18
   const segs = 14;
   for (let i = 0; i <= segs; i++) {
     const a = (i / segs) * Math.PI;
@@ -30,11 +29,11 @@ function makeArchSpanGeometry() {
   shape.closePath();
 
   const geo = new THREE.ExtrudeGeometry(shape, {
-    depth: 1.96,
+    depth: 2.56,
     bevelEnabled: false,
     curveSegments: 12,
   });
-  geo.translate(0, 0, -0.98);
+  geo.translate(0, 0, -1.28);
   geo.rotateY(Math.PI / 2);
   geo.computeVertexNormals();
   return geo;
@@ -42,20 +41,21 @@ function makeArchSpanGeometry() {
 
 /**
  * Branching mountain railway network:
- * - Twin steel rails, instanced wooden sleepers, gravel ballast embankments
- * - True multi-arch stone viaducts & river bridge with masonry arch rings, tapered piers, and cornice parapets
- * - Alpine stone mountain gallery/tunnel on seg4_main right before emerging onto the sunlit cloud-sea viaduct
- * - 3D interactive track switches with wordless mustard/cobalt direction paddles
+ * - Solid 3D steel rails seated flush on instanced wooden sleepers over a 3D ballast/masonry deck
+ * - Multi-arch stone viaducts & river bridges with wide deck clearance, tapered piers, pier caps & parapets
+ * - Alpine stone mountain gallery/tunnel on seg4_main right before emerging onto the cloud-sea viaduct
+ * - Registers walkable decks, pier obstacles, parapets & gallery walls into PhysicsWorld
  */
 export class TrackNetwork {
-  constructor(mats, { low = false } = {}) {
+  constructor(mats, { low = false, physics = null } = {}) {
     this.group = new THREE.Group();
     this.mats = mats;
+    this.physics = physics;
     this.segments = buildTrackCurves();
     this.switches = {
-      sw1: 0, // 0: main, 1: flower & lumber siding
-      sw2: 0, // 0: climb toward viaduct, 1: lake return loop
-      sw3: 0, // 0: main viaduct approach, 1: lookout cabin siding
+      sw1: 0,
+      sw2: 0,
+      sw3: 0,
     };
     this.switchVisuals = {};
     this.pierObstacles = [];
@@ -133,11 +133,31 @@ export class TrackNetwork {
     let railVerts = 0;
     let deckVerts = 0;
 
-    const addRibbonQuad = (verts, norms, idxs, vCount, a, b, c, d, nx, ny, nz) => {
+    const pushQuad = (verts, norms, idxs, vCount, a, b, c, d, nx, ny, nz) => {
       verts.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z, d.x, d.y, d.z);
       for (let k = 0; k < 4; k++) norms.push(nx, ny, nz);
       idxs.push(vCount, vCount + 1, vCount + 2, vCount, vCount + 2, vCount + 3);
       return vCount + 4;
+    };
+
+    const addBoxSpan = (verts, norms, idxs, vCount, p0L, p0R, p1L, p1R, depthDown, rightVec) => {
+      const b0L = p0L.clone();
+      const b0R = p0R.clone();
+      const b1L = p1L.clone();
+      const b1R = p1R.clone();
+      b0L.y -= depthDown;
+      b0R.y -= depthDown;
+      b1L.y -= depthDown;
+      b1R.y -= depthDown;
+      // Top
+      vCount = pushQuad(verts, norms, idxs, vCount, p0L, p0R, p1R, p1L, 0, 1, 0);
+      // Bottom
+      vCount = pushQuad(verts, norms, idxs, vCount, b0R, b0L, b1L, b1R, 0, -1, 0);
+      // Left side
+      vCount = pushQuad(verts, norms, idxs, vCount, b0L, p0L, p1L, b1L, -rightVec.x, 0, -rightVec.z);
+      // Right side
+      vCount = pushQuad(verts, norms, idxs, vCount, p0R, b0R, b1R, p1R, rightVec.x, 0, rightVec.z);
+      return vCount;
     };
 
     const pierRuns = [];
@@ -149,6 +169,8 @@ export class TrackNetwork {
       let prevR = null;
       let prevDeckL = null;
       let prevDeckR = null;
+      let prevElevated = false;
+      let prevRight = null;
       let currentRun = [];
 
       for (let i = 0; i <= steps; i++) {
@@ -157,72 +179,89 @@ export class TrackNetwork {
         seg.curve.getTangentAt(u, _t).normalize();
         _r.crossVectors(_t, _up).normalize();
 
-        if (i < steps) {
-          const yaw = Math.atan2(_t.x, _t.z);
-          const pitch = -Math.asin(clamp(_t.y, -0.95, 0.95));
-          _q.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
-          _s.set(1.38, 0.09, 0.22);
-          sleeperTransforms.push(
-            new THREE.Matrix4().compose(new THREE.Vector3(_p.x, _p.y + 0.03, _p.z), _q, _s)
-          );
-        }
-
-        const railL = _p.clone().addScaledVector(_r, -gaugeHalf);
-        railL.y += 0.11;
-        const railR = _p.clone().addScaledVector(_r, gaugeHalf);
-        railR.y += 0.11;
-
-        const deckL = _p.clone().addScaledVector(_r, -1.12);
-        deckL.y -= 0.03;
-        const deckR = _p.clone().addScaledVector(_r, 1.12);
-        deckR.y -= 0.03;
-
-        if (prevL) {
-          const rw = 0.065;
-          railVerts = addRibbonQuad(
-            railPos, railNorm, railIdx, railVerts,
-            prevL.clone().addScaledVector(_r, -rw),
-            prevL.clone().addScaledVector(_r, rw),
-            railL.clone().addScaledVector(_r, rw),
-            railL.clone().addScaledVector(_r, -rw),
-            0, 1, 0
-          );
-          railVerts = addRibbonQuad(
-            railPos, railNorm, railIdx, railVerts,
-            prevR.clone().addScaledVector(_r, -rw),
-            prevR.clone().addScaledVector(_r, rw),
-            railR.clone().addScaledVector(_r, rw),
-            railR.clone().addScaledVector(_r, -rw),
-            0, 1, 0
-          );
-          deckVerts = addRibbonQuad(
-            deckPos, deckNorm, deckIdx, deckVerts,
-            prevDeckL, prevDeckR, deckR, deckL, 0, 1, 0
-          );
-        }
-        prevL = railL;
-        prevR = railR;
-        prevDeckL = deckL;
-        prevDeckR = deckR;
-
         const groundY = heightAt(_p.x, _p.z);
         const clearance = _p.y - groundY;
         const onSummitPlatform = id === 'seg5_viaduct' && u > 0.83;
         const isElevatedSection =
           !onSummitPlatform &&
           ((seg.elevatedFrom !== undefined && u >= seg.elevatedFrom && u <= seg.elevatedTo) ||
-          clearance > 2.2);
+            clearance > 2.2);
+
+        // Sleepers sit flush on deck top (_p.y .. _p.y + 0.08)
+        if (i < steps) {
+          const yaw = Math.atan2(_t.x, _t.z);
+          const pitch = -Math.asin(clamp(_t.y, -0.95, 0.95));
+          _q.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+          _s.set(1.44, 0.08, 0.22);
+          sleeperTransforms.push(
+            new THREE.Matrix4().compose(new THREE.Vector3(_p.x, _p.y + 0.04, _p.z), _q, _s)
+          );
+        }
+
+        // Steel rail heads sit flush on sleepers (_p.y + 0.08 .. _p.y + 0.15)
+        const railL = _p.clone().addScaledVector(_r, -gaugeHalf);
+        railL.y += 0.15;
+        const railR = _p.clone().addScaledVector(_r, gaugeHalf);
+        railR.y += 0.15;
+
+        const deckHalfW = isElevatedSection ? 1.6 : 1.18;
+        const deckL = _p.clone().addScaledVector(_r, -deckHalfW);
+        const deckR = _p.clone().addScaledVector(_r, deckHalfW);
+
+        if (prevL) {
+          const rw = 0.055;
+          railVerts = addBoxSpan(
+            railPos, railNorm, railIdx, railVerts,
+            prevL.clone().addScaledVector(_r, -rw),
+            prevL.clone().addScaledVector(_r, rw),
+            railL.clone().addScaledVector(_r, rw),
+            railL.clone().addScaledVector(_r, -rw),
+            0.07, _r
+          );
+          railVerts = addBoxSpan(
+            railPos, railNorm, railIdx, railVerts,
+            prevR.clone().addScaledVector(_r, -rw),
+            prevR.clone().addScaledVector(_r, rw),
+            railR.clone().addScaledVector(_r, rw),
+            railR.clone().addScaledVector(_r, -rw),
+            0.07, _r
+          );
+
+          const deckDepth = (isElevatedSection || prevElevated) ? 0.42 : 0.22;
+          deckVerts = addBoxSpan(
+            deckPos, deckNorm, deckIdx, deckVerts,
+            prevDeckL, prevDeckR, deckL, deckR, deckDepth, _r
+          );
+
+          if ((isElevatedSection || prevElevated) && this.physics) {
+            const mid = prevDeckL.clone().add(prevDeckR).add(deckL).add(deckR).multiplyScalar(0.25);
+            const spanDir = deckL.clone().add(deckR).multiplyScalar(0.5).sub(prevDeckL.clone().add(prevDeckR).multiplyScalar(0.5));
+            const spanLen = Math.hypot(spanDir.x, spanDir.z);
+            const yaw = Math.atan2(spanDir.x, spanDir.z);
+            this.physics.addDeckOBB(mid.x, mid.z, yaw, 3.2, spanLen + 0.2, mid.y, 1.0);
+          }
+        }
+        prevL = railL;
+        prevR = railR;
+        prevDeckL = deckL;
+        prevDeckR = deckR;
+        prevElevated = isElevatedSection;
+        prevRight = _r.clone();
 
         if (isElevatedSection) {
-          if (i < steps && i % 2 === 0) {
+          if (i < steps) {
             const yaw = Math.atan2(_t.x, _t.z);
             const pitch = -Math.asin(clamp(_t.y, -0.95, 0.95));
             _q.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
-            _s.set(0.2, 0.48, railStep * 2.15);
-            for (const side of [-1.08, 1.08]) {
+            // Parapets placed at +-1.48m (inner face 1.40m, leaving >0.39m lateral clearance for locomotive)
+            _s.set(0.16, 0.42, railStep * 1.02);
+            for (const side of [-1.48, 1.48]) {
               const pPos = _p.clone().addScaledVector(_r, side);
-              pPos.y += 0.16;
+              pPos.y += 0.21; // sits flush on deck top (_p.y + 0.00 .. _p.y + 0.42)
               parapetTransforms.push(new THREE.Matrix4().compose(pPos, _q, _s));
+              if (this.physics) {
+                this.physics.addOBB(pPos.x, pPos.z, yaw, 0.18, railStep * 1.02, _p.y, _p.y + 0.45, 'parapet');
+              }
             }
           }
 
@@ -250,7 +289,7 @@ export class TrackNetwork {
     railMesh.receiveShadow = true;
     this.group.add(railMesh);
 
-    // Ballast / stone deck
+    // Solid 3D Ballast / Stone Deck
     const deckGeo = new THREE.BufferGeometry();
     deckGeo.setAttribute('position', new THREE.Float32BufferAttribute(deckPos, 3));
     deckGeo.setAttribute('normal', new THREE.Float32BufferAttribute(deckNorm, 3));
@@ -277,13 +316,13 @@ export class TrackNetwork {
     sleepers.instanceMatrix.needsUpdate = true;
     this.group.add(sleepers);
 
-    // Stone Viaduct Piers, Pier Caps, Cornices, & Masonry Arches
+    // Stone Viaduct Piers, Pier Caps, & Masonry Arches
     const flatPiers = [];
     const archSpans = [];
     for (const run of pierRuns) {
       for (let i = 0; i < run.length; i++) {
         flatPiers.push(run[i]);
-        this.pierObstacles.push({ x: run[i].pos.x, z: run[i].pos.z, radius: 2.2 });
+        this.pierObstacles.push({ x: run[i].pos.x, z: run[i].pos.z, radius: 2.1 });
         if (i < run.length - 1) {
           const a = run[i];
           const b = run[i + 1];
@@ -296,28 +335,41 @@ export class TrackNetwork {
     }
 
     if (flatPiers.length > 0) {
-      // Tapered stone piers with stepped masonry plinths
-      const pierGeo = new THREE.CylinderGeometry(1.12, 1.48, 1, 4);
+      const pierGeo = new THREE.CylinderGeometry(1.12, 1.44, 1, 4);
       pierGeo.rotateY(Math.PI / 4);
       const piers = new THREE.InstancedMesh(pierGeo, this.mats.stoneMid, flatPiers.length);
       piers.castShadow = !low;
       piers.receiveShadow = true;
 
-      const capGeo = new THREE.BoxGeometry(2.55, 0.38, 1.65);
+      const capGeo = new THREE.BoxGeometry(3.25, 0.38, 1.65);
       const caps = new THREE.InstancedMesh(capGeo, this.mats.stoneLight, flatPiers.length);
       caps.receiveShadow = true;
 
       for (let i = 0; i < flatPiers.length; i++) {
         const { pos, groundY, yaw } = flatPiers[i];
-        const h = Math.max(2.0, pos.y - groundY + 1.6);
+        // Sample lowest corner around pier base so pier touches sloped ground without excessive burial
+        const minFootY = Math.min(
+          groundY,
+          heightAt(pos.x + 1.1, pos.z),
+          heightAt(pos.x - 1.1, pos.z),
+          heightAt(pos.x, pos.z + 1.1),
+          heightAt(pos.x, pos.z - 1.1)
+        ) - 0.18;
+        const capTop = pos.y - 0.42;
+        const capBottom = capTop - 0.38;
+        const h = Math.max(1.2, capBottom - minFootY);
         _q.setFromAxisAngle(_up, yaw);
-        _s.set(1.22, h, 0.85);
-        _m.compose(new THREE.Vector3(pos.x, pos.y - h * 0.5 - 0.04, pos.z), _q, _s);
+        _s.set(1.36, h, 0.85);
+        _m.compose(new THREE.Vector3(pos.x, capBottom - h * 0.5, pos.z), _q, _s);
         piers.setMatrixAt(i, _m);
 
         _s.set(1, 1, 1);
-        _m.compose(new THREE.Vector3(pos.x, pos.y - 0.22, pos.z), _q, _s);
+        _m.compose(new THREE.Vector3(pos.x, (capTop + capBottom) * 0.5, pos.z), _q, _s);
         caps.setMatrixAt(i, _m);
+
+        if (this.physics) {
+          this.physics.addCylinder(pos.x, pos.z, 1.55, minFootY, capTop, 'pier');
+        }
       }
       piers.instanceMatrix.needsUpdate = true;
       caps.instanceMatrix.needsUpdate = true;
@@ -337,13 +389,13 @@ export class TrackNetwork {
         const horizDist = Math.hypot(dir.x, dir.z);
         const yaw = Math.atan2(dir.x, dir.z);
         const pitch = -Math.atan2(dir.y, Math.max(0.1, horizDist));
-        const spanLen = dir.length() + 0.35;
+        const spanLen = dir.length() + 0.3;
         const groundMid = heightAt(mid.x, mid.z);
-        const archDrop = clamp((mid.y - groundMid) * 0.65, 2.2, 6.4);
+        const archDrop = clamp((mid.y - groundMid) * 0.65, 1.8, 6.2);
 
         _q.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
         _s.set(1.02, archDrop, spanLen);
-        _m.compose(new THREE.Vector3(mid.x, mid.y - 0.03, mid.z), _q, _s);
+        _m.compose(new THREE.Vector3(mid.x, mid.y - 0.42, mid.z), _q, _s);
         arches.setMatrixAt(i, _m);
       }
       arches.instanceMatrix.needsUpdate = true;
@@ -362,11 +414,6 @@ export class TrackNetwork {
     }
   }
 
-  /**
-   * Builds an authentic Swiss stone avalanche gallery / open-arcade rock tunnel on seg4_main
-   * right before the train emerges onto seg5_viaduct and the backlit cloud sea opens below.
-   * Uses high arch clearance and open valley-side arcades so the camera never clips into the roof.
-   */
   _buildMountainGallery() {
     const m = this.mats;
     const gallery = new THREE.Group();
@@ -380,7 +427,7 @@ export class TrackNetwork {
       const um = (u0 + u1) * 0.5;
       const p0 = this.sample('seg4_main', u0).pos;
       const p1 = this.sample('seg4_main', u1).pos;
-      const { pos, tan } = this.sample('seg4_main', um);
+      const { pos } = this.sample('seg4_main', um);
       const dir = p1.clone().sub(p0);
       const segLen = dir.length() + 0.25;
       const yaw = Math.atan2(dir.x, dir.z);
@@ -390,14 +437,12 @@ export class TrackNetwork {
       bay.position.copy(pos);
       bay.rotation.set(pitch, yaw, 0, 'YXZ');
 
-      // Mountain-side solid stone retaining wall (+X / east side of track)
-      const backWall = new THREE.Mesh(new THREE.BoxGeometry(0.95, 4.6, segLen), m.stoneMid);
-      backWall.position.set(2.35, 2.2, 0);
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(0.95, 4.7, segLen), m.stoneMid);
+      backWall.position.set(2.35, 2.25, 0);
       backWall.castShadow = true;
       backWall.receiveShadow = true;
       bay.add(backWall);
 
-      // Sloped stone-and-timber avalanche roof slab high above the locomotive stack (y ~ 4.45m)
       const roof = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.52, segLen + 0.12), m.stoneMid);
       roof.position.set(0.25, 4.55, 0);
       roof.rotation.z = 0.14;
@@ -410,20 +455,29 @@ export class TrackNetwork {
       snowCap.rotation.z = 0.14;
       bay.add(snowCap);
 
-      // Valley-side open stone arcade piers (-X / west camera side) for sunlit rhythm
-      const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.62, 4.25, 0.72), m.stoneLight);
-      pillar.position.set(-1.95, 2.05, 0);
+      const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.62, 4.55, 0.72), m.stoneLight);
+      pillar.position.set(-1.95, 1.98, 0);
       pillar.castShadow = true;
       pillar.receiveShadow = true;
       bay.add(pillar);
 
-      // Portal arch lintel at entry and exit
       if (i === 0 || i === bays - 1) {
         const zEnd = i === 0 ? -segLen * 0.44 : segLen * 0.44;
         const header = new THREE.Mesh(new THREE.BoxGeometry(5.1, 0.95, 0.72), m.stoneLight);
         header.position.set(0.2, 4.15, zEnd);
         header.castShadow = true;
         bay.add(header);
+      }
+
+      if (this.physics) {
+        const cos = Math.cos(yaw);
+        const sin = Math.sin(yaw);
+        const wxBack = pos.x + 2.35 * cos;
+        const wzBack = pos.z - 2.35 * sin;
+        this.physics.addOBB(wxBack, wzBack, yaw, 0.95, segLen, pos.y - 0.5, pos.y + 4.8, 'wall');
+        const wxPil = pos.x - 1.95 * cos;
+        const wzPil = pos.z + 1.95 * sin;
+        this.physics.addOBB(wxPil, wzPil, yaw, 0.62, 0.72, pos.y - 0.5, pos.y + 4.4, 'wall');
       }
 
       gallery.add(bay);
@@ -434,26 +488,27 @@ export class TrackNetwork {
 
   _buildSwitches() {
     const switchSpecs = [
-      { id: 'sw1', segId: 'seg0_home_village', s: 0.985, side: 1.7 },
-      { id: 'sw2', segId: 'seg2_lake', s: 0.975, side: -1.7 },
-      { id: 'sw3', segId: 'seg3_climb', s: 0.985, side: 1.7 },
+      { id: 'sw1', segId: 'seg0_home_village', s: 0.985, side: 1.75 },
+      { id: 'sw2', segId: 'seg2_lake', s: 0.975, side: -1.75 },
+      { id: 'sw3', segId: 'seg3_climb', s: 0.985, side: 1.75 },
     ];
 
     for (const sp of switchSpecs) {
       const { pos, tan } = this.sample(sp.segId, sp.s);
       const right = new THREE.Vector3().crossVectors(tan, _up).normalize();
       const standPos = pos.clone().addScaledVector(right, sp.side);
+      const groundY = heightAt(standPos.x, standPos.z);
 
       const g = new THREE.Group();
-      g.position.copy(standPos);
+      g.position.set(standPos.x, groundY, standPos.z);
 
-      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.55, 8), this.mats.ironDark);
-      post.position.y = 0.78;
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.65, 8), this.mats.ironDark);
+      post.position.y = 0.825;
       post.castShadow = true;
       g.add(post);
 
       const leverPivot = new THREE.Group();
-      leverPivot.position.y = 1.45;
+      leverPivot.position.y = 1.55;
       const arm = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.72, 0.08), this.mats.mustard);
       arm.position.y = 0.34;
       leverPivot.add(arm);
@@ -466,6 +521,10 @@ export class TrackNetwork {
       leverPivot.rotation.z = 0.58;
       g.add(leverPivot);
       this.group.add(g);
+
+      if (this.physics) {
+        this.physics.addCylinder(standPos.x, standPos.z, 0.28, groundY, groundY + 2.2, 'post');
+      }
 
       this.switchVisuals[sp.id] = {
         pivot: leverPivot,

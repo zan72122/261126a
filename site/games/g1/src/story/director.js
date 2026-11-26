@@ -16,8 +16,11 @@ import { heightAt } from '../world/terrain.js';
 import { CameraRig, fitShot } from './camera.js';
 
 const _p = new THREE.Vector3();
+const _pF = new THREE.Vector3();
+const _pR = new THREE.Vector3();
 const _t = new THREE.Vector3();
 const _up = new THREE.Vector3(0, 1, 0);
+const RAIL_HEAD_OFFSET = 0.15;
 
 /**
  * Story & Gameplay Director:
@@ -55,7 +58,9 @@ export class Director {
     this.walkTarget = null;
     this.puppyTarget = null;
     this.floatVel = new THREE.Vector3();
+    this.walkVel = new THREE.Vector3();
     this.summitArrived = false;
+    this._lastGirlGroupPos = new THREE.Vector3();
 
     this._bindUI();
     this._placeInitial();
@@ -90,22 +95,28 @@ export class Director {
     };
   }
 
+  _surfaceY(x, z, refY = 0) {
+    return this.g.physics ? this.g.physics.surfaceHeightAt(x, z, refY) : heightAt(x, z);
+  }
+
   _placeInitial() {
     this._syncLocoToTrack();
 
     this.g.girl.pos.copy(HOME_GIRL_POS);
-    this.g.girl.pos.y = heightAt(HOME_GIRL_POS.x, HOME_GIRL_POS.z);
+    this.g.girl.pos.y = this._surfaceY(HOME_GIRL_POS.x, HOME_GIRL_POS.z, 0);
     this.g.girl.yaw = Math.atan2(
       HOME_PUPPY_POS.x - HOME_GIRL_POS.x,
       HOME_PUPPY_POS.z - HOME_GIRL_POS.z
     );
 
     this.g.puppy.pos.copy(HOME_PUPPY_POS);
-    this.g.puppy.pos.y = heightAt(HOME_PUPPY_POS.x, HOME_PUPPY_POS.z);
+    this.g.puppy.pos.y = this._surfaceY(HOME_PUPPY_POS.x, HOME_PUPPY_POS.z, 0);
     this.g.puppy.yaw = Math.atan2(
       HOME_GIRL_POS.x - HOME_PUPPY_POS.x,
       HOME_GIRL_POS.z - HOME_PUPPY_POS.z
     );
+
+    this._lastGirlGroupPos.copy(this.g.girl.pos);
   }
 
   go(nextState) {
@@ -132,6 +143,7 @@ export class Director {
       this.floatVel.set(0, -1.75, 0);
     } else if (nextState === 'walk') {
       this.phase = 'roaming';
+      this.walkVel.set(0, 0, 0);
       this._updateWalkMoment();
     } else if (nextState === 'summit') {
       this.phase = 'reunion';
@@ -140,16 +152,17 @@ export class Director {
       this.speed = 0;
       this.targetSpeed = 0;
 
-      // Park locomotive neatly at the right-hand summit buffer end so it sits beside the reunion
       this.segId = 'seg5_viaduct';
       this.segS = 0.94;
       this._syncLocoToTrack();
 
       const sy = SUMMIT_POS.y - 0.25;
-      this.g.girl.pos.set(SUMMIT_POS.x + 0.8, sy + 0.4, SUMMIT_POS.z - 2.9);
+      const terraceTop = sy + 0.4;
+      this.g.girl.pos.set(SUMMIT_POS.x + 0.8, terraceTop, SUMMIT_POS.z - 2.9);
       this.g.girl.yaw = 1.42;
-      this.g.puppy.pos.set(SUMMIT_POS.x + 1.8, sy + 0.4, SUMMIT_POS.z - 3.0);
+      this.g.puppy.pos.set(SUMMIT_POS.x + 1.8, terraceTop, SUMMIT_POS.z - 3.0);
       this.g.puppy.yaw = 1.25;
+      this._lastGirlGroupPos.copy(this.g.girl.pos);
       this.g.audio.playArrival();
       this.triggerWhistle(0.75);
     }
@@ -162,8 +175,8 @@ export class Director {
     this.phaseT = 0;
     this.g.audio.playBark();
     this.g.audio.playBell();
-    this.puppyTarget = new THREE.Vector3(BOARD_POS.x - 0.4, 0, BOARD_POS.z + 2.2);
-    this.walkTarget = new THREE.Vector3(BOARD_POS.x + 0.8, 0, BOARD_POS.z + 2.1);
+    this.puppyTarget = new THREE.Vector3(BOARD_POS.x - 0.1, 0.42, BOARD_POS.z + 2.1);
+    this.walkTarget = new THREE.Vector3(BOARD_POS.x + 0.8, 0.42, BOARD_POS.z + 2.0);
   }
 
   triggerBoard() {
@@ -224,8 +237,11 @@ export class Director {
     if (this.state !== 'ride') return;
     this.idleTimer = 0;
     const girlWorld = this.g.girl.pos.clone();
-    const groundY = heightAt(girlWorld.x, girlWorld.z);
-    const clearance = girlWorld.y - groundY;
+    const terrainY = heightAt(girlWorld.x, girlWorld.z);
+    const sideDrop = new THREE.Vector3(2.8, 0, 0).applyAxisAngle(_up, this.g.loco.yaw);
+    const sidePt = girlWorld.clone().add(sideDrop);
+    const sideGroundY = this._surfaceY(sidePt.x, sidePt.z, girlWorld.y);
+    const clearance = girlWorld.y - Math.min(terrainY, sideGroundY);
 
     this.targetSpeed = 0;
     this.speed = Math.min(this.speed, 1.6);
@@ -235,14 +251,27 @@ export class Director {
       const side = new THREE.Vector3(2.8, 0, 0).applyAxisAngle(_up, this.g.loco.yaw);
       this.g.girl.pos.copy(girlWorld).add(side);
       this.g.girl.pos.y += 1.05;
+      if (this.g.physics) {
+        this.g.physics.resolveActor(this.g.girl.pos, null, { radius: 0.38, height: 1.45, mode: 'float', keepDry: false });
+      }
       this.go('float');
     } else {
-      const side = new THREE.Vector3(-1.85, 0, 0).applyAxisAngle(_up, this.g.loco.yaw);
-      const land = girlWorld.clone().add(side);
-      land.y = heightAt(land.x, land.z);
+      const sideL = new THREE.Vector3(-2.0, 0, 0).applyAxisAngle(_up, this.g.loco.yaw);
+      const sideR = new THREE.Vector3(2.0, 0, 0).applyAxisAngle(_up, this.g.loco.yaw);
+      const candL = girlWorld.clone().add(sideL);
+      const candR = girlWorld.clone().add(sideR);
+      const yL = this._surfaceY(candL.x, candL.z, girlWorld.y);
+      const yR = this._surfaceY(candR.x, candR.z, girlWorld.y);
+      const land = yL >= LAKE_WATER_Y + 0.1 || yL >= yR ? candL : candR;
+      land.y = this._surfaceY(land.x, land.z, girlWorld.y);
+      if (this.g.physics) {
+        this.g.physics.resolveActor(land, null, { radius: 0.34, height: 1.26, mode: 'walk', keepDry: true });
+      }
       this.g.girl.pos.copy(land);
-      this.g.puppy.pos.copy(land).add(new THREE.Vector3(-0.75, 0, 0.55));
-      this.g.puppy.pos.y = heightAt(this.g.puppy.pos.x, this.g.puppy.pos.z);
+      this.g.puppy.pos.copy(land).add(new THREE.Vector3(-0.75, 0, 0.65));
+      if (this.g.physics) {
+        this.g.physics.resolveActor(this.g.puppy.pos, null, { radius: 0.28, height: 0.65, mode: 'walk', keepDry: true });
+      }
       this.walkTarget = null;
       this.go('walk');
     }
@@ -268,6 +297,10 @@ export class Director {
   }
 
   _nudgeClearOfPiersAndWater(pos) {
+    if (this.g.physics) {
+      this.g.physics.resolveActor(pos, null, { radius: 0.34, height: 1.26, mode: 'walk', keepDry: true });
+      return;
+    }
     for (const pier of this.g.tracks.pierObstacles) {
       const dx = pos.x - pier.x;
       const dz = pos.z - pier.z;
@@ -280,12 +313,7 @@ export class Director {
         pos.z = pier.z + nz * minR;
       }
     }
-    let y = heightAt(pos.x, pos.z);
-    if (y < LAKE_WATER_Y + 0.35) {
-      pos.x += 4.0;
-      y = heightAt(pos.x, pos.z);
-    }
-    pos.y = y;
+    pos.y = this._surfaceY(pos.x, pos.z, pos.y);
   }
 
   _handleTap(ndc) {
@@ -297,44 +325,56 @@ export class Director {
       ...this.g.puppy.interactables,
     ];
     const hits = this.ray.intersectObjects(targets, true);
+    let kind = null;
     if (hits.length > 0) {
       let obj = hits[0].object;
       while (obj && !obj.userData.interact) obj = obj.parent;
-      const kind = obj && obj.userData.interact;
-      if (kind === 'whistle') {
+      kind = obj && obj.userData.interact;
+    } else {
+      // Touch-friendly ray-proximity fallback without oversized invisible meshes
+      const r = this.ray.ray;
+      if (r.distanceSqToPoint(this.g.puppy.pos.clone().add(new THREE.Vector3(0, 0.35, 0))) < 0.25) {
+        kind = 'puppy';
+      } else if (r.distanceSqToPoint(this.g.girl.pos.clone().add(new THREE.Vector3(0, 0.65, 0))) < 0.28) {
+        kind = 'girl';
+      } else if (r.distanceSqToPoint(this.g.loco.pos.clone().add(new THREE.Vector3(0, 1.3, 0))) < 3.6) {
+        kind = 'loco';
+      }
+    }
+
+    if (kind === 'whistle') {
+      this.triggerWhistle();
+      return;
+    }
+    if (kind === 'valve') {
+      this.triggerValveSteam();
+      return;
+    }
+    if (kind === 'girl') {
+      if (this.state === 'home') {
+        this.triggerHomeLead();
+      } else if (this.state === 'ride') {
+        this.triggerDismount();
+      } else if (this.state === 'board') {
+        this.triggerBoard();
+      }
+      return;
+    }
+    if (kind === 'puppy') {
+      this.g.audio.playBark();
+      if (this.state === 'home') this.triggerHomeLead();
+      else if (this.state === 'board' || this.state === 'walk') this.triggerBoard();
+      return;
+    }
+    if (kind === 'loco') {
+      if (this.state === 'home') {
+        this.triggerHomeLead();
+      } else if (this.state === 'board' || this.state === 'walk' || this.state === 'float') {
+        this.triggerBoard();
+      } else if (this.state === 'ride') {
         this.triggerWhistle();
-        return;
       }
-      if (kind === 'valve') {
-        this.triggerValveSteam();
-        return;
-      }
-      if (kind === 'girl') {
-        if (this.state === 'home') {
-          this.triggerHomeLead();
-        } else if (this.state === 'ride') {
-          this.triggerDismount();
-        } else if (this.state === 'board') {
-          this.triggerBoard();
-        }
-        return;
-      }
-      if (kind === 'puppy') {
-        this.g.audio.playBark();
-        if (this.state === 'home') this.triggerHomeLead();
-        else if (this.state === 'board' || this.state === 'walk') this.triggerBoard();
-        return;
-      }
-      if (kind === 'loco') {
-        if (this.state === 'home') {
-          this.triggerHomeLead();
-        } else if (this.state === 'board' || this.state === 'walk' || this.state === 'float') {
-          this.triggerBoard();
-        } else if (this.state === 'ride') {
-          this.triggerWhistle();
-        }
-        return;
-      }
+      return;
     }
 
     if (this.state === 'home') {
@@ -359,7 +399,7 @@ export class Director {
       this.groundPlane.constant = -this.g.girl.pos.y;
       const hitPt = new THREE.Vector3();
       if (this.ray.ray.intersectPlane(this.groundPlane, hitPt)) {
-        hitPt.y = heightAt(hitPt.x, hitPt.z);
+        hitPt.y = this._surfaceY(hitPt.x, hitPt.z, this.g.girl.pos.y);
         this.walkTarget = hitPt;
       }
     }
@@ -376,13 +416,26 @@ export class Director {
   }
 
   _syncLocoToTrack() {
+    const seg = this.g.tracks.segments[this.segId];
     const { pos, tan } = this.g.tracks.sample(this.segId, this.segS, _p, _t);
-    this.g.loco.pos.copy(pos);
+    const ds = 1.4 / Math.max(10, seg.length);
+    this.g.tracks.sample(this.segId, clamp(this.segS + ds, 0, 1), _pF);
+    this.g.tracks.sample(this.segId, clamp(this.segS - ds, 0, 1), _pR);
+
+    const railY = Math.max(pos.y, (_pF.y + _pR.y) * 0.5) + RAIL_HEAD_OFFSET;
+    const horizAxle = Math.max(0.1, Math.hypot(_pF.x - _pR.x, _pF.z - _pR.z));
+    const axlePitch = -Math.atan2(_pF.y - _pR.y, horizAxle);
+
+    this.g.loco.pos.set(pos.x, railY, pos.z);
     this.g.loco.yaw = Math.atan2(tan.x, tan.z);
-    this.g.loco.pitch = -Math.asin(clamp(tan.y, -0.95, 0.95));
-    this.g.loco.group.position.copy(pos);
+    this.g.loco.pitch = axlePitch;
+    this.g.loco.group.position.copy(this.g.loco.pos);
     this.g.loco.group.rotation.set(this.g.loco.pitch, this.g.loco.yaw, 0, 'YXZ');
     this.g.loco.group.updateMatrixWorld(true);
+
+    if (this.g.physics) {
+      this.g.physics.setLocomotive(this.g.loco.pos, this.g.loco.yaw);
+    }
   }
 
   _updateRideMoment() {
@@ -425,10 +478,48 @@ export class Director {
     this.btnWhistle.classList.toggle('visible', showWhistle);
   }
 
+  _resolveGroundActor(actor, vel, radius, height, keepDry = true) {
+    if (!this.g.physics) {
+      actor.pos.y = this._surfaceY(actor.pos.x, actor.pos.z, actor.pos.y);
+      return;
+    }
+    this.g.physics.resolveActor(actor.pos, vel, {
+      radius,
+      height,
+      mode: 'walk',
+      keepDry,
+      ignoreLoco: false,
+    });
+  }
+
+  _separateGirlAndPuppy() {
+    const dx = this.g.puppy.pos.x - this.g.girl.pos.x;
+    const dz = this.g.puppy.pos.z - this.g.girl.pos.z;
+    const d = Math.hypot(dx, dz);
+    const minSep = 0.62;
+    if (d < minSep) {
+      const nx = d > 1e-4 ? dx / d : -0.7;
+      const nz = d > 1e-4 ? dz / d : 0.7;
+      this.g.puppy.pos.x = this.g.girl.pos.x + nx * minSep;
+      this.g.puppy.pos.z = this.g.girl.pos.z + nz * minSep;
+      this.g.puppy.pos.y = this._surfaceY(this.g.puppy.pos.x, this.g.puppy.pos.z, this.g.puppy.pos.y);
+    }
+  }
+
   update(dt) {
     this.stateT += dt;
     this.phaseT += dt;
     this.whistleKick = Math.max(0, this.whistleKick - dt * 3.5);
+
+    // Pick up any direct external manipulation of group.position during tests
+    if (this.state !== 'ride') {
+      if (
+        this.g.girl.group.position.distanceToSquared(this._lastGirlGroupPos) > 1e-5 &&
+        this.g.girl.pos.distanceToSquared(this._lastGirlGroupPos) < 1e-5
+      ) {
+        this.g.girl.pos.copy(this.g.girl.group.position);
+      }
+    }
 
     const drag = this.g.input.dragNormalized();
     if (drag.active && (Math.abs(drag.x) > 0.1 || Math.abs(drag.y) > 0.1)) {
@@ -454,19 +545,26 @@ export class Director {
 
     if (this.state === 'home') {
       if (this.phase === 'leading') {
-        const pDone = this._moveActorToward(this.g.puppy, this.puppyTarget, dt, 4.4);
-        const gDone = this._moveActorToward(this.g.girl, this.walkTarget, dt, 3.0);
+        const pDone = this._moveActorToward(this.g.puppy, this.puppyTarget, dt, 4.4, 0.28, 0.65);
+        const gDone = this._moveActorToward(this.g.girl, this.walkTarget, dt, 3.0, 0.34, 1.26);
+        this._separateGirlAndPuppy();
         this.g.girl.update(dt, this.g.time, { mode: gDone ? 'idle' : 'walk', moveSpeed: 3.0, showTicket: true });
         this.g.puppy.update(dt, this.g.time, { moving: !pDone, excited: pDone });
         if (gDone && this.phaseT > 1.2) {
           this.go('board');
         }
       } else {
+        this._resolveGroundActor(this.g.girl, null, 0.34, 1.26, true);
+        this._resolveGroundActor(this.g.puppy, null, 0.28, 0.65, true);
+        this._separateGirlAndPuppy();
         this.g.girl.update(dt, this.g.time, { mode: 'idle', showTicket: true });
         this.g.puppy.update(dt, this.g.time, { moving: false, excited: true });
       }
       this._emitIdleChimneySteam(dt);
     } else if (this.state === 'board') {
+      this._resolveGroundActor(this.g.girl, null, 0.34, 1.26, true);
+      this._resolveGroundActor(this.g.puppy, null, 0.28, 0.65, true);
+      this._separateGirlAndPuppy();
       this.g.girl.yaw = lerp(
         this.g.girl.yaw,
         Math.atan2(this.g.loco.pos.x - this.g.girl.pos.x, this.g.loco.pos.z - this.g.girl.pos.z),
@@ -555,10 +653,13 @@ export class Director {
         this.floatVel.x *= Math.exp(-2 * dt);
         this.floatVel.z *= Math.exp(-2 * dt);
       }
-      this.floatVel.y = -1.75;
+      this.floatVel.y = lerp(this.floatVel.y, -1.75, 1 - Math.exp(-3.5 * dt));
 
       this.g.girl.pos.addScaledVector(this.floatVel, dt);
-      const groundY = heightAt(this.g.girl.pos.x, this.g.girl.pos.z);
+      const floorY = this.g.physics
+        ? this.g.physics.resolveActor(this.g.girl.pos, this.floatVel, { radius: 0.38, height: 1.45, mode: 'float', keepDry: false })
+        : this._surfaceY(this.g.girl.pos.x, this.g.girl.pos.z, this.g.girl.pos.y);
+
       this.g.girl.update(dt, this.g.time, { mode: 'float' });
 
       this.g.loco.getWorldPoint(this.g.loco.puppySeatLocal, this.g.puppy.pos);
@@ -566,14 +667,27 @@ export class Director {
       this.g.puppy.update(dt, this.g.time, { moving: false, excited: true });
       this._emitIdleChimneySteam(dt);
 
-      if (this.g.girl.pos.y <= groundY + 0.05) {
+      const deckY = this.g.physics ? this.g.physics.deckHeightAt(this.g.girl.pos.x, this.g.girl.pos.z, this.g.girl.pos.y) : -Infinity;
+      const overWater = deckY === -Infinity && heightAt(this.g.girl.pos.x, this.g.girl.pos.z) < LAKE_WATER_Y + 0.05;
+      if (overWater && this.g.girl.pos.y <= LAKE_WATER_Y + 0.1) {
+        // Water buoyancy + gentle drift toward shore until dry land or pier is reached
+        const eps = 0.8;
+        const gx = heightAt(this.g.girl.pos.x + eps, this.g.girl.pos.z) - heightAt(this.g.girl.pos.x - eps, this.g.girl.pos.z);
+        const gz = heightAt(this.g.girl.pos.x, this.g.girl.pos.z + eps) - heightAt(this.g.girl.pos.x, this.g.girl.pos.z - eps);
+        const gl = Math.hypot(gx, gz);
+        if (gl > 1e-4) {
+          this.g.girl.pos.x += (gx / gl) * 2.2 * dt;
+          this.g.girl.pos.z += (gz / gl) * 2.2 * dt;
+        }
+        this.g.girl.pos.y = Math.max(this.g.girl.pos.y, LAKE_WATER_Y - 0.08);
+      } else if (this.g.girl.pos.y <= floorY + 0.05) {
         this._nudgeClearOfPiersAndWater(this.g.girl.pos);
         const near = this.g.tracks.nearestTrackPoint(this.g.girl.pos, true);
         this.segId = near.segId;
         this.segS = near.s;
         this._syncLocoToTrack();
-        this.g.puppy.pos.copy(this.g.girl.pos).add(new THREE.Vector3(1.1, 0, 0.8));
-        this.g.puppy.pos.y = heightAt(this.g.puppy.pos.x, this.g.puppy.pos.z);
+        this.g.puppy.pos.copy(this.g.girl.pos).add(new THREE.Vector3(1.0, 0, 0.8));
+        this._resolveGroundActor(this.g.puppy, null, 0.28, 0.65, true);
         this.walkTarget = null;
         this.go('walk');
       }
@@ -586,34 +700,45 @@ export class Director {
         camFwd.normalize();
         const camRight = new THREE.Vector3().crossVectors(camFwd, _up).normalize();
         const dir = camRight.multiplyScalar(drag.x).addScaledVector(camFwd, -drag.y).normalize();
-        this.g.girl.pos.addScaledVector(dir, 3.6 * dt);
-        this.g.girl.pos.y = heightAt(this.g.girl.pos.x, this.g.girl.pos.z);
+        this.walkVel.copy(dir).multiplyScalar(3.6);
+        this.g.girl.pos.addScaledVector(this.walkVel, dt);
+        this._resolveGroundActor(this.g.girl, this.walkVel, 0.34, 1.26, true);
         this.g.girl.yaw = lerp(this.g.girl.yaw, Math.atan2(dir.x, dir.z), dt * 8);
         this.walkTarget = null;
         moving = true;
       } else if (this.walkTarget) {
-        const done = this._moveActorToward(this.g.girl, this.walkTarget, dt, 3.6);
+        const done = this._moveActorToward(this.g.girl, this.walkTarget, dt, 3.6, 0.34, 1.26);
         moving = !done;
         if (done) {
-          const targetWasLoco = this.walkTarget.distanceTo(this.g.loco.pos) < 3.0;
+          const targetWasLoco = this.walkTarget.distanceTo(this.g.loco.pos) < 3.5;
           this.walkTarget = null;
-          if (targetWasLoco && this.g.girl.pos.distanceTo(this.g.loco.pos) < 4.5) {
+          if (targetWasLoco && this.g.girl.pos.distanceTo(this.g.loco.pos) < 5.0) {
             this.triggerBoard();
             return;
           }
         }
+      } else {
+        this._resolveGroundActor(this.g.girl, null, 0.34, 1.26, true);
       }
       this.g.girl.update(dt, this.g.time, { mode: moving ? 'walk' : 'idle', moveSpeed: 3.6 });
 
       const pupGoal = this.g.girl.pos.clone().add(new THREE.Vector3(-1.1, 0, 0.9));
-      const pDone = this._moveActorToward(this.g.puppy, pupGoal, dt, 4.2);
+      const pDone = this._moveActorToward(this.g.puppy, pupGoal, dt, 4.2, 0.28, 0.65);
+      this._separateGirlAndPuppy();
       this.g.puppy.update(dt, this.g.time, { moving: !pDone, excited: true });
       this._updateWalkMoment();
       this._emitIdleChimneySteam(dt);
     } else if (this.state === 'summit') {
+      this._resolveGroundActor(this.g.girl, null, 0.34, 1.26, true);
+      this._resolveGroundActor(this.g.puppy, null, 0.28, 0.65, true);
+      this._separateGirlAndPuppy();
       this.g.girl.update(dt, this.g.time, { mode: 'idle', showTicket: false });
       this.g.puppy.update(dt, this.g.time, { moving: false, excited: true });
       this._emitIdleChimneySteam(dt);
+    }
+
+    if (this.state !== 'ride') {
+      this._lastGirlGroupPos.copy(this.g.girl.pos);
     }
 
     this.g.loco.update(dt, this.speed, this.whistleKick);
@@ -631,17 +756,30 @@ export class Director {
     this.rig.update(dt, this._computeShot(), camStiff);
   }
 
-  _moveActorToward(actor, target, dt, speed) {
+  _moveActorToward(actor, target, dt, speed, radius = 0.34, height = 1.26) {
     const dx = target.x - actor.pos.x;
     const dz = target.z - actor.pos.z;
     const d = Math.hypot(dx, dz);
-    if (d < 0.35) return true;
+    if (d < 0.35) {
+      this._resolveGroundActor(actor, null, radius, height, true);
+      return true;
+    }
+    const prevX = actor.pos.x;
+    const prevZ = actor.pos.z;
     const step = Math.min(d, speed * dt);
+    const vx = (dx / d) * speed;
+    const vz = (dz / d) * speed;
     actor.pos.x += (dx / d) * step;
     actor.pos.z += (dz / d) * step;
-    actor.pos.y = heightAt(actor.pos.x, actor.pos.z);
+    const vel = new THREE.Vector3(vx, 0, vz);
+    this._resolveGroundActor(actor, vel, radius, height, true);
+    const moved = Math.hypot(actor.pos.x - prevX, actor.pos.z - prevZ);
     const targetYaw = Math.atan2(dx, dz);
     actor.yaw = actor.yaw + wrapAngle(targetYaw - actor.yaw) * Math.min(1, dt * 9);
+    // Stop cleanly if blocked against an obstacle rather than vibrating
+    if (step > 0.02 && moved < step * 0.15) {
+      return true;
+    }
     return false;
   }
 
@@ -685,8 +823,6 @@ export class Director {
     const aspect = this.g.vw / Math.max(1, this.g.vh);
 
     if (this.state === 'home') {
-      // Unobstructed garden shot: girl + puppy centered-foreground, home chalet & mailbox,
-      // waiting steam locomotive on platform, and distant summit sky above!
       const gp = this.g.girl.pos;
       const pp = this.g.puppy.pos;
       const lp = this.g.loco.pos;
@@ -746,8 +882,6 @@ export class Director {
       const inGallery = this.segId === 'seg4_main' && this.segS >= 0.34 && this.segS <= 0.84;
       const onViaduct = this.segId === 'seg5_viaduct';
 
-      // Keep camera safely on the open valley side & high enough to clear village roofs,
-      // and keep outside the stone gallery arcade so it never clips into the roof.
       const camDir = inGallery
         ? fwd.clone().multiplyScalar(-0.76).addScaledVector(right, -0.60).add(new THREE.Vector3(0, 0.26, 0)).normalize()
         : onViaduct
@@ -825,8 +959,6 @@ export class Director {
       return shot;
     }
 
-    // summit: Reunion framed large with entire locomotive on right, snow-trimmed station on left-back,
-    // and vast layered golden-backlit and pale-blue cloud sea opening behind them!
     const gp = this.g.girl.pos;
     const lp = this.g.loco.pos;
     const fwdL = new THREE.Vector3(Math.sin(this.g.loco.yaw), 0, Math.cos(this.g.loco.yaw));

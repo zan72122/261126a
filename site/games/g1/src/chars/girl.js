@@ -197,14 +197,10 @@ export class Girl {
     this.umbrella.visible = false;
     this.root.add(this.umbrella);
 
-    const hit = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.38, 0.38, 1.35, 10),
-      new THREE.MeshBasicMaterial({ visible: false })
-    );
-    hit.position.y = 0.68;
-    hit.userData.interact = 'girl';
-    this.group.add(hit);
-    this.interactables.push(hit);
+    chest.userData.interact = 'girl';
+    skirt.userData.interact = 'girl';
+    skull.userData.interact = 'girl';
+    this.interactables.push(chest, skirt, skull);
   }
 
   _makeLeg(legMat, bootMat) {
@@ -276,7 +272,7 @@ export class Girl {
       this.armL.shoulder.rotation.x = lerp(this.armL.shoulder.rotation.x, -0.45, k);
       this.armR.shoulder.rotation.x = lerp(this.armR.shoulder.rotation.x, -0.35 + Math.sin(time * 2.2) * 0.06, k);
       this.armR.elbow.rotation.x = lerp(this.armR.elbow.rotation.x, -0.5, k);
-      this.root.position.y = Math.sin(time * 7.5) * 0.012;
+      this.root.position.y = (Math.sin(time * 7.5) * 0.5 + 0.5) * 0.016;
       this.torso.rotation.z = lerp(this.torso.rotation.z, 0, k);
     } else if (mode === 'float') {
       const sway = Math.sin(time * 1.9);

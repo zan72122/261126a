@@ -17,9 +17,10 @@ import { MountainDog } from '../chars/puppy.js';
  * perched above the layered backlit sea of clouds with the Puppy's Family.
  */
 export class StationsAndSummit {
-  constructor(mats) {
+  constructor(mats, physics = null) {
     this.group = new THREE.Group();
     this.mats = mats;
+    this.physics = physics;
     this.boats = [];
     this.flags = [];
     this.familyDogs = [];
@@ -42,6 +43,9 @@ export class StationsAndSummit {
     g.add(post, head, cap);
     g.position.set(x, y, z);
     this.group.add(g);
+    if (this.physics) {
+      this.physics.addCylinder(x, z, 0.24, y, y + 2.8, 'post');
+    }
     return g;
   }
 
@@ -57,6 +61,9 @@ export class StationsAndSummit {
     g.position.set(x, y, z);
     this.group.add(g);
     this.flags.push(flag);
+    if (this.physics) {
+      this.physics.addCylinder(x, z, 0.2, y, y + 3.2, 'post');
+    }
   }
 
   _makeBench(x, y, z, ry = 0) {
@@ -74,6 +81,9 @@ export class StationsAndSummit {
     g.position.set(x, y, z);
     g.rotation.y = ry;
     this.group.add(g);
+    if (this.physics) {
+      this.physics.addOBB(x, z, ry, 1.52, 0.52, y, y + 0.92, 'bench');
+    }
     return g;
   }
 
@@ -127,79 +137,123 @@ export class StationsAndSummit {
 
   _buildBoardHalt() {
     const m = this.mats;
-    const plat = new THREE.Mesh(new THREE.BoxGeometry(9.6, 0.38, 2.5), m.timberMid);
-    plat.position.set(BOARD_POS.x, BOARD_POS.y + 0.05, BOARD_POS.z + 2.1);
+    const platGround = heightAt(BOARD_POS.x, BOARD_POS.z + 2.1);
+    const platH = 0.42;
+    const platTop = platGround + platH;
+
+    const plat = new THREE.Mesh(new THREE.BoxGeometry(9.6, platH, 2.5), m.timberMid);
+    plat.position.set(BOARD_POS.x, platGround + platH * 0.5, BOARD_POS.z + 2.1);
     plat.receiveShadow = true;
     this.group.add(plat);
 
+    // Gentle wooden entry ramp on the garden side so characters climb smoothly onto the platform
+    const ramp = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.14, 0.92), m.timberLight);
+    ramp.position.set(BOARD_POS.x + 0.4, platGround + 0.15, BOARD_POS.z + 3.75);
+    ramp.rotation.x = Math.atan2(platH, 0.8);
+    ramp.receiveShadow = true;
+    this.group.add(ramp);
+
+    if (this.physics) {
+      this.physics.addDeckOBB(BOARD_POS.x, BOARD_POS.z + 2.1, 0, 9.6, 2.5, platTop, 0.7);
+      this.physics.addDeckRampOBB(BOARD_POS.x + 0.4, BOARD_POS.z + 3.75, 0, 4.4, 0.8, platTop, platGround, 0.6);
+    }
+
     const roof = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.16, 2.3), m.slateRoof);
-    roof.position.set(BOARD_POS.x - 1.5, 2.65, BOARD_POS.z + 2.4);
+    roof.position.set(BOARD_POS.x - 1.5, platTop + 2.28, BOARD_POS.z + 2.4);
     roof.rotation.x = 0.12;
     roof.castShadow = true;
     this.group.add(roof);
 
     for (const px of [BOARD_POS.x - 3.2, BOARD_POS.x + 0.2]) {
-      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 2.4, 8), m.timberDark);
-      post.position.set(px, 1.4, BOARD_POS.z + 2.4);
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 2.22, 8), m.timberDark);
+      post.position.set(px, platTop + 1.11, BOARD_POS.z + 2.4);
       this.group.add(post);
+      if (this.physics) {
+        this.physics.addCylinder(px, BOARD_POS.z + 2.4, 0.14, platTop, platTop + 2.25, 'post');
+      }
     }
 
-    this._makeBench(BOARD_POS.x - 1.5, BOARD_POS.y + 0.24, BOARD_POS.z + 2.55, 0);
+    this._makeBench(BOARD_POS.x - 1.5, platTop, BOARD_POS.z + 2.55, 0);
+
+    // Luggage trunk placed clear of the girl's boarding spot (BOARD_POS.x + 0.8)
     const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.42, 0.44), m.cobalt);
-    trunk.position.set(BOARD_POS.x + 1.4, BOARD_POS.y + 0.45, BOARD_POS.z + 2.2);
+    trunk.position.set(BOARD_POS.x + 2.4, platTop + 0.21, BOARD_POS.z + 2.2);
     const band = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.1, 0.46), m.mustard);
     band.position.copy(trunk.position);
     this.group.add(trunk, band);
+    if (this.physics) {
+      this.physics.addOBB(BOARD_POS.x + 2.4, BOARD_POS.z + 2.2, 0, 0.7, 0.46, platTop, platTop + 0.45, 'prop');
+    }
 
-    this._makeLantern(BOARD_POS.x + 3.6, 0, BOARD_POS.z + 2.2);
-    this._makeFlag(BOARD_POS.x - 4.4, 0, BOARD_POS.z + 2.2);
+    this._makeLantern(BOARD_POS.x + 4.1, platTop, BOARD_POS.z + 2.2);
+    this._makeFlag(BOARD_POS.x - 4.2, platTop, BOARD_POS.z + 2.2);
   }
 
   _buildFlowerSiding() {
     const m = this.mats;
-    const baseY = SIDETRACK_POS.y - 0.25;
+    const baseY = heightAt(SIDETRACK_POS.x + 3.0, SIDETRACK_POS.z);
+    const platH = 0.36;
+    const platTop = baseY + platH;
 
-    const plat = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.36, 9.2), m.timberMid);
-    plat.position.set(SIDETRACK_POS.x + 2.2, baseY + 0.15, SIDETRACK_POS.z);
+    const plat = new THREE.Mesh(new THREE.BoxGeometry(2.6, platH, 9.2), m.timberMid);
+    plat.position.set(SIDETRACK_POS.x + 2.2, baseY + platH * 0.5, SIDETRACK_POS.z);
     plat.receiveShadow = true;
     this.group.add(plat);
+    if (this.physics) {
+      this.physics.addDeckOBB(SIDETRACK_POS.x + 2.2, SIDETRACK_POS.z, 0, 2.6, 9.2, platTop, 0.7);
+    }
 
+    const hutX = SIDETRACK_POS.x + 5.2;
+    const hutZ = SIDETRACK_POS.z;
+    const hutY = heightAt(hutX, hutZ);
     const hut = this._makeStationShelter(3.6, 4.2, m.timberDark, m.mustard);
-    hut.position.set(SIDETRACK_POS.x + 5.2, baseY, SIDETRACK_POS.z);
+    hut.position.set(hutX, hutY, hutZ);
     hut.rotation.y = -Math.PI * 0.5;
     this.group.add(hut);
+    if (this.physics) {
+      this.physics.addOBB(hutX, hutZ, -Math.PI * 0.5, 3.8, 4.4, hutY, hutY + 3.6, 'shelter');
+    }
 
-    this._makeBench(SIDETRACK_POS.x + 2.4, baseY + 0.34, SIDETRACK_POS.z + 1.5, -Math.PI * 0.5);
+    this._makeBench(SIDETRACK_POS.x + 2.4, platTop, SIDETRACK_POS.z + 1.5, -Math.PI * 0.5);
 
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 4 - row; col++) {
         const log = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.26, 4.4, 9), m.timberLight);
         log.rotation.x = Math.PI / 2;
-        log.position.set(SIDETRACK_POS.x + 4.0 + col * 0.52 + row * 0.26, baseY + 0.26 + row * 0.42, SIDETRACK_POS.z - 5.2);
+        log.position.set(SIDETRACK_POS.x + 4.0 + col * 0.52 + row * 0.26, baseY + 0.26 + row * 0.42, SIDETRACK_POS.z - 5.8);
         log.castShadow = true;
         this.group.add(log);
       }
     }
+    if (this.physics) {
+      this.physics.addOBB(SIDETRACK_POS.x + 4.8, SIDETRACK_POS.z - 5.8, 0, 2.2, 4.5, baseY, baseY + 1.4, 'logs');
+    }
 
     const retWall = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.1, 14.0), m.stoneMid);
-    retWall.position.set(SIDETRACK_POS.x + 8.5, baseY + 0.45, SIDETRACK_POS.z - 1.5);
+    retWall.position.set(SIDETRACK_POS.x + 8.5, baseY + 0.55, SIDETRACK_POS.z - 1.5);
     retWall.receiveShadow = true;
     this.group.add(retWall);
+    if (this.physics) {
+      this.physics.addOBB(SIDETRACK_POS.x + 8.5, SIDETRACK_POS.z - 1.5, 0, 0.75, 14.0, baseY, baseY + 1.15, 'wall');
+    }
 
     const cranePost = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.18, 3.2, 10), m.ironDark);
-    cranePost.position.set(SIDETRACK_POS.x + 2.4, baseY + 1.6, SIDETRACK_POS.z + 4.0);
+    cranePost.position.set(SIDETRACK_POS.x + 2.4, platTop + 1.6, SIDETRACK_POS.z + 3.9);
     const craneArm = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.14, 0.14), m.cobalt);
-    craneArm.position.set(SIDETRACK_POS.x + 1.6, baseY + 3.0, SIDETRACK_POS.z + 4.0);
+    craneArm.position.set(SIDETRACK_POS.x + 1.6, platTop + 3.0, SIDETRACK_POS.z + 3.9);
     this.group.add(cranePost, craneArm);
+    if (this.physics) {
+      this.physics.addCylinder(SIDETRACK_POS.x + 2.4, SIDETRACK_POS.z + 3.9, 0.25, platTop, platTop + 3.2, 'post');
+    }
 
-    // Organic, naturally varied wildflower clumps (NO grid spacing!)
     const fRand = rng(707);
     for (let c = 0; c < 18; c++) {
       const ang = fRand() * Math.PI * 2;
-      const dist = 2.8 + fRand() * 11.5;
-      const cx = SIDETRACK_POS.x - 1.5 + Math.cos(ang) * dist * 0.85;
+      const dist = 3.2 + fRand() * 11.0;
+      const cx = SIDETRACK_POS.x - 1.8 + Math.cos(ang) * dist * 0.85;
       const cz = SIDETRACK_POS.z + Math.sin(ang) * dist;
-      if (Math.abs(cx - SIDETRACK_POS.x) < 1.9) continue;
+      if (Math.abs(cx - SIDETRACK_POS.x) < 2.2) continue;
+      if (cx > SIDETRACK_POS.x + 0.5 && Math.abs(cz - SIDETRACK_POS.z) < 6.8) continue;
       const cy = heightAt(cx, cz);
       const cluster = new THREE.Group();
       const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(0.32 + fRand() * 0.2, 0), m.pineMid);
@@ -223,39 +277,52 @@ export class StationsAndSummit {
       this.group.add(cluster);
     }
 
-    this._makeLantern(SIDETRACK_POS.x + 2.2, baseY, SIDETRACK_POS.z - 2.6);
-    this._makeFlag(SIDETRACK_POS.x + 2.4, baseY, SIDETRACK_POS.z + 4.6);
+    this._makeLantern(SIDETRACK_POS.x + 2.2, platTop, SIDETRACK_POS.z - 2.6);
+    this._makeFlag(SIDETRACK_POS.x + 2.4, platTop, SIDETRACK_POS.z + 4.3);
   }
 
   _buildLakeStationAndBoats() {
     const m = this.mats;
     const baseY = LAKE_POS.y - 0.2;
+    const platH = 0.42;
+    const platTop = baseY + platH;
 
-    const plat = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.42, 9.6), m.timberMid);
-    plat.position.set(LAKE_POS.x - 2.3, baseY + 0.15, LAKE_POS.z);
+    const plat = new THREE.Mesh(new THREE.BoxGeometry(2.8, platH, 9.6), m.timberMid);
+    plat.position.set(LAKE_POS.x - 2.3, baseY + platH * 0.5, LAKE_POS.z);
     plat.rotation.y = 0.2;
     plat.receiveShadow = true;
     this.group.add(plat);
+    if (this.physics) {
+      this.physics.addDeckOBB(LAKE_POS.x - 2.3, LAKE_POS.z, 0.2, 2.8, 9.6, platTop, 0.75);
+    }
 
+    const houseX = LAKE_POS.x + 4.4;
+    const houseZ = LAKE_POS.z + 0.5;
+    const houseY = heightAt(houseX, houseZ);
     const lakeHouse = this._makeStationShelter(3.6, 4.4, m.slateRoof, m.cobalt);
-    lakeHouse.position.set(LAKE_POS.x + 3.6, baseY, LAKE_POS.z + 0.5);
+    lakeHouse.position.set(houseX, houseY, houseZ);
     lakeHouse.rotation.y = -Math.PI * 0.45;
     this.group.add(lakeHouse);
+    if (this.physics) {
+      this.physics.addOBB(houseX, houseZ, -Math.PI * 0.45, 3.8, 4.6, houseY, houseY + 3.6, 'shelter');
+    }
 
-    this._makeBench(LAKE_POS.x - 2.2, baseY + 0.36, LAKE_POS.z - 1.4, Math.PI * 0.5);
-    this._makeLantern(LAKE_POS.x - 1.8, baseY + 0.2, LAKE_POS.z + 3.8);
-    this._makeFlag(LAKE_POS.x - 2.4, baseY + 0.2, LAKE_POS.z - 4.0);
+    this._makeBench(LAKE_POS.x - 2.2, platTop, LAKE_POS.z - 1.4, Math.PI * 0.5);
+    this._makeLantern(LAKE_POS.x - 1.8, platTop, LAKE_POS.z + 3.8);
+    this._makeFlag(LAKE_POS.x - 2.4, platTop, LAKE_POS.z - 4.0);
 
-    for (let i = 0; i < 6; i++) {
-      const t = i / 5;
-      const sx = LAKE_POS.x - 3.6 - t * 4.5;
-      const sz = LAKE_POS.z - 1.5 - t * 0.4;
-      const st = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.45, 0.1, 7), m.stoneLight);
+    // Stone stepping path stopping cleanly at the shore end of the wooden pier
+    for (let i = 0; i < 5; i++) {
+      const t = i / 4;
+      const sx = LAKE_POS.x - 3.9 - t * 3.1;
+      const sz = LAKE_POS.z - 1.5 - t * 0.45;
+      const st = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.45, 0.08, 7), m.stoneLight);
       st.position.set(sx, heightAt(sx, sz) + 0.04, sz);
       this.group.add(st);
     }
 
     const pier = new THREE.Group();
+    const pierY = LAKE_WATER_Y + 0.65;
     const deck = new THREE.Mesh(new THREE.BoxGeometry(10.8, 0.18, 2.5), m.timberLight);
     deck.position.set(-5.0, 0, 0);
     deck.castShadow = true;
@@ -263,16 +330,20 @@ export class StationsAndSummit {
     pier.add(deck);
     for (let px = -9.5; px <= -1.0; px += 2.8) {
       for (const pz of [-0.98, 0.98]) {
-        const pile = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 2.3, 8), m.timberDark);
-        pile.position.set(px, -0.75, pz);
+        // Extend piles down into the lake bed so they never float above water floor
+        const pile = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 3.2, 8), m.timberDark);
+        pile.position.set(px, -1.35, pz);
         pier.add(pile);
         const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.26, 8), m.timberDark);
         cap.position.set(px, 0.2, pz);
         pier.add(cap);
       }
     }
-    pier.position.set(LAKE_PIER_POS.x, LAKE_WATER_Y + 0.65, LAKE_PIER_POS.z);
+    pier.position.set(LAKE_PIER_POS.x, pierY, LAKE_PIER_POS.z);
     this.group.add(pier);
+    if (this.physics) {
+      this.physics.addDeckOBB(LAKE_PIER_POS.x - 5.0, LAKE_PIER_POS.z, 0, 10.8, 2.5, pierY + 0.09, 0.9);
+    }
 
     const rRand = rng(303);
     for (let i = 0; i < 18; i++) {
@@ -287,7 +358,7 @@ export class StationsAndSummit {
     }
 
     const boatOffsets = [
-      [-11.5, -2.5, 0.3],
+      [-11.5, -2.8, 0.3],
       [-7.5, 2.8, -0.45],
       [-15.5, 4.2, 0.8],
     ];
@@ -307,47 +378,62 @@ export class StationsAndSummit {
       oar.rotation.x = Math.PI / 2;
       oar.position.set(0.28, 0.31, 0.15);
       boat.add(hull, gunwale, bench, oar);
-      boat.position.set(LAKE_PIER_POS.x + ox, LAKE_WATER_Y + 0.04, LAKE_PIER_POS.z + oz);
+      const bx = LAKE_PIER_POS.x + ox;
+      const bz = LAKE_PIER_POS.z + oz;
+      boat.position.set(bx, LAKE_WATER_Y + 0.04, bz);
       boat.rotation.y = ry;
       this.group.add(boat);
       this.boats.push({ mesh: boat, baseY: LAKE_WATER_Y + 0.04, phase: ox * 0.4 });
+      if (this.physics) {
+        this.physics.addOBB(bx, bz, ry, 1.25, 2.85, LAKE_WATER_Y - 0.3, LAKE_WATER_Y + 0.65, 'boat');
+      }
     }
   }
 
   _buildLookoutHut() {
     const m = this.mats;
-    const baseY = LOOKOUT_POS.y - 0.25;
-    const stoneBase = new THREE.Mesh(new THREE.CylinderGeometry(3.7, 4.0, 0.65, 8), m.stoneMid);
-    stoneBase.position.set(LOOKOUT_POS.x + 4.4, baseY - 0.1, LOOKOUT_POS.z);
-    const deck = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.6, 0.28, 8), m.timberMid);
-    deck.position.set(LOOKOUT_POS.x + 4.4, baseY + 0.26, LOOKOUT_POS.z);
+    const cx = LOOKOUT_POS.x + 4.4;
+    const cz = LOOKOUT_POS.z;
+    const baseY = heightAt(cx, cz);
+
+    const stoneBase = new THREE.Mesh(new THREE.CylinderGeometry(3.7, 4.0, 0.44, 8), m.stoneMid);
+    stoneBase.position.set(cx, baseY + 0.22, cz);
+    const deck = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.6, 0.26, 8), m.timberMid);
+    deck.position.set(cx, baseY + 0.57, cz);
+    const deckTop = baseY + 0.70;
     const rail = new THREE.Mesh(new THREE.TorusGeometry(3.2, 0.07, 6, 8), m.timberLight);
     rail.rotation.x = Math.PI / 2;
-    rail.position.set(LOOKOUT_POS.x + 4.4, baseY + 1.05, LOOKOUT_POS.z);
+    rail.position.set(cx, deckTop + 0.78, cz);
     const roof = new THREE.Mesh(new THREE.ConeGeometry(3.7, 1.9, 8), m.timberDark);
-    roof.position.set(LOOKOUT_POS.x + 4.4, baseY + 3.5, LOOKOUT_POS.z);
+    roof.position.set(cx, deckTop + 3.25, cz);
     this.group.add(stoneBase, deck, rail, roof);
 
     for (let i = 0; i < 4; i++) {
       const a = (i / 4) * Math.PI * 2 + 0.4;
+      const px = cx + Math.cos(a) * 2.5;
+      const pz = cz + Math.sin(a) * 2.5;
       const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 2.5, 8), m.timberDark);
-      post.position.set(
-        LOOKOUT_POS.x + 4.4 + Math.cos(a) * 2.5,
-        baseY + 1.45,
-        LOOKOUT_POS.z + Math.sin(a) * 2.5
-      );
+      post.position.set(px, deckTop + 1.25, pz);
       this.group.add(post);
+      if (this.physics) {
+        this.physics.addCylinder(px, pz, 0.14, deckTop, deckTop + 2.5, 'post');
+      }
     }
-    this._makeBench(LOOKOUT_POS.x + 4.4, baseY + 0.38, LOOKOUT_POS.z + 1.2, 0);
-    this._makeLantern(LOOKOUT_POS.x + 1.8, baseY + 0.2, LOOKOUT_POS.z + 2.5);
-    this._makeFlag(LOOKOUT_POS.x + 4.4, baseY, LOOKOUT_POS.z - 3.2);
+    this._makeBench(cx, deckTop, cz + 1.2, 0);
+    this._makeLantern(cx - 2.4, deckTop, cz + 1.6);
+    this._makeFlag(cx, deckTop, cz - 2.6);
+
+    if (this.physics) {
+      this.physics.addDeckCircle(cx, cz, 3.4, deckTop, 0.85);
+      this.physics.addCylinder(cx, cz, 3.7, deckTop + 2.3, deckTop + 4.3, 'roof');
+    }
   }
 
   _buildCloudSummitStation() {
     const m = this.mats;
     const sy = SUMMIT_POS.y - 0.25;
+    const terraceTop = sy + 0.40;
 
-    // 1. Stone Terrace & Retaining Foundation perched above the layered cloud sea
     const terraceStoneMat = m.stoneMid.clone();
     terraceStoneMat.map = m.stoneMid.map.clone();
     terraceStoneMat.map.repeat.set(8, 2);
@@ -356,10 +442,17 @@ export class StationsAndSummit {
     terraceStoneMat.bumpMap.repeat.set(8, 2);
     terraceStoneMat.bumpMap.needsUpdate = true;
 
-    const terraceBase = new THREE.Mesh(new THREE.BoxGeometry(24.0, 2.6, 14.0), terraceStoneMat);
-    terraceBase.position.set(SUMMIT_POS.x + 2.0, sy - 1.0, SUMMIT_POS.z - 5.2);
-    terraceBase.receiveShadow = true;
-    this.group.add(terraceBase);
+    // 1. Stone Terrace Slab seated flush on the Summit Plateau (y = 75.75 .. 76.15)
+    const terraceSlab = new THREE.Mesh(new THREE.BoxGeometry(24.0, 0.4, 11.6), terraceStoneMat);
+    terraceSlab.position.set(SUMMIT_POS.x + 2.0, sy + 0.2, SUMMIT_POS.z - 6.8);
+    terraceSlab.receiveShadow = true;
+    this.group.add(terraceSlab);
+
+    // Northern cliff retaining fascia ONLY along the northern drop-off edge (z < -406.2)
+    const cliffWall = new THREE.Mesh(new THREE.BoxGeometry(24.0, 2.6, 1.6), terraceStoneMat);
+    cliffWall.position.set(SUMMIT_POS.x + 2.0, sy - 0.9, SUMMIT_POS.z - 12.0);
+    cliffWall.receiveShadow = true;
+    this.group.add(cliffWall);
 
     const platMat = m.stoneLight.clone();
     platMat.map = m.stoneLight.map.clone();
@@ -369,38 +462,47 @@ export class StationsAndSummit {
     platMat.bumpMap.repeat.set(8, 3);
     platMat.bumpMap.needsUpdate = true;
 
-    const plat = new THREE.Mesh(new THREE.BoxGeometry(22.0, 0.55, 8.2), platMat);
-    plat.position.set(SUMMIT_POS.x + 2.5, sy + 0.12, SUMMIT_POS.z - 3.8);
+    // Upper arrival paving slab clear of track sleepers (z <= -396.0)
+    const plat = new THREE.Mesh(new THREE.BoxGeometry(22.0, 0.22, 6.0), platMat);
+    plat.position.set(SUMMIT_POS.x + 2.0, terraceTop - 0.1, SUMMIT_POS.z - 4.0);
     plat.receiveShadow = true;
     this.group.add(plat);
 
-    // Low stone & timber edge balustrade along the northern overlook toward the cloud sea
-    for (let bx = -7.5; bx <= 12.5; bx += 2.5) {
+    if (this.physics) {
+      this.physics.addDeckOBB(SUMMIT_POS.x + 2.0, SUMMIT_POS.z - 6.8, 0, 24.0, 11.6, terraceTop, 1.0);
+    }
+
+    // Low stone & timber edge balustrade along the open northern overlook east of the station house
+    const balZ = SUMMIT_POS.z - 12.35;
+    for (let bx = 3.5; bx <= 12.5; bx += 2.25) {
       const post = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.72, 0.24), m.stoneMid);
-      post.position.set(SUMMIT_POS.x + bx, sy + 0.72, SUMMIT_POS.z - 7.75);
+      post.position.set(SUMMIT_POS.x + bx, terraceTop + 0.36, balZ);
       this.group.add(post);
     }
-    const topRail = new THREE.Mesh(new THREE.BoxGeometry(20.4, 0.1, 0.14), m.timberLight);
-    topRail.position.set(SUMMIT_POS.x + 2.5, sy + 1.08, SUMMIT_POS.z - 7.75);
+    const topRail = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.1, 0.14), m.timberLight);
+    topRail.position.set(SUMMIT_POS.x + 8.0, terraceTop + 0.72, balZ);
     this.group.add(topRail);
+    if (this.physics) {
+      this.physics.addOBB(SUMMIT_POS.x + 8.0, balZ, 0, 9.4, 0.3, terraceTop, terraceTop + 0.9, 'fence');
+    }
 
-    // 2. White Snow-Trimmed Alpine Cloud Station House (placed left-of-center so the backlit cloud sea opens wide!)
+    // 2. White Snow-Trimmed Alpine Cloud Station House seated flush on terraceTop
     const station = new THREE.Group();
-    const plinth = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.55, 5.2), m.stoneMid);
-    plinth.position.y = 0.28;
-    const body = new THREE.Mesh(new THREE.BoxGeometry(8.8, 3.6, 4.8), m.plaster);
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.55, 4.8), m.stoneMid);
+    plinth.position.y = 0.275;
+    const body = new THREE.Mesh(new THREE.BoxGeometry(8.8, 3.6, 4.4), m.plaster);
     body.position.y = 1.9;
     body.castShadow = true;
     body.receiveShadow = true;
     station.add(plinth, body);
 
-    const timberBand = new THREE.Mesh(new THREE.BoxGeometry(9.0, 1.45, 5.0), m.timberMid);
+    const timberBand = new THREE.Mesh(new THREE.BoxGeometry(9.0, 1.45, 4.6), m.timberMid);
     timberBand.position.y = 3.0;
     station.add(timberBand);
 
     for (const side of [-1, 1]) {
-      const roof = new THREE.Mesh(new THREE.BoxGeometry(10.6, 0.28, 3.6), m.snowRoof);
-      roof.position.set(0, 4.5, side * 1.38);
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(10.6, 0.28, 3.4), m.snowRoof);
+      roof.position.set(0, 4.5, side * 1.3);
       roof.rotation.x = side * 0.42;
       roof.castShadow = true;
       station.add(roof);
@@ -410,7 +512,9 @@ export class StationsAndSummit {
     chim.position.set(-2.9, 6.0, -0.7);
     chim.castShadow = true;
     station.add(chim);
-    this.summitChimneyTip = new THREE.Vector3(SUMMIT_POS.x - 1.5 - 2.9, sy + 8.1, SUMMIT_POS.z - 9.2 - 0.7);
+    const stX = SUMMIT_POS.x - 1.5;
+    const stZ = SUMMIT_POS.z - 9.4;
+    this.summitChimneyTip = new THREE.Vector3(stX - 2.9, terraceTop + 7.8, stZ - 0.7);
 
     const cupola = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.68, 1.35, 8), m.lanternGlow);
     cupola.position.set(0, 5.7, 0);
@@ -419,57 +523,70 @@ export class StationsAndSummit {
     station.add(cupola, cupolaRoof);
 
     const door = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.9, 0.16), m.cobalt);
-    door.position.set(0, 1.2, 2.46);
+    door.position.set(0, 1.2, 2.26);
     station.add(door);
 
     for (const wx of [-2.9, -1.45, 1.45, 2.9]) {
       const winFrame = new THREE.Mesh(new THREE.BoxGeometry(0.98, 1.04, 0.14), m.timberDark);
-      winFrame.position.set(wx, 1.92, 2.44);
+      winFrame.position.set(wx, 1.92, 2.24);
       const win = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.88, 0.16), m.lanternGlow);
-      win.position.set(wx, 1.92, 2.46);
+      win.position.set(wx, 1.92, 2.26);
       const mV = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.9, 0.18), m.timberLight);
-      mV.position.set(wx, 1.92, 2.47);
+      mV.position.set(wx, 1.92, 2.27);
       const mH = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.055, 0.18), m.timberLight);
-      mH.position.set(wx, 1.92, 2.47);
+      mH.position.set(wx, 1.92, 2.27);
       const box = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.2, 0.24), m.mustard);
-      box.position.set(wx, 1.32, 2.54);
+      box.position.set(wx, 1.32, 2.34);
       station.add(winFrame, win, mV, mH, box);
     }
 
-    station.position.set(SUMMIT_POS.x - 1.5, sy + 0.3, SUMMIT_POS.z - 9.2);
+    station.position.set(stX, terraceTop, stZ);
     this.group.add(station);
+    if (this.physics) {
+      this.physics.addOBB(stX, stZ, 0, 9.2, 4.8, terraceTop, terraceTop + 6.0, 'station');
+    }
 
-    // Platform Warm Lanterns, Wooden Benches & Cobalt-Mustard Flags
-    this._makeLantern(SUMMIT_POS.x - 6.8, sy + 0.35, SUMMIT_POS.z - 2.8);
-    this._makeLantern(SUMMIT_POS.x + 6.5, sy + 0.35, SUMMIT_POS.z - 2.8);
-    this._makeLantern(SUMMIT_POS.x + 11.5, sy + 0.35, SUMMIT_POS.z - 2.8);
-    this._makeBench(SUMMIT_POS.x + 5.8, sy + 0.38, SUMMIT_POS.z - 5.2, 0);
-    this._makeBench(SUMMIT_POS.x - 1.8, sy + 0.38, SUMMIT_POS.z - 5.2, 0);
-    this._makeFlag(SUMMIT_POS.x - 7.5, sy + 0.35, SUMMIT_POS.z - 6.2);
-    this._makeFlag(SUMMIT_POS.x + 11.8, sy + 0.35, SUMMIT_POS.z - 6.2);
+    // Platform Warm Lanterns, Wooden Benches & Cobalt-Mustard Flags seated flush on terraceTop
+    this._makeLantern(SUMMIT_POS.x - 6.8, terraceTop, SUMMIT_POS.z - 2.8);
+    this._makeLantern(SUMMIT_POS.x + 6.5, terraceTop, SUMMIT_POS.z - 2.8);
+    this._makeLantern(SUMMIT_POS.x + 11.5, terraceTop, SUMMIT_POS.z - 2.8);
+    this._makeBench(SUMMIT_POS.x + 5.8, terraceTop, SUMMIT_POS.z - 5.2, 0);
+    this._makeBench(SUMMIT_POS.x - 1.8, terraceTop, SUMMIT_POS.z - 5.2, 0);
+    this._makeFlag(SUMMIT_POS.x - 7.5, terraceTop, SUMMIT_POS.z - 6.2);
+    this._makeFlag(SUMMIT_POS.x + 11.8, terraceTop, SUMMIT_POS.z - 6.2);
 
+    // Track end buffer stop seated cleanly on track deck at (33.2, 76.0, -393.0)
     const buf = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.95, 0.6), m.mustard);
-    buf.position.set(33.2, SUMMIT_POS.y + 0.45, -393.0);
+    buf.position.set(33.4, SUMMIT_POS.y + 0.475, -393.0);
     this.group.add(buf);
+    if (this.physics) {
+      this.physics.addOBB(33.4, -393.0, 0, 1.9, 0.6, SUMMIT_POS.y, SUMMIT_POS.y + 0.95, 'buffer');
+    }
 
-    // 3. Greeting Puppy's Family on the Summit Arrival Platform
+    // 3. Greeting Puppy's Family on the Summit Arrival Platform (all seated flush on terraceTop)
     const mother = new MountainDog(m, { scale: 1.55, hasBell: true });
-    mother.pos.set(SUMMIT_POS.x + 3.8, sy + 0.4, SUMMIT_POS.z - 3.6);
+    mother.pos.set(SUMMIT_POS.x + 3.8, terraceTop, SUMMIT_POS.z - 3.6);
     mother.yaw = -0.85;
     this.group.add(mother.group);
     this.familyDogs.push({ dog: mother, phase: 0 });
 
     const sib1 = new MountainDog(m, { scale: 0.92, hasBell: true });
-    sib1.pos.set(SUMMIT_POS.x + 2.5, sy + 0.4, SUMMIT_POS.z - 4.3);
+    sib1.pos.set(SUMMIT_POS.x + 2.5, terraceTop, SUMMIT_POS.z - 4.3);
     sib1.yaw = -0.55;
     this.group.add(sib1.group);
     this.familyDogs.push({ dog: sib1, phase: 1.7 });
 
     const sib2 = new MountainDog(m, { scale: 0.88, hasBell: false });
-    sib2.pos.set(SUMMIT_POS.x + 4.7, sy + 0.4, SUMMIT_POS.z - 4.4);
+    sib2.pos.set(SUMMIT_POS.x + 4.7, terraceTop, SUMMIT_POS.z - 4.4);
     sib2.yaw = -1.1;
     this.group.add(sib2.group);
     this.familyDogs.push({ dog: sib2, phase: 3.1 });
+
+    if (this.physics) {
+      this.physics.addCylinder(mother.pos.x, mother.pos.z, 0.45, terraceTop, terraceTop + 1.0, 'dog');
+      this.physics.addCylinder(sib1.pos.x, sib1.pos.z, 0.3, terraceTop, terraceTop + 0.7, 'dog');
+      this.physics.addCylinder(sib2.pos.x, sib2.pos.z, 0.3, terraceTop, terraceTop + 0.7, 'dog');
+    }
   }
 
   update(dt, time, arrivedAtSummit) {

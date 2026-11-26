@@ -11,6 +11,7 @@ import {
 import { clamp, lerp, smoothstep, wrapAngle } from '../core/math.js';
 import { fitShot } from '../core/camera.js';
 import { getGroundY, getLandInfo } from '../world/terrain.js';
+import { resolveBoatPhysics, resolveGirlPhysics } from '../world/colliders.js';
 import { getSeaWaveHeight } from '../world/sea.js';
 
 const _ray = new THREE.Raycaster();
@@ -92,7 +93,7 @@ export class Director {
     this.girl.setShellCarried(false);
 
     this.boat.pos.copy(HARBOR_BOAT_POS);
-    this.boat.yaw = -0.32;
+    this.boat.yaw = -0.05;
     this.boat.speed = 0;
 
     this.lastProgressPos.copy(this.girl.pos);
@@ -333,8 +334,8 @@ export class Director {
   _updateHarbor(dt, isAutoTest) {
     this._setMoment('harbor');
     if (this.phase === 'walkToShell' || this.phase === 'walkToShellThenBoard') {
-      const targetX = SHELL_MAP_POS.x - 0.55;
-      const targetZ = SHELL_MAP_POS.z - 0.55;
+      const targetX = SHELL_MAP_POS.x - 1.02;
+      const targetZ = SHELL_MAP_POS.z - 0.85;
       const dx = targetX - this.girl.pos.x;
       const dz = targetZ - this.girl.pos.z;
       const d = Math.hypot(dx, dz);
@@ -344,7 +345,6 @@ export class Director {
         const step = Math.min(d, dt * 2.7);
         this.girl.pos.x += (dx / d) * step;
         this.girl.pos.z += (dz / d) * step;
-        this.girl.pos.y = getGroundY(this.girl.pos.x, this.girl.pos.z);
       } else {
         this.girl.isWalking = false;
         this.girl.yaw = Math.atan2(SHELL_MAP_POS.x - this.girl.pos.x, SHELL_MAP_POS.z - this.girl.pos.z);
@@ -363,23 +363,56 @@ export class Director {
     } else if (!isAutoTest && this.stateT > 20) {
       this.pickUpShellAndMaybeBoard(true);
     }
+    resolveGirlPhysics(this.girl, 'harbor', this.boat, false);
+    resolveBoatPhysics(this.boat, dt, this.time, 0);
   }
 
   _updateBoard(dt) {
     this._setMoment('board');
     if (this.phase === 'walkJetty') {
       const seat = this.boat.getSeatWorldPos(_v);
-      const dx = seat.x - this.girl.pos.x;
-      const dz = seat.z - this.girl.pos.z;
+      let wpX = seat.x;
+      let wpZ = seat.z;
+      let steppingAboard = true;
+
+      // Harbor boarding follows the quay -> jetty -> boat cockpit path cleanly around pedestal & water
+      if (this.girl.pos.z < -95) {
+        if (this.girl.pos.z < -114.6 && Math.abs(this.girl.pos.x - 3.8) > 1.0) {
+          wpX = 3.8;
+          wpZ = -115.6;
+          steppingAboard = false;
+        } else if (this.girl.pos.z < -109.6 && this.girl.pos.x < 5.6) {
+          wpX = 3.8;
+          wpZ = -109.0;
+          steppingAboard = false;
+        }
+      } else if (this.currentIsland) {
+        const wl = this.currentIsland.walkLanding;
+        const dToBoat = Math.hypot(seat.x - this.girl.pos.x, seat.z - this.girl.pos.z);
+        if (dToBoat > 4.0) {
+          wpX = wl.x;
+          wpZ = wl.z;
+          steppingAboard = false;
+        }
+      }
+
+      const dx = wpX - this.girl.pos.x;
+      const dz = wpZ - this.girl.pos.z;
       const d = Math.hypot(dx, dz);
-      if (d > 0.35 && this.phaseT < 3.2) {
+      const seatDist = Math.hypot(seat.x - this.girl.pos.x, seat.z - this.girl.pos.z);
+
+      if (seatDist > 0.42 && this.phaseT < 4.5) {
         this.girl.isWalking = true;
-        this.girl.yaw = Math.atan2(dx, dz);
-        const step = Math.min(d, dt * 3.1);
-        this.girl.pos.x += (dx / d) * step;
-        this.girl.pos.z += (dz / d) * step;
-        const gy = getGroundY(this.girl.pos.x, this.girl.pos.z);
-        this.girl.pos.y = Math.max(seat.y - 0.15, gy);
+        if (d > 0.05) {
+          this.girl.yaw = Math.atan2(dx, dz);
+          const step = Math.min(d, dt * 3.3);
+          this.girl.pos.x += (dx / d) * step;
+          this.girl.pos.z += (dz / d) * step;
+        }
+        resolveGirlPhysics(this.girl, 'board', this.boat, steppingAboard);
+        if (steppingAboard) {
+          this.girl.pos.y = Math.max(seat.y - 0.12, getGroundY(this.girl.pos.x, this.girl.pos.z));
+        }
       } else {
         this.girl.isWalking = false;
         this.girl.isSeated = true;
@@ -388,13 +421,16 @@ export class Director {
         this.phase = 'castOff';
         this.phaseT = 0;
       }
+      resolveBoatPhysics(this.boat, dt, this.time, 0);
     } else if (this.phase === 'castOff') {
-      const desiredYaw = this.boat.pos.z < -90 ? -0.35 : wrapAngle(Math.atan2(PAVILION_DOCK_POS.x - this.boat.pos.x, PAVILION_DOCK_POS.z - this.boat.pos.z));
-      this.boat.yaw += wrapAngle(desiredYaw - this.boat.yaw) * Math.min(1, dt * 2.2);
+      const desiredYaw = this.boat.pos.z < -90
+        ? wrapAngle(Math.atan2(-2.5 - this.boat.pos.x, -92.0 - this.boat.pos.z))
+        : wrapAngle(Math.atan2(PAVILION_DOCK_POS.x - this.boat.pos.x, PAVILION_DOCK_POS.z - this.boat.pos.z));
+      this.boat.yaw += wrapAngle(desiredYaw - this.boat.yaw) * Math.min(1, dt * 2.4);
       this.boat.speed = lerp(this.boat.speed, 6.8, Math.min(1, dt * 2.4));
       this.boat.pos.x += Math.sin(this.boat.yaw) * this.boat.speed * dt;
       this.boat.pos.z += Math.cos(this.boat.yaw) * this.boat.speed * dt;
-      this.boat.pos.y = getSeaWaveHeight(this.boat.pos.x, this.boat.pos.z, this.time);
+      resolveBoatPhysics(this.boat, dt, this.time, 0);
 
       this.girl.pos.copy(this.boat.getSeatWorldPos(_v));
       this.girl.yaw = this.boat.yaw;
@@ -475,38 +511,9 @@ export class Director {
       return;
     }
 
-    // Soft shoreline / reef deflection
-    const land = getLandInfo(nextX, nextZ);
-    if (land.y > -0.15) {
-      let repulseX = 0;
-      let repulseZ = 1;
-      if (nextZ < -102) {
-        repulseX = 0;
-        repulseZ = 1;
-      } else {
-        for (const isl of ISLANDS) {
-          const d = Math.hypot(nextX - isl.center.x, nextZ - isl.center.z);
-          if (d < isl.radius + 5) {
-            repulseX = (nextX - isl.center.x) / Math.max(0.1, d);
-            repulseZ = (nextZ - isl.center.z) / Math.max(0.1, d);
-          }
-        }
-        for (const rf of REEFS) {
-          const d = Math.hypot(nextX - rf.x, nextZ - rf.z);
-          if (d < rf.r + 4) {
-            repulseX = (nextX - rf.x) / Math.max(0.1, d);
-            repulseZ = (nextZ - rf.z) / Math.max(0.1, d);
-          }
-        }
-      }
-      nextX += repulseX * 0.6;
-      nextZ += repulseZ * 0.6;
-      this.boat.yaw = wrapAngle(this.boat.yaw + 0.55 * dt);
-    }
-
     this.boat.pos.x = nextX;
     this.boat.pos.z = nextZ;
-    this.boat.pos.y = getSeaWaveHeight(nextX, nextZ, t);
+    resolveBoatPhysics(this.boat, dt, t, this.targetSteerX);
 
     this.girl.isSeated = true;
     this.girl.pos.copy(this.boat.getSeatWorldPos(_v));
@@ -537,9 +544,9 @@ export class Director {
     const dockYaw = this.currentIsland.dockYaw;
     this.boat.pos.x = lerp(this.boat.pos.x, dp.x, Math.min(1, dt * 2.5));
     this.boat.pos.z = lerp(this.boat.pos.z, dp.z, Math.min(1, dt * 2.5));
-    this.boat.pos.y = getSeaWaveHeight(this.boat.pos.x, this.boat.pos.z, t);
     this.boat.yaw += wrapAngle(dockYaw - this.boat.yaw) * Math.min(1, dt * 3.0);
     this.boat.speed *= Math.pow(0.05, dt);
+    resolveBoatPhysics(this.boat, dt, t, 0);
 
     this.girl.pos.copy(this.boat.getSeatWorldPos(_v));
     this.girl.yaw = this.boat.yaw;
@@ -550,6 +557,7 @@ export class Director {
       this.girl.isSeated = false;
       this.girl.pos.copy(this.currentIsland.walkLanding);
       this.girl.pos.y = getGroundY(this.girl.pos.x, this.girl.pos.z);
+      resolveGirlPhysics(this.girl, 'walk', this.boat, false);
       this.walkTarget = null;
       this.reboardWalk = false;
     }
@@ -578,14 +586,15 @@ export class Director {
       const dz = this.walkTarget.z - this.girl.pos.z;
       const d = Math.hypot(dx, dz);
       if (d > 0.25) {
-        const nx = this.girl.pos.x + (dx / d) * Math.min(d, dt * 3.6);
-        const nz = this.girl.pos.z + (dz / d) * Math.min(d, dt * 3.6);
-        const info = getLandInfo(nx, nz);
-        if (info.y >= 0.22) {
-          this.girl.pos.x = nx;
-          this.girl.pos.z = nz;
-          this.girl.pos.y = info.y;
-          this.girl.yaw = Math.atan2(dx, dz);
+        const prevX = this.girl.pos.x;
+        const prevZ = this.girl.pos.z;
+        const step = Math.min(d, dt * 3.6);
+        this.girl.pos.x += (dx / d) * step;
+        this.girl.pos.z += (dz / d) * step;
+        resolveGirlPhysics(this.girl, 'walk', this.boat, false);
+        const moved = Math.hypot(this.girl.pos.x - prevX, this.girl.pos.z - prevZ);
+        if (moved > 0.004) {
+          this.girl.yaw = Math.atan2(this.girl.pos.x - prevX, this.girl.pos.z - prevZ);
           this.girl.isWalking = true;
         } else {
           this.girl.isWalking = false;
@@ -603,20 +612,22 @@ export class Director {
       }
     } else {
       this.girl.isWalking = false;
+      resolveGirlPhysics(this.girl, 'walk', this.boat, false);
     }
 
-    this.boat.pos.y = getSeaWaveHeight(this.boat.pos.x, this.boat.pos.z, t);
+    resolveBoatPhysics(this.boat, dt, t, 0);
   }
 
   _updateFloat(dt, t) {
     this._setMoment('float');
+    resolveBoatPhysics(this.boat, dt, t, 0);
     const seat = this.boat.getSeatWorldPos(_v);
-    this.boat.pos.y = getSeaWaveHeight(this.boat.pos.x, this.boat.pos.z, t);
     this.boat.speed *= Math.pow(0.15, dt);
 
     if (this.phase === 'ascend') {
       this.girl.pos.y = lerp(this.girl.pos.y, this.floatPeakY, Math.min(1, dt * 3.8));
       this.girl.yaw = wrapAngle(this.girl.yaw + dt * 0.45);
+      resolveGirlPhysics(this.girl, 'float', null, false);
       if (this.phaseT > 0.72 || Math.abs(this.floatPeakY - this.girl.pos.y) < 0.25) {
         this.phase = 'descend';
         this.phaseT = 0;
@@ -634,6 +645,7 @@ export class Director {
     if (dy > 0.18) {
       this.girl.pos.y -= Math.min(dy, dt * 1.15);
       this.girl.yaw = wrapAngle(this.girl.yaw + dt * 0.45);
+      resolveGirlPhysics(this.girl, 'float', null, false);
     } else {
       this.girl.isFloating = false;
       this.girl.isSeated = true;
@@ -650,9 +662,9 @@ export class Director {
     if (this.phase === 'glideIn') {
       this.boat.pos.x = lerp(this.boat.pos.x, PAVILION_DOCK_POS.x, Math.min(1, dt * 2.4));
       this.boat.pos.z = lerp(this.boat.pos.z, PAVILION_DOCK_POS.z, Math.min(1, dt * 2.4));
-      this.boat.pos.y = getSeaWaveHeight(this.boat.pos.x, this.boat.pos.z, t);
-      this.boat.yaw += wrapAngle(0.98 - this.boat.yaw) * Math.min(1, dt * 2.8);
+      this.boat.yaw += wrapAngle(0.76 - this.boat.yaw) * Math.min(1, dt * 2.8);
       this.boat.speed *= Math.pow(0.08, dt);
+      resolveBoatPhysics(this.boat, dt, t, 0);
 
       this.girl.isSeated = true;
       this.girl.pos.copy(this.boat.getSeatWorldPos(_v));
@@ -663,7 +675,7 @@ export class Director {
         this.phase = 'stepAshore';
         this.phaseT = 0;
         this.girl.isSeated = false;
-        this.girl.pos.set(-1.55, 0.98, 180.6);
+        this.girl.pos.set(-1.55, getGroundY(-1.55, 179.8), 179.8);
       }
     } else if (this.phase === 'stepAshore') {
       const targetX = -0.25;
@@ -677,17 +689,18 @@ export class Director {
         const step = Math.min(d, dt * 2.6);
         this.girl.pos.x += (dx / d) * step;
         this.girl.pos.z += (dz / d) * step;
-        this.girl.pos.y = Math.max(1.07, getGroundY(this.girl.pos.x, this.girl.pos.z));
       } else {
         this.girl.isWalking = false;
         this.girl.yaw = Math.atan2(WELCOMER_POS.x - this.girl.pos.x, WELCOMER_POS.z - this.girl.pos.z);
         this.phase = 'reunion';
         this.phaseT = 0;
       }
-      this.boat.pos.y = getSeaWaveHeight(this.boat.pos.x, this.boat.pos.z, t);
+      resolveGirlPhysics(this.girl, 'stars', this.boat, false);
+      resolveBoatPhysics(this.boat, dt, t, 0);
     } else {
       this.girl.isWalking = false;
-      this.boat.pos.y = getSeaWaveHeight(this.boat.pos.x, this.boat.pos.z, t);
+      resolveGirlPhysics(this.girl, 'stars', this.boat, false);
+      resolveBoatPhysics(this.boat, dt, t, 0);
     }
   }
 
