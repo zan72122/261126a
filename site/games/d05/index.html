@@ -1,0 +1,2021 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>Coral Light Sea</title>
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#204a6e;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+canvas{display:block;position:fixed;left:0;top:0;width:100%;height:100%;touch-action:none;outline:none;-webkit-user-select:none;user-select:none}
+#veil{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 30%,#3d86a8 0%,#235d84 55%,#173f66 100%);pointer-events:none;transition:opacity 1.4s ease;z-index:2}
+</style>
+<script>
+window.__ready = false;
+window.__errors = [];
+(function () {
+  function push(m) { try { if (window.__errors.length < 50) window.__errors.push(String(m)); } catch (_) {} }
+  window.addEventListener('error', function (e) {
+    if (e && e.target && e.target !== window && (e.target.src || e.target.href)) { push('resource: ' + (e.target.src || e.target.href)); return; }
+    push((e && (e.message || (e.error && e.error.message))) + ' @' + (e && e.filename) + ':' + (e && e.lineno));
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) { push('unhandledrejection: ' + (e && e.reason && (e.reason.message || e.reason))); });
+})();
+</script>
+<script type="importmap">{"imports":{"three":"../../vendor/three/build/three.module.min.js","three/addons/":"../../vendor/three/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="veil"></div>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+try {
+
+// ============================================================ params
+const QS = new URLSearchParams(location.search);
+const AUTOTEST = QS.has('autotest');
+const FORCED = ['low', 'mid', 'high'].includes(QS.get('q')) ? QS.get('q') : null;
+const SKIP = Math.max(0, Math.min(19, parseInt(QS.get('skip') || '0', 10) || 0));
+const TS = parseFloat(QS.get('ts')) > 0 ? Math.min(4, parseFloat(QS.get('ts'))) : AUTOTEST ? 3.0 : 1.0;
+const DEBUG = AUTOTEST || QS.has('debug');
+const log = (...a) => { if (DEBUG) console.log('[d05]', ...a); };
+
+// ============================================================ math helpers
+const V3 = THREE.Vector3, UP = new V3(0, 1, 0), XA = new V3(1, 0, 0);
+const clamp = (x, a, b) => x < a ? a : x > b ? b : x;
+const lerp = (a, b, t) => a + (b - a) * t;
+const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeS = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
+const angDiff = (a, b) => { let d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; };
+const damp = (dt, tau) => 1 - Math.exp(-dt / Math.max(tau, 1e-4));
+function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const PERM = new Uint8Array(512);
+{ const r = mulberry(77); const p = []; for (let i = 0; i < 256; i++) p.push(i); for (let i = 255; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = p[i]; p[i] = p[j]; p[j] = t; } for (let i = 0; i < 512; i++) PERM[i] = p[i & 255]; }
+function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+function grd(h, x, y, z) { h &= 15; const u = h < 8 ? x : y, v = h < 4 ? y : (h === 12 || h === 14 ? x : z); return ((h & 1) ? -u : u) + ((h & 2) ? -v : v); }
+function noise(x, y, z) {
+  const fx = Math.floor(x), fy = Math.floor(y), fz = Math.floor(z);
+  const X = fx & 255, Y = fy & 255, Z = fz & 255; x -= fx; y -= fy; z -= fz;
+  const u = fade(x), v = fade(y), w = fade(z), P = PERM;
+  const A = P[X] + Y, AA = P[A] + Z, AB = P[A + 1] + Z, B = P[X + 1] + Y, BA = P[B] + Z, BB = P[B + 1] + Z;
+  return lerp(lerp(lerp(grd(P[AA], x, y, z), grd(P[BA], x - 1, y, z), u), lerp(grd(P[AB], x, y - 1, z), grd(P[BB], x - 1, y - 1, z), u), v),
+    lerp(lerp(grd(P[AA + 1], x, y, z - 1), grd(P[BA + 1], x - 1, y, z - 1), u), lerp(grd(P[AB + 1], x, y - 1, z - 1), grd(P[BB + 1], x - 1, y - 1, z - 1), u), v), w);
+}
+function perp(d, ang, out) {
+  const a = Math.abs(d.y) < 0.9 ? UP : XA;
+  const u = new V3().crossVectors(d, a).normalize(), v = new V3().crossVectors(d, u);
+  return (out || new V3()).copy(u).multiplyScalar(Math.cos(ang)).addScaledVector(v, Math.sin(ang));
+}
+const col = h => new THREE.Color(h);
+
+// ============================================================ quality
+const QP = {
+  low:  { pr: 1.0,  shadow: 0,    bloom: 0,    snow: 160, fish: 36,  bub: 24, lights: 1, grass: 360,  det: 0 },
+  mid:  { pr: 1.25, shadow: 1024, bloom: 0.33, snow: 400, fish: 72,  bub: 45, lights: 2, grass: 800,  det: 1 },
+  high: { pr: 1.75, shadow: 2048, bloom: 0.5,  snow: 800, fish: 120, bub: 80, lights: 4, grass: 1500, det: 2 }
+};
+const QORDER = ['low', 'mid', 'high'];
+const QM = { cur: FORCED || 'mid', forced: !!FORCED, times: [], t: 0, lastChange: 0, cool: 2.5 };
+const DET = QP[QM.cur].det;
+
+// ============================================================ stage table
+const ST = {
+  sky:   ['#FFC49A', '#F3A7BA', '#9CA9E8', '#5366AB'].map(col),
+  zen:   ['#7487BC', '#6F70B0', '#3E4B90', '#1B275C'].map(col),
+  water: ['#286D91', '#216C9F', '#3054A0', '#36499B'].map(col),
+  top:   ['#FFE5C5', '#FFD5DB', '#CADFFF', '#D9E9FF'].map(col),
+  dirI:  [2.0, 1.7, 1.5, 1.7],
+  hemI:  [1.3, 1.4, 1.5, 1.6],
+  fogN:  [9, 10, 12, 13],
+  fogF:  [42, 45, 50, 55],
+  bloom: [0.25, 0.40, 0.55, 0.70],
+  night: [0.0, 0.22, 0.62, 1.0]
+};
+function stageLerpC(arr, p, out) { const i = Math.min(2, Math.floor(p)), f = clamp(p - i, 0, 1); return out.copy(arr[i]).lerp(arr[i + 1], f); }
+function stageLerp(arr, p) { const i = Math.min(2, Math.floor(p)), f = clamp(p - i, 0, 1); return lerp(arr[i], arr[i + 1], f); }
+
+const C_SLEEP = col('#899DA6');
+const C_PINK = col('#FF62C5'), C_EME = col('#42F5B1'), C_AQUA = col('#39CFFF'), C_PURP = col('#AC79FF'), C_GOLD = col('#FFDC8C'), C_TIP = col('#F4FCFF'), C_BUB = col('#BDF5FF');
+const PALETTE = [C_PINK, C_AQUA, C_EME, C_PURP, C_GOLD];
+
+// ============================================================ renderer / scene
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, QP[QM.cur].pr));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+document.body.appendChild(renderer.domElement);
+renderer.domElement.addEventListener('webglcontextlost', e => { e.preventDefault(); window.__errors.push('webglcontextlost'); });
+
+const scene = new THREE.Scene();
+scene.background = null;
+const camera = new THREE.PerspectiveCamera(47, window.innerWidth / window.innerHeight, 0.1, 150);
+camera.position.set(0, -15, 20);
+scene.add(camera);
+
+const hemi = new THREE.HemisphereLight(0xffe5c5, 0x47616a, 1.3);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffe5c5, 2.0);
+sun.position.set(6, 30, 8);
+sun.shadow.camera.left = -11; sun.shadow.camera.right = 11; sun.shadow.camera.top = 11; sun.shadow.camera.bottom = -11;
+sun.shadow.camera.near = 1; sun.shadow.camera.far = 60; sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.03;
+scene.add(sun); scene.add(sun.target);
+const plights = [];
+for (let i = 0; i < 4; i++) { const l = new THREE.PointLight(0xffffff, 0, 11, 1.6); l.position.set(0, -100, 0); scene.add(l); plights.push({ l, target: null, i: 0, col: new THREE.Color() }); }
+
+// ============================================================ shared shader parts
+const U = {
+  uTime: { value: 0 },
+  uCausCol: { value: new THREE.Color('#FFE5C5') }, uCaus: { value: 1.0 },
+  uFogCol: { value: new THREE.Color('#286D91') }, uFogNear: { value: 9 }, uFogFar: { value: 42 },
+  uAbove: { value: 0 }, uAirFog: { value: new THREE.Color('#2b3a73') },
+  uWaveO: { value: -100 }, uWaveR: { value: 0 }, uWaveA: { value: 0 }, uWaveCol: { value: new THREE.Color('#FFDC8C') }, uWaveMulti: { value: 0 }
+};
+const GLSL_PAL = `
+vec3 palD05(float y){
+  float f = fract(y*0.075 + uTime*0.08)*5.0;
+  vec3 c0 = vec3(1.0,0.12,0.56), c1 = vec3(0.04,0.62,1.0), c2 = vec3(0.05,0.91,0.44), c3 = vec3(0.41,0.19,1.0), c4 = vec3(1.0,0.72,0.27);
+  if (f < 1.0) return mix(c0,c1,f); if (f < 2.0) return mix(c1,c2,f-1.0); if (f < 3.0) return mix(c2,c3,f-2.0); if (f < 4.0) return mix(c3,c4,f-3.0); return mix(c4,c0,f-4.0);
+}`;
+const F_COMMON = `
+uniform float uTime; uniform vec3 uCausCol; uniform float uCaus; uniform vec3 uFogCol; uniform float uFogNear; uniform float uFogFar;
+uniform float uAbove; uniform vec3 uAirFog;
+uniform float uWaveO; uniform float uWaveR; uniform float uWaveA; uniform vec3 uWaveCol; uniform float uWaveMulti;
+varying vec3 vWP; varying vec3 vWN;
+float causticD05(vec2 p, float t){
+  vec2 a = p*0.55 + vec2(t*0.18, t*0.12);
+  vec2 b = p*0.83 - vec2(t*0.11, -t*0.16);
+  a += 0.55*vec2(sin(a.y*1.7 + t*1.9), sin(a.x*1.5 - t*1.7));
+  b += 0.55*vec2(sin(b.y*1.3 - t*1.5), sin(b.x*1.8 + t*2.1));
+  float ca = 1.0 - abs(sin(a.x)*sin(a.y));
+  float cb = 1.0 - abs(sin(b.x)*sin(b.y));
+  return pow(ca, 9.0)*0.85 + pow(cb, 9.0)*0.6;
+}
+${GLSL_PAL}
+float fogGradD05(float dy){ return 1.0 + 0.22*smoothstep(0.05, 0.95, dy) - 0.22*smoothstep(-0.05, -0.9, dy); }
+vec3 waveTermD05(float tipW){
+  float dw = abs(abs(vWP.y - uWaveO) - uWaveR);
+  vec3 wc = uWaveMulti > 0.5 ? palD05(vWP.y) : uWaveCol;
+  return wc * exp(-dw*dw*0.35) * uWaveA * (0.2 + 1.3*tipW);
+}
+`;
+const V_WP = `
+{ vec4 wp4 = vec4(transformed, 1.0); vec3 on = objectNormal;
+#ifdef USE_INSTANCING
+  wp4 = instanceMatrix * wp4; on = mat3(instanceMatrix) * on;
+#endif
+  wp4 = modelMatrix * wp4; vWP = wp4.xyz; vWN = normalize(mat3(modelMatrix) * on); }
+`;
+const F_CAUS = `
+{
+  float cm = causticD05(vWP.xz + vWP.y*0.2, uTime);
+  float upn = clamp(vWN.y*0.8 + 0.2, 0.0, 1.0);
+  float dep = exp(min(vWP.y, 0.0)*0.035) * step(vWP.y, 0.0);
+  reflectedLight.directDiffuse += diffuseColor.rgb * uCausCol * (cm * uCaus * upn * dep);
+  reflectedLight.indirectDiffuse += diffuseColor.rgb * uFogCol * (0.75 - 0.35*uAbove);
+}
+`;
+const F_FOG = `
+{
+  float fd = length(vWP - cameraPosition);
+  vec3 fc = uFogCol * fogGradD05(normalize(vWP - cameraPosition).y); float ff;
+  if (uAbove < 0.5) { ff = pow(smoothstep(uFogNear*0.05, uFogFar, fd), 0.78); }
+  else if (vWP.y < 0.05) { float dep = max(-vWP.y, 0.0); ff = clamp(1.0 - exp(-dep*0.1 - fd*0.006), 0.0, 0.97); }
+  else { ff = smoothstep(40.0, 170.0, fd)*0.8; fc = uAirFog; }
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, fc, ff) + gE * ff * 0.55;
+}
+`;
+function patch(mat, key, ex) {
+  ex = ex || {};
+  mat.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, U, ex.uniforms || {});
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWP;\nvarying vec3 vWN;\nuniform float uTime;\n' + (ex.vHead || ''))
+      .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\n' + (ex.vNorm || ''))
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\n' + (ex.vMain || ''))
+      .replace('#include <project_vertex>', '#include <project_vertex>\n' + V_WP);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\n' + F_COMMON + (ex.fHead || ''))
+      .replace('#include <clipping_planes_fragment>', 'vec3 gE = vec3(0.0);\n#include <clipping_planes_fragment>')
+      .replace('#include <color_fragment>', '#include <color_fragment>\n' + (ex.fColor || ''))
+      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + (ex.fNormal || ''))
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n' + (ex.fEmis || '') + '\ntotalEmissiveRadiance += gE;')
+      .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n' + F_CAUS)
+      .replace('#include <tonemapping_fragment>', F_FOG + '\n#include <tonemapping_fragment>')
+      .replace('#include <fog_fragment>', '');
+  };
+  mat.customProgramCacheKey = () => 'd05-' + key;
+  return mat;
+}
+
+// ============================================================ geometry builder
+class GB {
+  constructor() { this.p = []; this.i = []; this.t = []; this.c = []; this.d = []; this.b = []; this.tips = []; this.col = [1, 1, 1]; this.dl = 0; this.base = [0, 0, 0]; }
+  get n() { return this.p.length / 3; }
+  v(x, y, z, t) { this.p.push(x, y, z); this.t.push(t); this.c.push(this.col[0], this.col[1], this.col[2]); this.d.push(this.dl); this.b.push(this.base[0], this.base[1], this.base[2]); return this.n - 1; }
+  strip(r0, r1, seg, cx, cy, cz) {
+    // choose winding so that faces point away from (cx,cy,cz)
+    const P = this.p; const a = r0, b = r0 + 1, c = r1;
+    const ux = P[b * 3] - P[a * 3], uy = P[b * 3 + 1] - P[a * 3 + 1], uz = P[b * 3 + 2] - P[a * 3 + 2];
+    const vx = P[c * 3] - P[a * 3], vy = P[c * 3 + 1] - P[a * 3 + 1], vz = P[c * 3 + 2] - P[a * 3 + 2];
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    const flip = (nx * (P[a * 3] - cx) + ny * (P[a * 3 + 1] - cy) + nz * (P[a * 3 + 2] - cz)) < 0;
+    for (let s = 0; s < seg; s++) {
+      const s1 = (s + 1) % seg, A = r0 + s, B = r0 + s1, C = r1 + s, D = r1 + s1;
+      if (flip) { this.i.push(A, C, B, B, C, D); } else { this.i.push(A, B, C, B, D, C); }
+    }
+  }
+  cap(r, seg, tip, cx, cy, cz) {
+    const P = this.p;
+    const ux = P[(r + 1) * 3] - P[r * 3], uy = P[(r + 1) * 3 + 1] - P[r * 3 + 1], uz = P[(r + 1) * 3 + 2] - P[r * 3 + 2];
+    const vx = P[tip * 3] - P[r * 3], vy = P[tip * 3 + 1] - P[r * 3 + 1], vz = P[tip * 3 + 2] - P[r * 3 + 2];
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    const flip = (nx * (P[tip * 3] - cx) + ny * (P[tip * 3 + 1] - cy) + nz * (P[tip * 3 + 2] - cz)) < 0;
+    for (let s = 0; s < seg; s++) { const s1 = (s + 1) % seg; if (flip) this.i.push(r + s, tip, r + s1); else this.i.push(r + s, r + s1, tip); }
+  }
+  tube(pts, rs, ts, seg, capEnd) {
+    const n = pts.length, T = new V3(), N = new V3(), B = new V3();
+    let prev = -1;
+    for (let k = 0; k < n; k++) {
+      if (k === 0) T.subVectors(pts[1], pts[0]); else if (k === n - 1) T.subVectors(pts[k], pts[k - 1]); else T.subVectors(pts[k + 1], pts[k - 1]);
+      T.normalize();
+      if (k === 0) perp(T, 0, N); else { N.addScaledVector(T, -N.dot(T)); if (N.lengthSq() < 1e-8) perp(T, 0, N); N.normalize(); }
+      B.crossVectors(T, N);
+      const st = this.n, r = rs[k], p = pts[k];
+      for (let s = 0; s < seg; s++) { const a = s / seg * Math.PI * 2, c = Math.cos(a), si = Math.sin(a); this.v(p.x + (N.x * c + B.x * si) * r, p.y + (N.y * c + B.y * si) * r, p.z + (N.z * c + B.z * si) * r, ts[k]); }
+      if (prev >= 0) { const q = pts[k - 1]; this.strip(prev, st, seg, q.x, q.y, q.z); }
+      prev = st;
+    }
+    if (capEnd) { const p = pts[n - 1], r = rs[n - 1]; const tip = this.v(p.x + T.x * r * 0.9, p.y + T.y * r * 0.9, p.z + T.z * r * 0.9, ts[n - 1]); this.cap(prev, seg, tip, p.x, p.y, p.z); }
+  }
+  grid(nu, nv, fn, cx, cy, cz, wrapU) {
+    // fn(u,v) -> [x,y,z,t]
+    const st = this.n, cols = wrapU ? nu : nu + 1;
+    for (let j = 0; j <= nv; j++) for (let i = 0; i < cols; i++) { const r = fn(i / nu, j / nv); this.v(r[0], r[1], r[2], r[3]); }
+    for (let j = 0; j < nv; j++) {
+      for (let i = 0; i < nu; i++) {
+        const i1 = wrapU ? (i + 1) % nu : i + 1;
+        const A = st + j * cols + i, B = st + j * cols + i1, C = st + (j + 1) * cols + i, D = st + (j + 1) * cols + i1;
+        this.i.push(A, B, C, B, D, C);
+      }
+    }
+    if (cx !== undefined) { // orient using first quad center test
+      const P = this.p, a = st, b = st + 1, c = st + cols;
+      let best = 0, bi = st;
+      for (let k = st; k < this.n; k += Math.max(1, Math.floor((this.n - st) / 7))) { const dd = (P[k * 3] - cx) ** 2 + (P[k * 3 + 1] - cy) ** 2 + (P[k * 3 + 2] - cz) ** 2; if (dd > best) { best = dd; bi = k; } }
+      const ux = P[b * 3] - P[a * 3], uy = P[b * 3 + 1] - P[a * 3 + 1], uz = P[b * 3 + 2] - P[a * 3 + 2];
+      const vx = P[c * 3] - P[a * 3], vy = P[c * 3 + 1] - P[a * 3 + 1], vz = P[c * 3 + 2] - P[a * 3 + 2];
+      const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+      if (nx * (P[a * 3] - cx) + ny * (P[a * 3 + 1] - cy) + nz * (P[a * 3 + 2] - cz) < 0) {
+        const I = this.i; const from = I.length - nu * nv * 6;
+        for (let k = from; k < I.length; k += 3) { const t = I[k + 1]; I[k + 1] = I[k + 2]; I[k + 2] = t; }
+      }
+      void bi;
+    }
+    return st;
+  }
+  xf(from, m, tipFrom) {
+    const P = this.p, e = m.elements;
+    for (let k = from; k < this.n; k++) {
+      const x = P[k * 3], y = P[k * 3 + 1], z = P[k * 3 + 2];
+      P[k * 3] = e[0] * x + e[4] * y + e[8] * z + e[12]; P[k * 3 + 1] = e[1] * x + e[5] * y + e[9] * z + e[13]; P[k * 3 + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
+    }
+    if (tipFrom !== undefined) for (let k = tipFrom; k < this.tips.length; k++) this.tips[k].applyMatrix4(m);
+  }
+  geometry() {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(this.p, 3));
+    g.setAttribute('aT', new THREE.Float32BufferAttribute(this.t, 1));
+    g.setAttribute('aCol', new THREE.Float32BufferAttribute(this.c, 3));
+    g.setAttribute('aD', new THREE.Float32BufferAttribute(this.d, 1));
+    g.setAttribute('aB', new THREE.Float32BufferAttribute(this.b, 3));
+    g.setIndex(this.i);
+    g.computeVertexNormals();
+    g.computeBoundingBox(); g.computeBoundingSphere();
+    return g;
+  }
+}
+
+// ============================================================ coral generators (local: base at origin, grows +Y)
+function genBranch(g, r, S, det) {
+  const levels = det < 0 ? 2 : S > 1.6 ? 4 : 3, seg = Math.max(3, 4 + det);
+  const br = (p, dir, len, rad, lvl) => {
+    const n = det < 0 ? 3 : 4, pts = [], rs = [], ts = [];
+    const cur = p.clone(), d = dir.clone();
+    for (let k = 0; k <= n; k++) {
+      pts.push(cur.clone()); rs.push(rad * (1 - 0.28 * k / n)); ts.push((lvl + k / n) / (levels + 1));
+      cur.addScaledVector(d, len / n);
+      d.x += (r() - 0.5) * 0.22; d.z += (r() - 0.5) * 0.22; d.y += 0.07; d.normalize();
+    }
+    const last = lvl >= levels;
+    g.tube(pts, rs, ts, seg, last);
+    if (last) { g.tips.push(pts[n].clone()); return; }
+    const kids = lvl === 0 ? 3 : (r() < 0.5 ? 3 : 2);
+    const a0 = r() * 6.28;
+    for (let c = 0; c < kids; c++) {
+      const side = perp(d, a0 + c / kids * Math.PI * 2 + (r() - 0.5) * 0.6);
+      const tilt = 0.42 + r() * 0.38;
+      const nd = d.clone().multiplyScalar(Math.cos(tilt)).addScaledVector(side, Math.sin(tilt)).normalize();
+      br(pts[n].clone().addScaledVector(d, -rad * 0.3), nd, len * (0.7 + r() * 0.14), rs[n] * 0.86, lvl + 1);
+    }
+  };
+  br(new V3(0, -0.06 * S, 0), new V3((r() - 0.5) * 0.2, 1, (r() - 0.5) * 0.2).normalize(), S * 0.34, S * 0.075, 0);
+}
+function genTable(g, r, S, det) {
+  const seg = Math.max(3, 4 + det), h = S * 0.32, rad = S * 0.075;
+  g.tube([new V3(0, -0.05 * S, 0), new V3(0, h * 0.5, 0), new V3(0, h, 0)], [rad * 1.2, rad, rad * 0.9], [0, 0.12, 0.22], seg, false);
+  const K = det < 0 ? 9 : 13 + det * 3;
+  for (let k = 0; k < K; k++) {
+    const a = k / K * Math.PI * 2 + r() * 0.2;
+    const dir = new V3(Math.cos(a), 0.12, Math.sin(a)).normalize();
+    const pts = [], rs = [], ts = [];
+    const cur = new V3(0, h, 0); const n = 5, L = S * (0.46 + r() * 0.1);
+    for (let i = 0; i <= n; i++) {
+      pts.push(cur.clone()); rs.push(rad * 0.55 * (1 - 0.6 * i / n)); ts.push(0.22 + 0.63 * i / n);
+      cur.addScaledVector(dir, L / n); cur.y += Math.sin(i * 1.3 + k) * 0.01 * S;
+    }
+    g.tube(pts, rs, ts, Math.max(3, seg - 1), true);
+    g.tips.push(pts[n].clone());
+    for (let f = 1; f <= (det < 0 ? 1 : 2); f++) { // forks + upturned tips
+      const base = pts[Math.min(n - 1, 1 + f * 2)];
+      for (let sgn = -1; sgn <= 1; sgn += 2) {
+        const fa = a + sgn * (0.28 + r() * 0.15);
+        const fd = new V3(Math.cos(fa), 0.05, Math.sin(fa)).normalize();
+        const e = base.clone().addScaledVector(fd, L * (0.32 - f * 0.06));
+        const up = e.clone(); up.y += S * 0.06;
+        g.tube([base.clone(), e, up], [rad * 0.3, rad * 0.22, rad * 0.16], [0.5 + f * 0.1, 0.85, 1.0], 3, true);
+        g.tips.push(up);
+      }
+    }
+  }
+}
+function genBrain(g, r, S, det) {
+  const R = S * 0.5, nu = det < 0 ? 26 : 40 + det * 16, nv = det < 0 ? 13 : 22 + det * 8, off = r() * 50, fq = 1.7 + r() * 0.5;
+  g.grid(nu, nv, (u, v) => {
+    const th = u * Math.PI * 2, ph = v * Math.PI * 0.6;
+    const dx = Math.sin(ph) * Math.cos(th), dy = Math.cos(ph), dz = Math.sin(ph) * Math.sin(th);
+    const nn = noise(dx * fq + off, dy * fq, dz * fq) + 0.4 * noise(dx * fq * 2.3, dy * fq * 2.3 + off, dz * fq * 2.3);
+    const m = 0.5 + 0.5 * Math.sin(nn * 26);
+    const rr = R * (1 + 0.06 * m) * (v > 0.95 ? 0.97 : 1);
+    return [dx * rr, dy * rr * 0.78 + R * 0.12, dz * rr, 0.15 + 0.85 * m * (0.35 + 0.65 * sstep(0.95, 0.05, v))];
+  }, 0, R * 0.12, 0, true);
+  // collect a few tips on top
+  for (let k = 0; k < 10; k++) { const th = k / 10 * 6.28, ph = 0.25 + (k % 3) * 0.25; g.tips.push(new V3(Math.sin(ph) * Math.cos(th) * R, Math.cos(ph) * R * 0.78 + R * 0.12, Math.sin(ph) * Math.sin(th) * R)); }
+}
+function genLeaf(g, r, S, det) {
+  const K = 5 + (r() < 0.5 ? 1 : 0) + (S > 1.5 ? 2 : 0), nu = det < 0 ? 4 : 6 + det * 2, nv = det < 0 ? 6 : 8 + det * 3;
+  for (let k = 0; k < K; k++) {
+    const az = k / K * Math.PI * 2 + r() * 0.5, tilt = 0.35 + r() * 0.45, W = S * (0.24 + r() * 0.1), Lp = S * (0.5 + r() * 0.16), ph = r() * 6;
+    const ca = Math.cos(az), sa = Math.sin(az), ct = Math.cos(tilt), stl = Math.sin(tilt);
+    g.grid(nu, nv, (u, v) => {
+      const vv = v * 2 - 1;
+      let x = vv * W * (0.25 + 0.75 * u), y = u * Lp, z = Math.sin(vv * 3.4 + u * 4 + ph) * 0.07 * S * u - u * u * 0.16 * S * (1 - 0.5 * vv * vv);
+      // tilt outward around local X
+      const y2 = y * ct - z * stl, z2 = y * stl + z * ct;
+      return [ca * z2 - sa * x, y2, sa * z2 + ca * x, 0.08 + 0.92 * u];
+    });
+    for (let q = 0; q < 2; q++) { const u = 1, vv = q ? 0.6 : -0.6; const x = vv * W, y = Lp, z = -0.16 * S; const y2 = y * ct - z * stl, z2 = y * stl + z * ct; g.tips.push(new V3(ca * z2 - sa * x, y2, sa * z2 + ca * x)); void u; }
+  }
+}
+function genFan(g, r, S, det) {
+  const levels = det < 0 ? 4 : 5, seg = det > 0 ? 4 : 3;
+  const br = (p, ang, len, rad, lvl) => {
+    const n = 3, pts = [], rs = [], ts = []; const cur = p.clone(); let a = ang;
+    for (let k = 0; k <= n; k++) {
+      pts.push(cur.clone()); rs.push(rad * (1 - 0.25 * k / n)); ts.push((lvl + k / n) / (levels + 1));
+      cur.x += Math.sin(a) * len / n; cur.y += Math.cos(a) * len / n; cur.z += (r() - 0.5) * 0.02 * S; a += (r() - 0.5) * 0.15;
+    }
+    const last = lvl >= levels;
+    g.tube(pts, rs, ts, seg, last);
+    if (last) { g.tips.push(pts[n].clone()); return; }
+    const spread = 0.28 + r() * 0.2;
+    br(pts[n], a - spread, len * (0.8 + r() * 0.1), rs[n] * 0.8, lvl + 1);
+    br(pts[n], a + spread, len * (0.8 + r() * 0.1), rs[n] * 0.8, lvl + 1);
+  };
+  g.tube([new V3(0, -0.05 * S, 0), new V3(0, S * 0.12, 0)], [S * 0.03, S * 0.026], [0, 1 / (levels + 1)], seg + 1, false);
+  br(new V3(0, S * 0.12, 0), -0.55, S * 0.2, S * 0.022, 1);
+  br(new V3(0, S * 0.12, 0), 0.0, S * 0.24, S * 0.024, 1);
+  br(new V3(0, S * 0.12, 0), 0.55, S * 0.2, S * 0.022, 1);
+}
+function genFlower(g, r, S, det, big) {
+  const R = S * 0.42, segD = det < 0 ? 12 : 20 + det * 8;
+  g.grid(segD, Math.max(3, 6 + det * 2), (u, v) => {
+    const th = u * Math.PI * 2, ph = v * Math.PI * 0.5;
+    const rr = R * (1 + 0.05 * noise(Math.cos(th) * 2, v * 3, Math.sin(th) * 2));
+    return [Math.sin(ph) * Math.cos(th) * rr, Math.cos(ph) * rr * 0.42, Math.sin(ph) * Math.sin(th) * rr, 0.05 + 0.2 * (1 - v)];
+  }, 0, 0, 0, true);
+  const N = Math.min(big ? 170 : 110, Math.round(26 * Math.pow(S, 1.15) * (det < 0 ? 0.45 : 0.7 + det * 0.15)));
+  const ga = Math.PI * (3 - Math.sqrt(5));
+  const tent = big ? 8 : det < 0 ? 5 : 7;
+  for (let k = 0; k < N; k++) {
+    const yy = 1 - (k + 0.5) / N * 0.92, rad = Math.sqrt(1 - yy * yy), th = k * ga;
+    const nrm = new V3(Math.cos(th) * rad, yy, Math.sin(th) * rad);
+    const base = new V3(nrm.x * R, nrm.y * R * 0.42, nrm.z * R);
+    const dir = new V3(nrm.x, nrm.y * 1.4 + 0.25, nrm.z).normalize();
+    const sl = S * (0.07 + r() * 0.06) * (big ? 1.25 : 1), sr = S * 0.02;
+    const top = base.clone().addScaledVector(dir, sl);
+    g.tube([base, base.clone().addScaledVector(dir, sl * 0.5), top], [sr, sr * 0.9, sr * 1.15], [0.25, 0.42, 0.6], 3 + (det > 1 ? 1 : 0), false);
+    for (let q = 0; q < tent; q++) {
+      const sd = perp(dir, q / tent * Math.PI * 2 + k);
+      const td = dir.clone().multiplyScalar(0.55).addScaledVector(sd, 0.85).normalize();
+      const tl = S * 0.055 * (big ? 1.3 : 1);
+      const e1 = top.clone().addScaledVector(td, tl * 0.5); const e2 = top.clone().addScaledVector(td, tl).addScaledVector(dir, tl * 0.25);
+      g.tube([top.clone().addScaledVector(sd, sr * 0.6), e1, e2], [sr * 0.35, sr * 0.28, sr * 0.18], [0.62, 0.82, 1.0], 3, true);
+      if (q === 0 && k % 3 === 0) g.tips.push(e2.clone());
+    }
+  }
+}
+const GEN = { branch: genBranch, table: genTable, brain: genBrain, leaf: genLeaf, fan: genFan, flower: genFlower };
+
+// ============================================================ materials
+const CORAL_VH = `attribute float aT; attribute vec3 aCol; attribute float aD; attribute vec3 aB; varying float vT; varying vec3 vCol; varying float vD;
+uniform float uWake; uniform float uGrowMin;`;
+const CORAL_VM = `vT = aT; vCol = aCol; vD = aD;
+{ float gg = clamp((uWake*1.3 - aD*0.95)*2.5, 0.0, 1.0); float sc = mix(uGrowMin, 1.0, gg); transformed = aB + (transformed - aB)*sc; }`;
+const CORAL_FH = `varying float vT; varying vec3 vCol; varying float vD; uniform float uWake; uniform float uGlow; uniform float uHint; uniform vec3 uTipCol; uniform float uSeed; uniform float uBand;`;
+const CORAL_FC = `
+float frontW = uWake*1.3 - (vT*0.9 + vD);
+float litW = smoothstep(0.0, 0.22, frontW);
+float bandW = exp(-frontW*frontW*55.0) * step(0.001, uWake) * uBand;
+float tipW = smoothstep(0.25, 1.0, vT);
+vec3 ppW = vWP*10.0;
+float dotsW = smoothstep(0.62, 0.95, (sin(ppW.x)*sin(ppW.y+1.3)*sin(ppW.z+0.7))*0.5 + 0.5);
+float brW = 0.82 + 0.18*sin(uTime*1.3 + uSeed*6.0 + vT*3.0);
+vec3 gcW = mix(vCol, uTipCol, smoothstep(0.8, 1.0, vT)*0.55);
+gE += gcW * litW * (0.05 + 1.55*tipW*tipW + 0.8*dotsW*tipW) * brW * uGlow;
+gE += mix(vCol, vec3(1.0), 0.45) * bandW * 2.4 * (0.35 + tipW);
+gE += uTipCol * uHint * exp(-pow((vT - fract(uTime*0.42))*6.0, 2.0)) * 0.55 * (0.3 + tipW);
+gE += waveTermD05(tipW);
+diffuseColor.rgb *= (0.5 + 0.5*smoothstep(0.0, 0.55, vT)) * (0.9 + 0.2*dotsW);
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb*0.55 + vCol*0.3, litW*0.55);
+`;
+function coralMat(seed, growMin) {
+  const m = new THREE.MeshStandardMaterial({ color: C_SLEEP.clone().offsetHSL((seed % 1) * 0.04 - 0.02, 0, ((seed * 7) % 1) * 0.06 - 0.03), roughness: 0.7, metalness: 0.0, side: THREE.DoubleSide });
+  m.userData.u = { uWake: { value: 0 }, uGlow: { value: 1 }, uHint: { value: 0 }, uTipCol: { value: C_TIP.clone() }, uGrowMin: { value: growMin }, uSeed: { value: seed }, uBand: { value: 1 } };
+  patch(m, 'coral', { uniforms: m.userData.u, vHead: CORAL_VH, vMain: CORAL_VM, fHead: CORAL_FH, fColor: CORAL_FC });
+  return m;
+}
+
+// ============================================================ world geometry: terrain
+const TOP = -4.6;
+function floorH(x, z) {
+  const r = Math.hypot(x, z);
+  let h = -22 + 0.8 * noise(x * 0.05, 0.3, z * 0.05) + 0.4 * noise(x * 0.13, 1.7, z * 0.13) + 0.14 * noise(x * 0.4, 3.1, z * 0.4);
+  h += 12 * sstep(14, 41, r + 4 * noise(x * 0.05, 8, z * 0.05)) * (0.9 + 0.1 * noise(x * 0.04, 5, z * 0.04));
+  h += 0.7 * Math.max(0, 1 - r / 7);
+  return h;
+}
+function towerBaseR(y) {
+  const sk = sstep(-14.5, -22, y);
+  let r = 1.75 + 2.5 * sk * sk + 0.3 * sstep(-8, -15, y);
+  if (y > TOP - 1.3) { const k = (y - (TOP - 1.3)) / 1.3; r *= Math.sqrt(Math.max(0, 1 - k * k)); }
+  return r;
+}
+function towerSurfR(th, y) { const c = Math.cos(th), s = Math.sin(th); return towerBaseR(y) * (1 + 0.2 * noise(c * 1.2 + 3, y * 0.16, s * 1.2) + 0.12 * Math.max(0, noise(c * 0.8, y * 0.45 + 2, s * 0.8)) + 0.09 * noise(c * 3.1, y * 0.6 + 7, s * 3.1) + 0.045 * noise(c * 7, y * 1.5, s * 7)); }
+
+const world = new THREE.Group(); scene.add(world);
+// floor
+{
+  const segs = [110, 150, 200][DET];
+  const g = new THREE.PlaneGeometry(240, 240, segs, segs); g.rotateX(-Math.PI / 2);
+  const pa = g.attributes.position, cols = new Float32Array(pa.count * 3);
+  const sand = col('#d2ccb8'), sand2 = col('#bdbcae'), sand3 = col('#aaa591'), tc = new THREE.Color();
+  for (let i = 0; i < pa.count; i++) {
+    const x = pa.getX(i), z = pa.getZ(i); pa.setY(i, floorH(x, z));
+    const n1 = noise(x * 0.09, 9, z * 0.09), n2 = noise(x * 0.5, 2, z * 0.5);
+    tc.copy(sand).lerp(sand2, clamp(0.5 + n1 * 0.9, 0, 1)).lerp(sand3, clamp(n2 * 0.6, 0, 0.5));
+    const r = Math.hypot(x, z); tc.multiplyScalar((0.85 + 0.15 * sstep(5, 9, r)) * (1 - 0.25 * sstep(30, 45, r)));
+    cols[i * 3] = tc.r; cols[i * 3 + 1] = tc.g; cols[i * 3 + 2] = tc.b;
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(cols, 3)); g.computeVertexNormals();
+  const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
+  patch(m, 'floor', {
+    fNormal: `{
+      vec2 q = vWP.xz;
+      float ph = q.x*1.7 + q.y*0.55 + sin(q.y*0.42)*1.6 + sin(q.x*0.27 + q.y*0.19)*1.2;
+      float dph_dx = 1.7 + 0.27*cos(q.x*0.27 + q.y*0.19)*1.2;
+      float dph_dz = 0.55 + 0.42*cos(q.y*0.42)*1.6 + 0.19*cos(q.x*0.27 + q.y*0.19)*1.2;
+      float dh = cos(ph) + 0.35*cos(2.0*ph);
+      vec3 gW = vec3(dph_dx*dh, 0.0, dph_dz*dh) * 0.055;
+      normal = normalize(normal - (viewMatrix * vec4(gW, 0.0)).xyz);
+    }`,
+    fColor: `diffuseColor.rgb *= 0.93 + 0.07*sin(vWP.x*1.7 + vWP.z*0.55 + sin(vWP.z*0.42)*1.6);`
+  });
+  const mesh = new THREE.Mesh(g, m); mesh.receiveShadow = true; world.add(mesh);
+}
+// tower
+const towerMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 });
+patch(towerMat, 'rock', { fEmis: `gE += waveTermD05(0.15) * 0.35;`,
+  fNormal: `{ vec3 q = vWP*2.3; vec3 gq = vec3(sin(q.x*1.3+sin(q.y*1.7)), sin(q.y*1.1+sin(q.z*1.9)), sin(q.z*1.5+sin(q.x*1.2))) + 0.5*vec3(sin(q.y*3.7+q.z*2.1), sin(q.z*3.3+q.x*2.6), sin(q.x*3.9+q.y*2.4));
+    normal = normalize(normal + (viewMatrix*vec4(gq*0.16,0.0)).xyz); }`,
+  fColor: `{ vec3 q = vWP*1.7; float m = sin(q.x*2.1+sin(q.y*2.7))*sin(q.z*2.3+sin(q.x*1.9))*sin(q.y*1.8); diffuseColor.rgb *= 0.82 + 0.3*m; }` });
+{
+  const ny = [70, 90, 110][DET], nt = [40, 52, 64][DET];
+  const pos = [], cols = [], idx = [];
+  const c1 = col('#7a7e7c'), c2 = col('#9a988a'), c3 = col('#7f9a9a'), c4 = col('#a88ea2'), c5 = col('#9aa67e'), tc = new THREE.Color();
+  for (let j = 0; j <= ny; j++) {
+    const y = lerp(-23, TOP, j / ny);
+    for (let i = 0; i < nt; i++) {
+      const th = i / nt * Math.PI * 2, r = towerSurfR(th, y);
+      pos.push(Math.cos(th) * r, y, Math.sin(th) * r);
+      const n1 = noise(Math.cos(th) * 2.2, y * 0.35, Math.sin(th) * 2.2), n2 = noise(Math.cos(th) * 6, y * 1.1 + 4, Math.sin(th) * 6);
+      tc.copy(c1).lerp(c2, clamp(0.5 + n1, 0, 1)).lerp(c3, clamp(n2 * 0.8, 0, 0.6)).lerp(c4, clamp((n1 - 0.2) * 2, 0, 0.55)).lerp(c5, clamp((n2 - 0.3) * 2, 0, 0.5));
+      cols.push(tc.r, tc.g, tc.b);
+    }
+  }
+  pos.push(0, TOP + 0.05, 0); cols.push(c1.r, c1.g, c1.b);
+  const tip = (pos.length / 3) - 1;
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nt; i++) {
+    const i1 = (i + 1) % nt, A = j * nt + i, B = j * nt + i1, C = (j + 1) * nt + i, D = (j + 1) * nt + i1;
+    idx.push(A, C, B, B, C, D);
+  }
+  for (let i = 0; i < nt; i++) idx.push(ny * nt + i, tip, ny * nt + (i + 1) % nt);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const mesh = new THREE.Mesh(g, towerMat); mesh.receiveShadow = true; mesh.castShadow = false; world.add(mesh);
+}
+
+// ============================================================ targets (20 corals)
+const TYPES = ['branch', 'brain', 'leaf', 'flower', 'fan', 'table', 'branch', 'fan', 'brain', 'leaf', 'table', 'fan', 'branch', 'flower', 'table', 'fan', 'table', 'branch', 'leaf', 'final'];
+const TCOLS = [C_PINK, C_AQUA, C_EME, C_PURP, C_PINK, C_EME, C_AQUA, C_PURP, C_PINK, C_AQUA, C_PURP, C_EME, C_PINK, C_AQUA, C_EME, C_PURP, C_PINK, C_AQUA, C_EME, C_GOLD];
+const SSIZE = [1.25, 1.45, 2.0, 2.5];
+const TY = [-21.0, -20.4, -19.7, -19.0, -18.3, -17.2, -16.0, -14.8, -13.7, -12.6, -11.4, -10.3, -9.2, -8.1, -7.1, -6.4, -6.0, -5.6, -5.3, TOP];
+const thetaOf = i => 0.4 - i * 0.78;
+const targets = [];
+const tipCount = [];
+const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), dummy = new THREE.Object3D();
+function basisMatrix(pos, yAxis, zHint, m) {
+  const Y = yAxis.clone().normalize();
+  const Z = zHint.clone().addScaledVector(Y, -zHint.dot(Y)); if (Z.lengthSq() < 1e-6) perp(Y, 0, Z); Z.normalize();
+  const X = new V3().crossVectors(Y, Z);
+  m.makeBasis(X, Y, Z); m.setPosition(pos); return m;
+}
+function buildCoral(type, S, seed, colr, det) {
+  const g = new GB(); g.col = [colr.r, colr.g, colr.b]; const r = mulberry(seed);
+  if (type === 'final') genFlower(g, r, S, det, true); else GEN[type](g, r, S, det);
+  return g;
+}
+const haloTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  const gr = x.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,255,255,0.45)'); gr.addColorStop(0.6, 'rgba(255,255,255,0.1)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = gr; x.fillRect(0, 0, 128, 128); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+})();
+function makeHalo(c) {
+  const m = new THREE.SpriteMaterial({ map: haloTex, color: c.clone(), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0, fog: false });
+  const s = new THREE.Sprite(m); s.renderOrder = 5; return s;
+}
+function finishTarget(t) {
+  t.mesh.updateMatrixWorld(true);
+  t.box = new THREE.Box3().setFromObject(t.mesh);
+  t.center = t.box.getCenter(new V3());
+  const sz = t.box.getSize(new V3()); t.radius = Math.max(sz.x, sz.y, sz.z) * 0.5;
+  t.corners = []; for (let k = 0; k < 8; k++) t.corners.push(new V3(k & 1 ? t.box.max.x : t.box.min.x, k & 2 ? t.box.max.y : t.box.min.y, k & 4 ? t.box.max.z : t.box.min.z));
+  t.tipsW = t.tipsL.map(p => p.clone().applyMatrix4(t.mesh.matrixWorld));
+  if (!t.tipsW.length) t.tipsW.push(t.center.clone());
+  t.halo.position.copy(t.center); t.halo.scale.setScalar(t.radius * 3.2);
+}
+for (let i = 0; i < 20; i++) {
+  const stg = Math.floor(i / 5), type = TYPES[i];
+  const S = type === 'final' ? 3.6 : SSIZE[stg] * (0.9 + mulberry(i * 31 + 3)() * 0.2);
+  const g = buildCoral(type, S, 1000 + i * 17, TCOLS[i], Math.min(2, DET + 1));
+  const geo = g.geometry();
+  const mat = coralMat(i * 0.137, 1.0);
+  const mesh = new THREE.Mesh(geo, mat); mesh.castShadow = true; mesh.receiveShadow = true;
+  const th = thetaOf(i), y = TY[i];
+  const radial = new V3(Math.cos(th), 0, Math.sin(th));
+  let base, axis;
+  if (type === 'final') { base = new V3(0, TOP - 0.35, 0); axis = UP.clone(); }
+  else {
+    const rr = towerSurfR(th, y) - 0.12;
+    base = new V3(radial.x * rr, y, radial.z * rr);
+    const tilt = type === 'table' ? 0.12 : type === 'brain' ? 0.35 : stg === 0 ? 0.3 : 0.48;
+    axis = UP.clone().multiplyScalar(1 - tilt).addScaledVector(radial, tilt).normalize();
+  }
+  basisMatrix(base, axis, radial, tmpM);
+  tmpM.decompose(mesh.position, mesh.quaternion, mesh.scale);
+  world.add(mesh);
+  const halo = makeHalo(TCOLS[i]); world.add(halo);
+  const t = { i, stage: stg, type, S, mesh, mat, halo, col: TCOLS[i].clone(), tipsL: g.tips, wake: 0, awake: false, glow: 1, az: th + 0.17, cyl: true };
+  finishTarget(t);
+  targets.push(t);
+}
+// free-play pool (8), placed later on the outer shelf
+const FREE_TYPES = ['branch', 'table', 'brain', 'leaf', 'fan', 'flower', 'branch', 'fan'];
+const freePool = [];
+for (let k = 0; k < 8; k++) {
+  const S = [1.5, 1.8, 1.5, 1.7, 1.9, 1.6, 1.7, 1.8][k];
+  const g = buildCoral(FREE_TYPES[k], S, 5000 + k * 53, PALETTE[k % 4], Math.min(2, DET + 1));
+  const mat = coralMat(0.5 + k * 0.11, 1.0); mat.userData.u.uGrowMin.value = 1.0;
+  const mesh = new THREE.Mesh(g.geometry(), mat); mesh.castShadow = true; mesh.receiveShadow = true; mesh.visible = false; world.add(mesh);
+  const halo = makeHalo(C_PINK); world.add(halo);
+  freePool.push({ i: 100 + k, stage: 3, type: FREE_TYPES[k], S, mesh, mat, halo, col: PALETTE[k % 4].clone(), tipsL: g.tips, wake: 0, awake: false, glow: 1, az: 0, cyl: false, grow: 0 });
+}
+
+// ============================================================ decorative clusters (one per stage + shelf)
+const clusters = [];
+function laneBlocked(x, z, y) {
+  const r = Math.hypot(x, z), a = Math.atan2(z, x);
+  for (const t of targets) {
+    if (t.type === 'final') continue;
+    const tr = Math.hypot(t.center.x, t.center.z);
+    if (Math.abs(angDiff(a, t.az)) < 0.36 && r > tr - 0.3 && r < tr + 15 && Math.abs((y ?? t.center.y) - t.center.y) < 3.5) return true;
+    if (t.center.distanceTo(new V3(x, y ?? t.center.y, z)) < t.radius + 0.8) return true;
+  }
+  return false;
+}
+function buildCluster(stg, rnd) {
+  const g = new GB(); const seedR = rnd; const parts = [];
+  const tries = [54, 95, 85, 40, 30][stg];
+  const types = ['branch', 'brain', 'leaf', 'fan', 'flower', 'table'];
+  for (let k = 0; k < tries * 3 && parts.length < tries; k++) {
+    let base, axis, S, order, radial;
+    if (stg === 0 && k % 2 === 1) {
+      const y = lerp(-21.6, -18.2, seedR()), a = seedR() * Math.PI * 2, rr = towerSurfR(a, y) - 0.1;
+      const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
+      let bad = false;
+      for (const t of targets) { if (t.center.distanceTo(new V3(x, y, z)) < t.radius * 0.95 + 0.3) { bad = true; break; } }
+      if (bad) continue;
+      radial = new V3(Math.cos(a), 0, Math.sin(a));
+      base = new V3(x, y, z); axis = UP.clone().multiplyScalar(0.7).addScaledVector(radial, 0.3).normalize(); S = 0.4 + seedR() * 0.5;
+      order = clamp(-angDiff(thetaOf(0) + 0.4, a) / 4.0, 0, 1) * 0.7 + seedR() * 0.3;
+    } else if (stg === 0) {
+      const a = seedR() * Math.PI * 2, rr = 5.5 + seedR() * 9;
+      const x = Math.cos(a) * rr, z = Math.sin(a) * rr, y = floorH(x, z) - 0.05;
+      if (laneBlocked(x, z, y)) continue;
+      base = new V3(x, y, z); axis = new V3((seedR() - 0.5) * 0.3, 1, (seedR() - 0.5) * 0.3).normalize(); S = 0.4 + seedR() * 0.7;
+      radial = new V3(Math.cos(a), 0, Math.sin(a));
+      order = clamp(angDiff(thetaOf(0) + 0.6, a) / -4.2, 0, 1) * 0.6 + clamp((rr - 5.5) / 9, 0, 1) * 0.4;
+    } else if (stg === 4) {
+      const a = seedR() * Math.PI * 2, rr = 40 + seedR() * 4.5;
+      const x = Math.cos(a) * rr, z = Math.sin(a) * rr, y = floorH(x, z) - 0.05;
+      base = new V3(x, y, z); axis = UP.clone(); S = 0.6 + seedR() * 0.9; radial = new V3(Math.cos(a), 0, Math.sin(a));
+      order = (angDiff(0, a) / Math.PI + 1) * 0.5;
+    } else {
+      const ys = [[-18.4, -12.0], [-12.0, -6.6], [-6.6, -4.7]][stg - 1];
+      const y = lerp(ys[0], ys[1], seedR()), a = seedR() * Math.PI * 2;
+      const rr = towerSurfR(a, y) - 0.1;
+      const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
+      let bad = false;
+      for (const t of targets) { if (t.center.distanceTo(new V3(x, y, z)) < t.radius * 0.95 + 0.3) { bad = true; break; } }
+      for (const q of parts) { if (q.distanceTo(new V3(x, y, z)) < 0.4) { bad = true; break; } }
+      if (bad) continue;
+      radial = new V3(Math.cos(a), 0, Math.sin(a));
+      base = new V3(x, y, z); axis = UP.clone().multiplyScalar(0.55).addScaledVector(radial, 0.45).normalize();
+      S = [0.75, 1.0, 1.15][stg - 1] * (0.5 + seedR() * 0.7);
+      order = clamp((y - ys[0]) / (ys[1] - ys[0]), 0, 1) * 0.75 + seedR() * 0.25;
+    }
+    const type = types[Math.floor(seedR() * types.length)];
+    const c = PALETTE[Math.floor(seedR() * 4)];
+    g.col = [c.r, c.g, c.b]; g.dl = order; g.base = [base.x, base.y, base.z];
+    const from = g.n, tf = g.tips.length;
+    GEN[type](g, mulberry(Math.floor(seedR() * 1e6)), S, DET - 1);
+    basisMatrix(base, axis, radial, tmpM); g.xf(from, tmpM, tf);
+    parts.push(base);
+  }
+  const mat = coralMat(0.3 + stg * 0.21, 0.55);
+  const mesh = new THREE.Mesh(g.geometry(), mat); mesh.receiveShadow = true; world.add(mesh);
+  return { mesh, mat, wake: 0, wakeTo: 0 };
+}
+{ const rr = mulberry(9090); for (let s = 0; s < 5; s++) clusters.push(buildCluster(s, rr)); }
+
+// rocks
+{
+  const rr = mulberry(4242);
+  const rockMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+  patch(rockMat, 'rock2', {});
+  const geos = [];
+  for (let v = 0; v < 3; v++) {
+    const g = new THREE.IcosahedronGeometry(1, 3); const pa = g.attributes.position; const cs = new Float32Array(pa.count * 3);
+    const off = v * 13.7, c1 = col('#77726a'), c2 = col('#9a9485'), tc = new THREE.Color();
+    for (let i = 0; i < pa.count; i++) {
+      const x = pa.getX(i), y = pa.getY(i), z = pa.getZ(i);
+      const d = 1 + 0.32 * noise(x * 1.2 + off, y * 1.2, z * 1.2) + 0.12 * noise(x * 3 + off, y * 3, z * 3);
+      pa.setXYZ(i, x * d * 1.25, y * d * 0.62, z * d);
+      tc.copy(c1).lerp(c2, clamp(0.5 + noise(x * 2.5, y * 2.5 + off, z * 2.5), 0, 1)); cs[i * 3] = tc.r; cs[i * 3 + 1] = tc.g; cs[i * 3 + 2] = tc.b;
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(cs, 3)); g.computeVertexNormals(); geos.push(g);
+  }
+  for (let v = 0; v < 3; v++) {
+    const im = new THREE.InstancedMesh(geos[v], rockMat, 16); let n = 0;
+    for (let k = 0; k < 60 && n < 16; k++) {
+      const a = rr() * Math.PI * 2, r = 7 + rr() * 45, x = Math.cos(a) * r, z = Math.sin(a) * r;
+      if (laneBlocked(x, z) || (r > 44 && r < 58)) continue;
+      const s = 0.4 + rr() * 1.3;
+      dummy.position.set(x, floorH(x, z) - s * 0.15, z); dummy.rotation.set(rr() * 0.3, rr() * 6.28, rr() * 0.3); dummy.scale.set(s, s, s); dummy.updateMatrix();
+      im.setMatrixAt(n++, dummy.matrix);
+    }
+    im.count = n; im.receiveShadow = true; world.add(im);
+  }
+}
+// seagrass
+const grass = (() => {
+  const g = new THREE.PlaneGeometry(0.07, 1, 1, 5); g.translate(0, 0.5, 0);
+  const pa = g.attributes.position, cs = new Float32Array(pa.count * 3), c1 = col('#3e5a32'), c2 = col('#9db35e'), tc = new THREE.Color();
+  for (let i = 0; i < pa.count; i++) { const y = pa.getY(i); pa.setX(i, pa.getX(i) * (1 - y * 0.7)); tc.copy(c1).lerp(c2, y); cs[i * 3] = tc.r; cs[i * 3 + 1] = tc.g; cs[i * 3 + 2] = tc.b; }
+  g.setAttribute('color', new THREE.BufferAttribute(cs, 3)); g.computeVertexNormals();
+  const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75, side: THREE.DoubleSide });
+  patch(m, 'grass', { vMain: `{ vec3 ip = instanceMatrix[3].xyz; float s = position.y; float sw = sin(uTime*1.2 + ip.x*0.7 + ip.z*0.5)*0.22*s*s; transformed.x += sw; transformed.z += sw*0.6*cos(ip.x); }` });
+  const cap = 1500, im = new THREE.InstancedMesh(g, m, cap), rr = mulberry(777);
+  let n = 0;
+  for (let k = 0; k < 6000 && n < cap; k++) {
+    const pa2 = Math.floor(rr() * 26), ca = pa2 * 2.399, cr = 6 + (pa2 * 7.3) % 40;
+    const x = Math.cos(ca) * cr + (rr() - 0.5) * 4, z = Math.sin(ca) * cr + (rr() - 0.5) * 4, r = Math.hypot(x, z);
+    if (laneBlocked(x, z) || (r > 44 && r < 58)) continue;
+    const h = 0.35 + rr() * 0.75;
+    dummy.position.set(x, floorH(x, z) - 0.05, z); dummy.rotation.set((rr() - 0.5) * 0.3, rr() * 6.28, (rr() - 0.5) * 0.3); dummy.scale.set(1, h, 1); dummy.updateMatrix();
+    im.setMatrixAt(n++, dummy.matrix);
+  }
+  im.userData.max = n; im.count = Math.min(n, QP[QM.cur].grass); world.add(im);
+  return im;
+})();
+
+// ============================================================ dolphins
+function cr1(arr, sArr, s) {
+  let i = 0; while (i < sArr.length - 2 && s > sArr[i + 1]) i++;
+  const t = clamp((s - sArr[i]) / (sArr[i + 1] - sArr[i]), 0, 1);
+  const p0 = arr[Math.max(0, i - 1)], p1 = arr[i], p2 = arr[i + 1], p3 = arr[Math.min(arr.length - 1, i + 2)];
+  const t2 = t * t, t3 = t2 * t;
+  return 0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
+}
+class LB { // loft builder: position, color, aS
+  constructor() { this.p = []; this.c = []; this.s = []; this.i = []; }
+  get n() { return this.p.length / 3; }
+  v(x, y, z, c, s) { this.p.push(x, y, z); this.c.push(c.r, c.g, c.b); this.s.push(s); return this.n - 1; }
+  strip(r0, r1, seg, cx, cy, cz) { GB.prototype.strip.call(this, r0, r1, seg, cx, cy, cz); }
+  cap(r, seg, tip, cx, cy, cz) { GB.prototype.cap.call(this, r, seg, tip, cx, cy, cz); }
+  geometry() {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(this.p, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(this.c, 3)); g.setAttribute('aS', new THREE.Float32BufferAttribute(this.s, 1));
+    g.setIndex(this.i); g.computeVertexNormals(); g.computeBoundingSphere(); return g;
+  }
+  // stations: [{c:V3, a:V3 (axis1 * radius1), b:V3 (axis2 * radius2), s, colFn(angle)}]
+  loft(st, seg, capStart, capEnd, colFn, startTip, endTip) {
+    let prev = -1, first = -1;
+    for (let k = 0; k < st.length; k++) {
+      const q = st[k], r0 = this.n;
+      for (let j = 0; j < seg; j++) {
+        const an = j / seg * Math.PI * 2, ca = Math.cos(an), sa = Math.sin(an);
+        const ex = q.ext ? q.ext(ca, sa) : 0;
+        const x = q.c.x + q.a.x * ca + q.b.x * sa * (1 + ex), y = q.c.y + q.a.y * ca + q.b.y * sa * (1 + ex), z = q.c.z + q.a.z * ca + q.b.z * sa * (1 + ex);
+        this.v(x, y, z, colFn(q, ca, sa), q.s);
+      }
+      if (prev >= 0) { const pc = st[k - 1].c; this.strip(prev, r0, seg, pc.x, pc.y, pc.z); } else first = r0;
+      prev = r0;
+    }
+    if (capStart) { const q = st[0]; const tp = startTip || q.c; const t = this.v(tp.x, tp.y, tp.z, colFn(q, 1, 0), q.s); this.cap(first, seg, t, st[1].c.x, st[1].c.y, st[1].c.z); }
+    if (capEnd) { const q = st[st.length - 1]; const tp = endTip || q.c; const t = this.v(tp.x, tp.y, tp.z, colFn(q, 1, 0), q.s); const pq = st[st.length - 2].c; this.cap(prev, seg, t, pq.x, pq.y, pq.z); }
+  }
+}
+function buildDolphinGeo(backHex, bellyHex) {
+  const SS = [0, 0.012, 0.03, 0.055, 0.075, 0.09, 0.11, 0.14, 0.18, 0.24, 0.32, 0.42, 0.52, 0.62, 0.71, 0.79, 0.86, 0.92, 0.965, 1.0];
+  const HW = [0.004, 0.012, 0.019, 0.023, 0.026, 0.036, 0.052, 0.066, 0.078, 0.09, 0.098, 0.098, 0.09, 0.074, 0.056, 0.038, 0.024, 0.016, 0.011, 0.006];
+  const HH = [0.004, 0.011, 0.016, 0.02, 0.024, 0.038, 0.058, 0.074, 0.088, 0.102, 0.112, 0.112, 0.104, 0.088, 0.07, 0.052, 0.038, 0.026, 0.016, 0.008];
+  const CY = [-0.014, -0.014, -0.013, -0.012, -0.01, -0.004, 0.003, 0.007, 0.008, 0.008, 0.006, 0.004, 0.004, 0.006, 0.008, 0.008, 0.006, 0.004, 0.002, 0.0];
+  const back = col(backHex), belly = col(bellyHex), tc = new THREE.Color(), dk = back.clone().multiplyScalar(0.82);
+  const lb = new LB(), seg = 24, NR = 60;
+  const hw = s => Math.max(0.002, cr1(HW, SS, s)), hh = s => Math.max(0.002, cr1(HH, SS, s)), cy = s => cr1(CY, SS, s);
+  const st = [];
+  for (let k = 0; k < NR; k++) {
+    const u = k / (NR - 1), s = u < 0.3 ? 0.3 * Math.pow(u / 0.3, 1.6) : u;
+    const w = hw(s), h = hh(s), c = cy(s);
+    st.push({ c: new V3(0, c, 0.5 - s), a: new V3(w, 0, 0), b: new V3(0, h, 0), s, ext: (ca, sa) => sa < 0 ? 0.05 * sa * sa : 0 });
+  }
+  const bodyCol = (q, ca, sa) => {
+    let k = sstep(-0.5, 0.32, sa + 0.1 * Math.sin(q.s * 11) * (q.s > 0.25 ? 1 : 0) - (q.s > 0.12 && q.s < 0.5 ? 0.12 * Math.abs(ca) * 0 : 0));
+    if (q.s < 0.07) k = Math.max(k, 0.55);
+    tc.copy(belly).lerp(back, k); if (sa > 0.55 && q.s > 0.12 && q.s < 0.7) tc.lerp(dk, 0.45 * sstep(0.55, 0.95, sa));
+    return tc;
+  };
+  lb.loft(st, seg, true, true, bodyCol, new V3(0, CY[0], 0.505), new V3(0, 0, -0.505));
+  const finCol = (k) => (q, ca, sa) => tc.copy(belly).lerp(back, k + (1 - k) * sstep(-0.4, 0.6, sa) * 0.5);
+  const fin = (stations, seg2, colFn) => lb.loft(stations, seg2, false, true, colFn);
+  // dorsal fin
+  {
+    const sts = [];
+    for (let k = 0; k <= 6; k++) {
+      const w = k / 6, sm = 0.5 + 0.12 * w + 0.05 * w * w;
+      const topY = cy(sm) + hh(sm) * 0.92;
+      sts.push({ c: new V3(0, topY - 0.015 + 0.125 * Math.pow(w, 0.9), 0.5 - sm), a: new V3(0, 0, 0.085 * (1 - 0.78 * w)), b: new V3(0.013 * (1 - 0.6 * w), 0, 0), s: sm });
+    }
+    fin(sts, 10, finCol(0.92));
+  }
+  // pectoral flippers
+  for (const sg of [-1, 1]) {
+    const s0 = 0.235, root = new V3(sg * hw(s0) * 0.75, cy(s0) - hh(s0) * 0.5, 0.5 - s0);
+    const span = new V3(sg * 0.62, -0.42, -0.6).normalize(), chord = new V3(0, -0.15, 1).normalize();
+    const thick = new V3().crossVectors(span, chord).normalize();
+    const sts = [];
+    for (let k = 0; k <= 5; k++) {
+      const w = k / 5; const c = root.clone().addScaledVector(span, 0.17 * w).addScaledVector(chord, -0.03 * w * w);
+      sts.push({ c, a: chord.clone().multiplyScalar(0.042 * (1 - 0.72 * w)), b: thick.clone().multiplyScalar(0.011 * (1 - 0.6 * w)), s: s0 });
+    }
+    fin(sts, 8, finCol(0.8));
+  }
+  // flukes
+  for (const sg of [-1, 1]) {
+    const sts = [];
+    for (let k = 0; k <= 6; k++) {
+      const w = k / 6;
+      const c = new V3(sg * 0.155 * w, 0.0, -0.5 - 0.02 - 0.05 * w - 0.03 * w * w);
+      sts.push({ c, a: new V3(-sg * 0.25 * w, 0, 1).normalize().multiplyScalar(0.058 * (1 - 0.75 * w)), b: new V3(0, 0.012 * (1 - 0.65 * w), 0), s: 1.0 + 0.04 * w });
+    }
+    fin(sts, 8, finCol(0.85));
+  }
+  const g = lb.geometry();
+  return { g, hw, hh, cy };
+}
+const DOLPHIN_VH = `attribute float aS; uniform float uPhase; uniform float uAmp;`;
+const DOLPHIN_VN = `{
+  float s = aS; float w0 = smoothstep(0.32, 1.02, s); float w = w0*w0;
+  float dw = 2.0*w0*(6.0*clamp((s-0.32)/0.7,0.0,1.0)*(1.0-clamp((s-0.32)/0.7,0.0,1.0))/0.7);
+  float ph = uPhase - s*4.2;
+  float dyds = uAmp*(dw*sin(ph) - 4.2*w*cos(ph));
+  objectNormal = normalize(vec3(objectNormal.x, objectNormal.y, objectNormal.z + dyds*objectNormal.y));
+}`;
+const DOLPHIN_VM = `{ float s = aS; float w = smoothstep(0.32, 1.02, s); w *= w; transformed.y += uAmp * w * sin(uPhase - s*4.2) - uAmp*0.12*sin(uPhase + 0.8); }`;
+function dolphinMat(rimHex) {
+  const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.0 });
+  m.userData.u = { uPhase: { value: 0 }, uAmp: { value: 0.05 }, uRim: { value: col(rimHex) } };
+  patch(m, 'dolphin', {
+    uniforms: m.userData.u, vHead: DOLPHIN_VH, vNorm: DOLPHIN_VN, vMain: DOLPHIN_VM,
+    fHead: `uniform vec3 uRim;`,
+    fEmis: `{ vec3 vv = normalize(cameraPosition - vWP); float fr = pow(1.0 - abs(dot(normalize(vWN), vv)), 3.0); gE += uRim * fr * 0.22; }`
+  });
+  return m;
+}
+const DG = buildDolphinGeo('#5d7385', '#dfe5e8');
+const DGk = buildDolphinGeo('#6a8091', '#e5eaec');
+function makeDolphin(geo, len, rimHex) {
+  const grp = new THREE.Group();
+  const mat = dolphinMat(rimHex);
+  const body = new THREE.Mesh(geo.g, mat); body.castShadow = true; body.receiveShadow = true; grp.add(body);
+  const eyeM = new THREE.MeshStandardMaterial({ color: 0x14191e, roughness: 0.12, metalness: 0 });
+  patch(eyeM, 'eye', {});
+  const s0 = 0.118;
+  for (const sg of [-1, 1]) { const e = new THREE.Mesh(new THREE.SphereGeometry(0.0085, 10, 8), eyeM); e.position.set(sg * geo.hw(s0) * 0.93, geo.cy(s0) - geo.hh(s0) * 0.12, 0.5 - s0); grp.add(e); }
+  grp.scale.setScalar(len);
+  scene.add(grp);
+  return { grp, mat, len, pos: new V3(), vel: new V3(), q: new THREE.Quaternion(), phase: Math.random() * 6, amp: 0.05, boost: 0, desired: new V3(), heading: new V3(0, 0, 1), direct: false, lookAtT: null };
+}
+const mom = makeDolphin(DG, 2.8, '#9fc3ff');
+const kid = makeDolphin(DGk, 1.7, '#b6d4ff');
+const DKEY = [[0, 0, 0.5], [0, 0, -0.52], [0.16, 0, -0.56], [-0.16, 0, -0.56], [0, 0.21, -0.1], [0.2, -0.1, 0.2], [-0.2, -0.1, 0.2], [0, -0.13, 0.12], [0, 0.11, -0.52], [0, -0.11, -0.52]];
+
+// ============================================================ fish
+const FISH_SP = [
+  { len: 0.24, D: 0.2, W: 0.05, f: (s, sa, ca) => s > 0.82 ? '#f0b52a' : '#f5d33b' },
+  { len: 0.17, D: 0.12, W: 0.045, f: (s, sa) => s > 0.84 ? '#2b6fc4' : (sa > 0 ? '#3c8fe6' : '#86c6ff') },
+  { len: 0.22, D: 0.14, W: 0.045, f: (s, sa) => (Math.abs(sa) > 0.85 || s > 0.84) ? '#f5d75a' : '#e8eef3' },
+  { len: 0.2, D: 0.13, W: 0.055, f: (s, sa) => (Math.abs(s - 0.2) < 0.035 || Math.abs(s - 0.45) < 0.04 || Math.abs(s - 0.7) < 0.03) ? '#f6f6f2' : '#ff8a2a' },
+  { len: 0.19, D: 0.12, W: 0.045, f: (s) => s < 0.48 ? '#9a5bd6' : (s < 0.55 ? '#cf9a8a' : '#f4cf3c') },
+  { len: 0.26, D: 0.15, W: 0.05, f: (s, sa) => s > 0.82 ? '#ffd24a' : (sa > 0.2 ? '#2fa6d0' : '#6fd3ee') }
+];
+function buildFishGeo(sp) {
+  const lb = new LB(), seg = 16, tc = new THREE.Color();
+  const st = [];
+  const NR = 18;
+  for (let k = 0; k < NR; k++) {
+    const s = k / (NR - 1);
+    const body = s < 0.8 ? Math.pow(Math.sin(Math.PI * clamp(s / 0.8 * 0.93 + 0.04, 0, 1)), 0.75) : 0;
+    const hhv = s < 0.8 ? sp.D * lerp(0.12, 1, body) : sp.D * 0.1;
+    const wwv = s < 0.8 ? sp.W * lerp(0.15, 1, body) : 0.006;
+    const finTop = (s > 0.28 && s < 0.74) ? 0.55 * Math.sin(Math.PI * (s - 0.28) / 0.46) : 0;
+    const finBot = (s > 0.5 && s < 0.74) ? 0.4 * Math.sin(Math.PI * (s - 0.5) / 0.24) : 0;
+    const tail = s >= 0.8 ? lerp(1.5, 7.5, (s - 0.8) / 0.2) : 0;
+    st.push({ c: new V3(0, 0, 0.5 - s), a: new V3(wwv, 0, 0), b: new V3(0, hhv, 0), s, ext: (ca, sa) => (sa > 0 ? (finTop + tail) * Math.pow(sa, 10) : (finBot + tail) * Math.pow(-sa, 10)) });
+  }
+  lb.loft(st, seg, true, true, (q, ca, sa) => {
+    tc.set(sp.f(q.s, sa, ca));
+    if (q.s > 0.09 && q.s < 0.15 && sa > 0.05 && sa < 0.45) tc.multiplyScalar(0.15); // eye
+    if (sa < -0.4 && q.s < 0.8) tc.lerp(new THREE.Color(1, 1, 1), 0.15);
+    return tc;
+  }, new V3(0, 0, 0.51), new V3(0, 0, -0.5));
+  const g = lb.geometry(); g.scale(sp.len, sp.len, sp.len); return g;
+}
+const FISH_VH = `attribute float aS; attribute float aPh;`;
+const FISH_VM = `{ float s = aS; float w = smoothstep(0.3, 1.0, s); transformed.x += 0.02*w*sin(uTime*10.0 + aPh*6.283 - s*5.5); }`;
+const fishMats = [], fishMeshes = [], FISH_PER = 20, FISH_TOTAL = FISH_SP.length * FISH_PER;
+const fishTint = { uTint: { value: new THREE.Color('#ff62c5') }, uTintA: { value: 0.2 } };
+FISH_SP.forEach((sp, k) => {
+  const g = buildFishGeo(sp);
+  const ph = new Float32Array(FISH_PER); for (let i = 0; i < FISH_PER; i++) ph[i] = Math.random();
+  g.setAttribute('aPh', new THREE.InstancedBufferAttribute(ph, 1));
+  const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, metalness: 0.0, side: THREE.DoubleSide });
+  patch(m, 'fish', {
+    uniforms: fishTint, vHead: FISH_VH, vMain: FISH_VM, fHead: `uniform vec3 uTint; uniform float uTintA;`,
+    fEmis: `{ vec3 vv = normalize(cameraPosition - vWP); float fr = pow(1.0 - abs(dot(normalize(vWN), vv)), 2.0); gE += uTint * (0.15 + fr) * uTintA; }`
+  });
+  const im = new THREE.InstancedMesh(g, m, FISH_PER); im.count = 0; im.frustumCulled = false; im.castShadow = false;
+  scene.add(im); fishMats.push(m); fishMeshes.push(im);
+});
+const fish = [];
+{
+  const rr = mulberry(31337);
+  for (let i = 0; i < FISH_TOTAL; i++) {
+    fish.push({ sp: i % FISH_SP.length, slot: Math.floor(i / FISH_SP.length), pos: new V3(0, -200, 0), vel: new V3(), off: new V3(rr() * 2 - 1, rr() * 2 - 1, rr() * 2 - 1), ph: rr() * 6.28, spd: 0.6 + rr() * 0.6, u: rr(), sc: 0.85 + rr() * 0.35, on: false, q: new THREE.Quaternion() });
+  }
+}
+
+// ============================================================ sky, stars, water surface, shafts
+const SKY_GLSL = `
+uniform vec3 uSkyHor; uniform vec3 uSkyZen; uniform vec3 uSunDir; uniform vec3 uSunCol; uniform vec3 uMoonDir; uniform float uNight; uniform float uTime;
+float h21(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x*p.y); }
+float vn2(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(h21(i), h21(i+vec2(1.0,0.0)), f.x), mix(h21(i+vec2(0.0,1.0)), h21(i+vec2(1.0,1.0)), f.x), f.y); }
+float fbm2(vec2 p){ float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++){ s += a*vn2(p); p = p*2.03 + vec2(1.7, 9.2); a *= 0.5; } return s; }
+vec3 skyCol(vec3 d){
+  float e = clamp(d.y, -0.3, 1.0);
+  vec3 c = mix(uSkyHor, uSkyZen, pow(max(e, 0.0), 0.5));
+  c = mix(c, uSkyHor*0.7, smoothstep(0.0, -0.3, e));
+  float sd = max(dot(d, uSunDir), 0.0);
+  c += uSunCol * (pow(sd, 6.0)*0.45 + pow(sd, 400.0)*2.0) * (1.0 - uNight);
+  vec2 cp = d.xz / max(d.y + 0.18, 0.06) * 0.9;
+  float n = fbm2(cp + vec2(uTime*0.004, uTime*0.002));
+  float cl = smoothstep(0.5, 0.82, n) * smoothstep(0.0, 0.22, d.y);
+  vec3 cc = mix(uSkyHor*1.1 + uSunCol*0.2*(1.0 - uNight), uSkyZen*1.6 + vec3(0.03,0.04,0.08), uNight*0.7);
+  c = mix(c, cc, cl*0.55);
+  float md = dot(d, uMoonDir);
+  c += vec3(0.86, 0.91, 1.0) * (smoothstep(0.99935, 0.99955, md)*3.0 + pow(max(md, 0.0), 120.0)*0.25 + pow(max(md, 0.0), 12.0)*0.05) * uNight;
+  return c;
+}`;
+const SU = {
+  uSkyHor: { value: new THREE.Color() }, uSkyZen: { value: new THREE.Color() }, uSunDir: { value: new V3(0.8, 0.1, -0.6).normalize() }, uSunCol: { value: new THREE.Color('#ffb070') },
+  uMoonDir: { value: new V3(-0.55, 0.42, -0.72).normalize() }, uNight: { value: 0 }, uTime: U.uTime
+};
+const skyMat = new THREE.ShaderMaterial({
+  uniforms: Object.assign({ uUnder: { value: 1 }, uFogCol: U.uFogCol }, SU), side: THREE.BackSide, depthWrite: false,
+  vertexShader: `varying vec3 vD; void main(){ vD = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }`,
+  fragmentShader: SKY_GLSL + `uniform float uUnder; uniform vec3 uFogCol; varying vec3 vD; void main(){ vec3 d = normalize(vD); vec3 c;
+  if (uUnder > 0.5) { c = uFogCol * (1.0 + 0.22*smoothstep(0.05, 0.95, d.y) - 0.22*smoothstep(-0.05, -0.9, d.y)); } else c = skyCol(d);
+  gl_FragColor = vec4(c, 1.0);
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+}`
+});
+const sky = new THREE.Mesh(new THREE.SphereGeometry(120, 32, 16), skyMat); sky.frustumCulled = false; sky.renderOrder = -10; camera.add(sky);
+// stars
+const stars = (() => {
+  const N = 1400, pos = new Float32Array(N * 3), sz = new Float32Array(N), ph = new Float32Array(N); const rr = mulberry(1234);
+  for (let i = 0; i < N; i++) { let d; do { d = new V3(rr() * 2 - 1, rr(), rr() * 2 - 1); } while (d.lengthSq() > 1 || d.y < 0.04); d.normalize().multiplyScalar(110); pos.set([d.x, d.y, d.z], i * 3); sz[i] = 0.4 + Math.pow(rr(), 5) * 2.6; ph[i] = rr() * 6.28; }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aSize', new THREE.BufferAttribute(sz, 1)); g.setAttribute('aPh', new THREE.BufferAttribute(ph, 1));
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uTime: U.uTime, uVis: { value: 0 }, uPR: { value: 1 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: `attribute float aSize; attribute float aPh; uniform float uTime; uniform float uPR; varying float vA; void main(){ vec4 mv = modelViewMatrix*vec4(position,1.0); gl_Position = projectionMatrix*mv; gl_PointSize = (1.2 + aSize*1.6)*uPR; vA = (0.55 + 0.45*sin(uTime*(1.0 + aPh*0.5) + aPh*9.0)) * smoothstep(0.0, 18.0, position.y); }`,
+    fragmentShader: `uniform float uVis; varying float vA; void main(){ vec2 p = gl_PointCoord*2.0-1.0; float r = dot(p,p); if (r > 1.0) discard; float a = exp(-r*3.5)*vA*uVis; gl_FragColor = vec4(vec3(0.85,0.9,1.0)*a*1.6, 1.0);
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+}`
+  });
+  const p = new THREE.Points(g, m); p.frustumCulled = false; p.visible = false; camera.add(p); return p;
+})();
+// water surface
+const WU = {
+  uTime: U.uTime, uRip: { value: [new THREE.Vector4(0, 0, -99, 0), new THREE.Vector4(0, 0, -99, 0), new THREE.Vector4(0, 0, -99, 0), new THREE.Vector4(0, 0, -99, 0)] }, uWaveAmp: { value: 1 },
+  uFogCol: U.uFogCol, uFogNear: U.uFogNear, uFogFar: U.uFogFar, uAirFog: U.uAirFog, uDeep: { value: new THREE.Color('#1b3e70') }, uGlowCol: { value: new THREE.Color('#ff7ad0') }, uGlowAmt: { value: 0 },
+  uSkyHor: SU.uSkyHor, uSkyZen: SU.uSkyZen, uSunDir: SU.uSunDir, uSunCol: SU.uSunCol, uMoonDir: SU.uMoonDir, uNight: SU.uNight
+};
+const WATER_H = `
+uniform vec4 uRip[4]; uniform float uWaveAmp;
+float whD05(vec2 p, float t){
+  float h = 0.0;
+  h += 0.13*sin(dot(p, vec2(0.96, 0.28))*1.142 - t*3.35);
+  h += 0.09*sin(dot(p, vec2(-0.5, 0.866))*1.745 - t*4.13 + 1.3);
+  h += 0.06*sin(dot(p, vec2(0.707, -0.707))*2.618 - t*5.07 + 2.1);
+  h += 0.04*sin(dot(p, vec2(-0.894, -0.447))*3.927 - t*6.2 + 0.7);
+  h *= uWaveAmp;
+  for (int i = 0; i < 4; i++){ vec4 r = uRip[i]; float age = t - r.z; if (age > 0.0 && age < 7.0){ float d = length(p - r.xy); h += r.w * sin(d*4.5 - age*7.0) * exp(-abs(d - age*1.9)*1.1) * exp(-age*0.45); } }
+  return h;
+}`;
+const waterMat = new THREE.ShaderMaterial({
+  uniforms: WU, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+  vertexShader: `uniform float uTime; ${WATER_H} varying vec3 vWP; void main(){ vec4 wp = modelMatrix*vec4(position,1.0); wp.y += whD05(wp.xz, uTime); vWP = wp.xyz; gl_Position = projectionMatrix*viewMatrix*wp; }`,
+  fragmentShader: `uniform float uTime; ${WATER_H}
+uniform vec3 uFogCol; uniform float uFogNear; uniform float uFogFar; uniform vec3 uAirFog; uniform vec3 uDeep; uniform vec3 uGlowCol; uniform float uGlowAmt;
+${SKY_GLSL.replace('uniform float uTime;', '')}
+varying vec3 vWP;
+void main(){
+  float e = 0.07; vec2 p = vWP.xz;
+  float hx = whD05(p + vec2(e, 0.0), uTime) - whD05(p - vec2(e, 0.0), uTime);
+  float hz = whD05(p + vec2(0.0, e), uTime) - whD05(p - vec2(0.0, e), uTime);
+  vec3 N = normalize(vec3(-hx/(2.0*e), 1.0, -hz/(2.0*e)));
+  N = normalize(N + vec3(sin(p.x*7.0 + uTime*2.3)*0.03, 0.0, sin(p.y*6.3 - uTime*2.1)*0.03));
+  vec3 V = normalize(vWP - cameraPosition);
+  float dist = length(vWP - cameraPosition);
+  vec3 colr; float alpha;
+  float rr = length(vWP.xz);
+  if (cameraPosition.y < 0.0) {
+    vec3 R = refract(V, -N, 1.333);
+    if (dot(R, R) < 0.001) { colr = uDeep*1.1 + uGlowCol*uGlowAmt*0.25; }
+    else { colr = skyCol(normalize(R))*1.05 + vec3(0.04, 0.06, 0.08); float edge = smoothstep(0.0, 0.25, dot(R, vec3(0.0,1.0,0.0))); colr = mix(uDeep*1.4, colr, edge); }
+    colr += uGlowCol * uGlowAmt * exp(-rr*rr*0.004) * 0.25;
+    float f = smoothstep(uFogNear*0.6, uFogFar*1.05, dist);
+    colr = mix(colr, uFogCol, f);
+    alpha = 1.0;
+  } else {
+    vec3 R = reflect(V, N); R.y = abs(R.y);
+    float fres = 0.02 + 0.98*pow(1.0 - max(dot(-V, N), 0.0), 5.0);
+    vec3 refl = skyCol(R);
+    float glow = exp(-rr*rr*0.012);
+    vec3 under = uDeep*0.32 + uGlowCol*uGlowAmt*glow*0.55;
+    colr = mix(under, refl, fres);
+    float mg = pow(max(dot(R, uMoonDir), 0.0), 260.0)*uNight*4.0;
+    colr += vec3(0.85, 0.9, 1.0)*mg;
+    alpha = mix(0.5, 1.0, fres);
+    float f = smoothstep(50.0, 160.0, dist)*0.85;
+    colr = mix(colr, uAirFog, f); alpha = mix(alpha, 1.0, f);
+  }
+  gl_FragColor = vec4(colr, alpha);
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+}`
+});
+const water = (() => {
+  const seg = [70, 100, 140][DET];
+  const g = new THREE.PlaneGeometry(260, 260, seg, seg); g.rotateX(-Math.PI / 2);
+  const m = new THREE.Mesh(g, waterMat); m.renderOrder = 3; m.frustumCulled = false; scene.add(m); return m;
+})();
+// light shafts
+const shafts = [];
+{
+  const rr = mulberry(222);
+  const g = new THREE.CylinderGeometry(1, 3.4, 26, 20, 1, true); g.translate(0, -13, 0);
+  for (let k = 0; k < 11; k++) {
+    const m = new THREE.ShaderMaterial({
+      uniforms: { uTime: U.uTime, uCol: { value: new THREE.Color('#ffe5c5') }, uStr: { value: 0.08 }, uSeed: { value: rr() * 10 }, uFogFar: U.uFogFar },
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+      vertexShader: `varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vWP; void main(){ vUv = uv; vec4 wp = modelMatrix*vec4(position,1.0); vWP = wp.xyz; vN = normalize(mat3(modelMatrix)*normal); vV = normalize(cameraPosition - wp.xyz); gl_Position = projectionMatrix*viewMatrix*wp; }`,
+      fragmentShader: `uniform float uTime; uniform vec3 uCol; uniform float uStr; uniform float uSeed; uniform float uFogFar; varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vWP;
+void main(){ float ed = pow(abs(dot(normalize(vN), normalize(vV))), 2.2); float al = smoothstep(0.0, 0.7, vUv.y) * (1.0 - smoothstep(0.82, 0.99, vUv.y)) * (0.55 + 0.45*sin(uTime*0.45 + uSeed + vUv.x*18.0)*sin(uTime*0.31 + vUv.x*7.0 + uSeed*2.0));
+ float d = length(vWP - cameraPosition); al *= (1.0 - smoothstep(4.0, uFogFar*1.2, d)*0.85) * smoothstep(0.5, 4.0, d);
+ gl_FragColor = vec4(uCol*ed*al*uStr, 1.0);
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+}`
+    });
+    const mesh = new THREE.Mesh(g, m);
+    const a = rr() * 6.28, r = 3 + rr() * 26;
+    mesh.position.set(Math.cos(a) * r, 0, Math.sin(a) * r); mesh.rotation.set((rr() - 0.5) * 0.25 + 0.12, rr() * 6.28, (rr() - 0.5) * 0.25);
+    mesh.scale.set(0.7 + rr() * 0.8, 1, 0.7 + rr() * 0.8); mesh.renderOrder = 4; mesh.frustumCulled = false;
+    scene.add(mesh); shafts.push(mesh);
+  }
+}
+// marine snow
+const snow = (() => {
+  const N = 800, B = 26, pos = new Float32Array(N * 3), rnd = new Float32Array(N); const rr = mulberry(55);
+  for (let i = 0; i < N; i++) { pos[i * 3] = rr() * B; pos[i * 3 + 1] = rr() * B; pos[i * 3 + 2] = rr() * B; rnd[i] = rr(); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aR', new THREE.BufferAttribute(rnd, 1));
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uTime: U.uTime, uCam: { value: new V3() }, uBox: { value: B }, uPx: { value: 500 }, uCol: { value: new THREE.Color('#cfe6ff') } },
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: `attribute float aR; uniform float uTime; uniform vec3 uCam; uniform float uBox; uniform float uPx; varying float vA;
+void main(){ vec3 p = position + vec3(sin(uTime*0.1 + aR*20.0)*0.4, -uTime*0.06*(0.4 + aR), cos(uTime*0.13 + aR*13.0)*0.4);
+ p = uCam + mod(p - uCam + uBox*0.5, uBox) - uBox*0.5; p.y = min(p.y, -0.3);
+ vec4 mv = viewMatrix*vec4(p, 1.0); gl_Position = projectionMatrix*mv; float dz = -mv.z;
+ gl_PointSize = clamp((0.012 + aR*0.025)*uPx/max(dz, 0.1), 1.0, 9.0);
+ vA = (0.18 + 0.4*aR) * smoothstep(uBox*0.5, uBox*0.15, dz) * smoothstep(0.3, 1.4, dz); }`,
+    fragmentShader: `uniform vec3 uCol; varying float vA; void main(){ vec2 p = gl_PointCoord*2.0-1.0; float r = dot(p,p); if (r > 1.0) discard; gl_FragColor = vec4(uCol*exp(-r*2.5)*vA, 1.0);
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+}`
+  });
+  const p = new THREE.Points(g, m); p.frustumCulled = false; scene.add(p); return p;
+})();
+
+// ============================================================ particles pool (bubbles, sparkles, drops)
+const PMAX = 520, NGUIDE = 15;
+const PP = { pos: new Float32Array(PMAX * 3), col: new Float32Array(PMAX * 3), size: new Float32Array(PMAX), alpha: new Float32Array(PMAX), kind: new Float32Array(PMAX),
+  vel: new Float32Array(PMAX * 3), life: new Float32Array(PMAX), age: new Float32Array(PMAX), a0: new Float32Array(PMAX), on: new Uint8Array(PMAX), next: NGUIDE };
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(PP.pos, 3).setUsage(THREE.DynamicDrawUsage));
+pGeo.setAttribute('aColor', new THREE.BufferAttribute(PP.col, 3).setUsage(THREE.DynamicDrawUsage));
+pGeo.setAttribute('aSize', new THREE.BufferAttribute(PP.size, 1).setUsage(THREE.DynamicDrawUsage));
+pGeo.setAttribute('aAlpha', new THREE.BufferAttribute(PP.alpha, 1).setUsage(THREE.DynamicDrawUsage));
+pGeo.setAttribute('aKind', new THREE.BufferAttribute(PP.kind, 1).setUsage(THREE.DynamicDrawUsage));
+const pMat = new THREE.ShaderMaterial({
+  uniforms: { uPx: { value: 500 }, uFogCol: U.uFogCol, uFogFar: U.uFogFar, uAbove: U.uAbove },
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  vertexShader: `attribute vec3 aColor; attribute float aSize; attribute float aAlpha; attribute float aKind; uniform float uPx; uniform float uFogFar; varying vec3 vC; varying float vA; varying float vK;
+void main(){ vec4 mv = modelViewMatrix*vec4(position,1.0); gl_Position = projectionMatrix*mv; float dz = max(-mv.z, 0.1);
+ gl_PointSize = clamp(aSize*uPx/dz, 0.0, 160.0); vC = aColor; vK = aKind; vA = aAlpha * (1.0 - smoothstep(uFogFar*0.35, uFogFar*1.1, dz)*0.85) * smoothstep(0.15, 0.6, dz); }`,
+  fragmentShader: `varying vec3 vC; varying float vA; varying float vK;
+void main(){ vec2 p = gl_PointCoord*2.0-1.0; float r = length(p); if (r > 1.0 || vA < 0.002) discard; vec3 c;
+ if (vK < 0.5) { float ring = smoothstep(0.62, 0.9, r)*smoothstep(1.0, 0.9, r); float hl = smoothstep(0.42, 0.0, length(p - vec2(-0.35, -0.38))); float body = 0.18*(1.0 - r);
+   c = vC*(ring*1.1 + body) + vec3(1.0)*hl*0.85 + vC*exp(-r*r*2.0)*0.12; }
+ else { float g = exp(-r*r*5.0); c = vC*g*1.7 + vec3(1.0)*exp(-r*r*22.0)*0.5; }
+ gl_FragColor = vec4(c*vA, 1.0);
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+}`
+});
+const pPoints = new THREE.Points(pGeo, pMat); pPoints.frustumCulled = false; pPoints.renderOrder = 6; scene.add(pPoints);
+function spawnP(kind, p, v, c, size, life, alpha) {
+  let k = -1;
+  for (let n = 0; n < PMAX - NGUIDE; n++) { const j = NGUIDE + ((PP.next - NGUIDE + n) % (PMAX - NGUIDE)); if (!PP.on[j]) { k = j; break; } }
+  if (k < 0) k = NGUIDE + ((PP.next - NGUIDE) % (PMAX - NGUIDE));
+  PP.next = NGUIDE + ((k - NGUIDE + 1) % (PMAX - NGUIDE));
+  PP.on[k] = 1; PP.kind[k] = kind; PP.pos[k * 3] = p.x; PP.pos[k * 3 + 1] = p.y; PP.pos[k * 3 + 2] = p.z;
+  PP.vel[k * 3] = v.x; PP.vel[k * 3 + 1] = v.y; PP.vel[k * 3 + 2] = v.z; PP.col[k * 3] = c.r; PP.col[k * 3 + 1] = c.g; PP.col[k * 3 + 2] = c.b;
+  PP.size[k] = size; PP.life[k] = life; PP.age[k] = 0; PP.a0[k] = alpha ?? 1; PP.alpha[k] = 0;
+}
+function updateP(dt) {
+  for (let k = NGUIDE; k < PMAX; k++) {
+    if (!PP.on[k]) continue;
+    PP.age[k] += dt; const a = PP.age[k], L = PP.life[k];
+    if (a >= L) { PP.on[k] = 0; PP.alpha[k] = 0; continue; }
+    const kind = PP.kind[k], i3 = k * 3;
+    if (kind < 0.5) { // bubble
+      PP.vel[i3 + 1] = Math.min(PP.vel[i3 + 1] + 0.9 * dt, 1.6);
+      PP.vel[i3] *= 0.985; PP.vel[i3 + 2] *= 0.985;
+      PP.pos[i3] += Math.sin(a * 7 + k) * 0.12 * dt;
+      if (PP.pos[i3 + 1] > -0.15) { PP.on[k] = 0; PP.alpha[k] = 0; continue; }
+    } else if (kind < 1.5) { // sparkle
+      PP.vel[i3] *= 0.96; PP.vel[i3 + 1] *= 0.96; PP.vel[i3 + 2] *= 0.96;
+    } else { // drop
+      PP.vel[i3 + 1] -= 9.8 * dt;
+      if (PP.pos[i3 + 1] < -0.05 && PP.vel[i3 + 1] < 0) { PP.on[k] = 0; PP.alpha[k] = 0; continue; }
+    }
+    PP.pos[i3] += PP.vel[i3] * dt; PP.pos[i3 + 1] += PP.vel[i3 + 1] * dt; PP.pos[i3 + 2] += PP.vel[i3 + 2] * dt;
+    PP.alpha[k] = PP.a0[k] * Math.min(1, a / 0.12) * Math.min(1, (L - a) / (L * 0.35));
+  }
+  for (const n of ['position', 'aColor', 'aSize', 'aAlpha', 'aKind']) pGeo.attributes[n].needsUpdate = true;
+}
+// ripples
+const ripples = [];
+{
+  const g = new THREE.PlaneGeometry(1, 1);
+  for (let k = 0; k < 8; k++) {
+    const m = new THREE.ShaderMaterial({
+      uniforms: { uCol: { value: new THREE.Color() }, uA: { value: 0 }, uW: { value: 0.08 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: `varying vec2 vUv; void main(){ vUv = uv*2.0-1.0; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+      fragmentShader: `uniform vec3 uCol; uniform float uA; uniform float uW; varying vec2 vUv; void main(){ float r = length(vUv); float d = abs(r - 0.85); float a = exp(-d*d/(uW*uW))*uA + exp(-r*r*6.0)*uA*0.08; if (r > 1.0) discard; gl_FragColor = vec4(uCol*a, 1.0);
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+}`
+    });
+    const mesh = new THREE.Mesh(g, m); mesh.visible = false; mesh.renderOrder = 7; mesh.frustumCulled = false; scene.add(mesh);
+    ripples.push({ mesh, m, age: 0, life: 1, s0: 0.2, s1: 2, on: false });
+  }
+}
+let ripIdx = 0;
+function spawnRipple(p, c, s0, s1, life, strength, flat) {
+  const r = ripples[ripIdx++ % ripples.length];
+  r.mesh.position.copy(p); r.m.uniforms.uCol.value.copy(c); r.age = 0; r.life = life; r.s0 = s0; r.s1 = s1; r.on = true; r.str = strength ?? 1; r.flat = !!flat; r.mesh.visible = true;
+}
+function updateRipples(dt) {
+  for (const r of ripples) {
+    if (!r.on) continue; r.age += dt; const t = r.age / r.life;
+    if (t >= 1) { r.on = false; r.mesh.visible = false; continue; }
+    if (r.flat) r.mesh.quaternion.setFromAxisAngle(XA, -Math.PI / 2); else r.mesh.quaternion.copy(camera.quaternion); r.mesh.scale.setScalar(lerp(r.s0, r.s1, 1 - Math.pow(1 - t, 2.2)));
+    r.m.uniforms.uA.value = r.str * (1 - t) * Math.min(1, t * 8) * 0.9;
+  }
+}
+let surfRip = 0;
+function surfaceRipple(x, z, s) { const v = WU.uRip.value[surfRip++ % 4]; v.set(x, z, U.uTime.value, s); }
+
+// ============================================================ audio
+const AU = { ctx: null, master: null, wet: null, nb: null, amb: null, lp: null, wind: null, waves: null, nextBub: 2 };
+function ensureAudio() {
+  try {
+    if (!AU.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return; AU.ctx = new C(); audioBuild(); }
+    if (AU.ctx.state !== 'running') { const p = AU.ctx.resume(); if (p && p.catch) p.catch(() => {}); }
+  } catch (e) { /* audio unavailable */ }
+}
+function audioBuild() {
+  const c = AU.ctx;
+  const comp = c.createDynamicsCompressor(); comp.threshold.value = -16; comp.knee.value = 14; comp.ratio.value = 5; comp.attack.value = 0.004; comp.release.value = 0.25; comp.connect(c.destination);
+  const master = c.createGain(); master.gain.value = 0.6; master.connect(comp); AU.master = master;
+  const len = Math.floor(c.sampleRate * 2.8), ir = c.createBuffer(2, len, c.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.8); }
+  const conv = c.createConvolver(); conv.buffer = ir; const wet = c.createGain(); wet.gain.value = 0.42; conv.connect(wet); wet.connect(master); AU.wet = conv;
+  const nb = c.createBuffer(1, c.sampleRate * 3, c.sampleRate); const nd = nb.getChannelData(0); let last = 0;
+  for (let i = 0; i < nd.length; i++) { const w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; nd[i] = w * 0.5 + last * 3.0; }
+  AU.nb = nb;
+  const src = (gainV, filt, f, q) => { const s = c.createBufferSource(); s.buffer = nb; s.loop = true; s.loopStart = Math.random(); const fl = c.createBiquadFilter(); fl.type = filt; fl.frequency.value = f; fl.Q.value = q; const g = c.createGain(); g.gain.value = gainV; s.connect(fl); fl.connect(g); g.connect(master); s.start(); return { s, fl, g }; };
+  AU.amb = src(0.0, 'lowpass', 260, 0.6); AU.amb.g.gain.setTargetAtTime(0.11, c.currentTime, 1.5);
+  AU.flow = src(0.0, 'bandpass', 520, 0.8); AU.flow.g.gain.setTargetAtTime(0.025, c.currentTime, 2);
+  AU.wind = src(0.0, 'bandpass', 900, 0.5);
+  AU.waves = src(0.0, 'lowpass', 480, 0.7);
+}
+function note(f, when, dur, vol, type, send, att) {
+  const c = AU.ctx; if (!c) return;
+  const o = c.createOscillator(); o.type = type || 'sine'; o.frequency.value = f;
+  const g = c.createGain(); g.gain.setValueAtTime(0.0001, when); g.gain.linearRampToValueAtTime(vol, when + (att || 0.008)); g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+  o.connect(g); g.connect(AU.master); if (send) { const sg = c.createGain(); sg.gain.value = send; g.connect(sg); sg.connect(AU.wet); }
+  o.start(when); o.stop(when + dur + 0.05);
+}
+const NT = { C2: 65.41, G2: 98, C3: 130.81, G3: 196, C4: 261.63, E4: 329.63, G4: 392, C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880, C6: 1046.5, E6: 1318.5, G6: 1567.98, C7: 2093 };
+function sndSuccess(stage) {
+  const c = AU.ctx; if (!c || c.state !== 'running') return; const t = c.currentTime + 0.005;
+  const seqs = [[NT.C5, NT.G5], [NT.C5, NT.E5, NT.G5], [NT.C5, NT.E5, NT.G5, NT.C6], [NT.C5, NT.G5, NT.C6, NT.E6, NT.G6, NT.C7]];
+  const seq = seqs[Math.min(3, stage)], gap = stage >= 3 ? 0.06 : 0.09;
+  seq.forEach((f, k) => { note(f, t + k * gap, 1.4 + k * 0.1, 0.12, 'sine', 0.5); note(f * 2, t + k * gap, 0.6, 0.025, 'triangle', 0.4); });
+  if (stage >= 3) { note(NT.C4, t, 2.2, 0.08, 'sine', 0.6, 0.03); note(NT.G4, t + 0.04, 2.0, 0.05, 'sine', 0.6, 0.03); }
+}
+function sndBubble(v) { const c = AU.ctx; if (!c || c.state !== 'running') return; const t = c.currentTime; const o = c.createOscillator(), g = c.createGain(); const f0 = 280 + Math.random() * 300; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * 2.8, t + 0.07); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.05 * (v || 1), t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1); o.connect(g); g.connect(AU.master); o.start(t); o.stop(t + 0.12); }
+function sndSparkle(n) { const c = AU.ctx; if (!c || c.state !== 'running') return; const t = c.currentTime; for (let k = 0; k < (n || 4); k++) note(2400 + Math.random() * 1800, t + k * 0.05 + Math.random() * 0.03, 0.25, 0.014, 'triangle', 0.6); }
+function sndSplash(big) {
+  const c = AU.ctx; if (!c || c.state !== 'running') return; const t = c.currentTime;
+  const s = c.createBufferSource(); s.buffer = AU.nb; const f = c.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 0.7; f.frequency.setValueAtTime(2200, t); f.frequency.exponentialRampToValueAtTime(500, t + 0.8);
+  const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(big ? 0.22 : 0.12, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+  s.connect(f); f.connect(g); g.connect(AU.master); const sg = c.createGain(); sg.gain.value = 0.3; g.connect(sg); sg.connect(AU.wet); s.start(t, Math.random()); s.stop(t + 1.3);
+  note(110, t, 0.35, 0.08, 'sine', 0.2);
+}
+function sndClimax() {
+  const c = AU.ctx; if (!c || c.state !== 'running') return; const t = c.currentTime + 0.01;
+  const chord = [NT.C2, NT.G2, NT.C3, NT.G3, NT.C4, NT.E4, NT.G4, NT.C5, NT.E5, NT.G5, NT.C6, NT.E6, NT.G6];
+  chord.forEach((f, k) => { note(f, t + k * 0.16, 5.5 - k * 0.15, k < 3 ? 0.07 : 0.05, k < 4 ? 'sine' : (k % 2 ? 'triangle' : 'sine'), 0.65, 0.25); });
+}
+function sndRise() { const c = AU.ctx; if (!c || c.state !== 'running') return; const t = c.currentTime + 0.01; [NT.C4, NT.G4, NT.C5, NT.E5, NT.G5, NT.C6].forEach((f, k) => note(f, t + k * 0.22, 2.6, 0.06, 'sine', 0.6, 0.05)); }
+function audioEnv(dt, depth01, above) {
+  const c = AU.ctx; if (!c || !AU.amb) return; const t = c.currentTime;
+  AU.amb.fl.frequency.setTargetAtTime(220 + 950 * (1 - depth01), t, 0.5);
+  AU.amb.g.gain.setTargetAtTime(above ? 0.015 : 0.11, t, 0.4);
+  AU.flow.g.gain.setTargetAtTime(above ? 0.0 : 0.025, t, 0.4);
+  AU.wind.g.gain.setTargetAtTime(above ? 0.05 : 0.0, t, 0.6);
+  AU.waves.g.gain.setTargetAtTime(above ? 0.05 + 0.03 * Math.sin(t * 0.7) : 0.0, t, 0.3);
+  if (!above) { AU.nextBub -= dt; if (AU.nextBub < 0) { AU.nextBub = 2 + Math.random() * 4; sndBubble(0.5); } }
+}
+
+// ============================================================ game state
+const G = {
+  state: 'READY', st: 0, idx: SKIP, mode: 'main', p: 0, pTo: 0, idle: 0, tapsInStage: 0, climaxT: 0, freeK: 0, freeTaps: 0,
+  cur: null, from: null, swim: null, fishMode: 'gather', fishC: new V3(), fishR: 1, fishP0: new V3(), fishP1: new V3(),
+  fishActive: 0, flash: 0, flashCol: new THREE.Color(), wave: null, lastLight: 0, bub: 0, guideBoost: 0, cl: {}, free: null
+};
+window.__game = G;
+
+function setState(s) { G.state = s; G.st = 0; log(s, 'idx=' + G.idx, 'mode=' + G.mode, 't=' + U.uTime.value.toFixed(1)); }
+function fishTargetCount() {
+  const scale = QP[QM.cur].fish / 120;
+  if (G.mode === 'free' || G.state === 'CLIMAX' || G.state === 'AFTERGLOW') return Math.round(120 * scale);
+  const stg = Math.min(3, Math.floor(G.idx / 5)), k = G.idx % 5;
+  const lv = [0, 24, 48, 80, 120];
+  return Math.round(lerp(lv[stg], lv[stg + 1], k / 5) * scale);
+}
+
+// ============================================================ camera rig
+const CAM = { L: new V3(), az: 0, el: 0.2, d: 9, init: false, Ld: new V3(), azd: 0, eld: 0.2, under: true, camY: null, pts: [], np: 0, settled: false };
+for (let k = 0; k < 48; k++) CAM.pts.push(new V3());
+function dirFrom(az, el, out) { return (out || new V3()).set(Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az)); }
+const _f = new V3(), _r = new V3(), _u = new V3(), _v = new V3(), _dir = new V3();
+function camBasis(dir) { _f.copy(dir).negate(); _r.crossVectors(_f, UP).normalize(); _u.crossVectors(_r, _f); }
+function fitDistance(L, dir, pts, n, minD) {
+  camBasis(dir);
+  const portrait = camera.aspect < 1;
+  const mX = portrait ? 0.82 : 0.84, mY = portrait ? 0.86 : 0.84;
+  const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2), tanH = tanV * camera.aspect;
+  let d = minD;
+  for (let k = 0; k < n; k++) {
+    _v.subVectors(pts[k], L);
+    const x = _v.dot(_r), y = _v.dot(_u), z = _v.dot(dir);
+    const need = Math.max(Math.abs(x) / (mX * tanH), Math.abs(y) / (mY * tanV)) + z;
+    if (need > d) d = need;
+    if (z + 1.2 > d) d = z + 1.2;
+  }
+  return d;
+}
+function pushPt(p) { if (CAM.np < CAM.pts.length) CAM.pts[CAM.np++].copy(p); }
+const _dk = new V3();
+function pushDolphin(D) {
+  D.grp.updateMatrixWorld(true);
+  for (const k of DKEY) { _dk.set(k[0], k[1], k[2]).applyMatrix4(D.grp.matrixWorld); pushPt(_dk); }
+}
+function pushTarget(t) { for (const c of t.corners) pushPt(c); }
+
+// pose dolphins relative to a frame
+const _pk = new V3(), _pm = new V3();
+function poseFrame(L, az, el, coralR, outKid, outMom, hk, hm) {
+  dirFrom(az, el, _dir); camBasis(_dir);
+  const A = 3.0 + coralR, k = camera.aspect < 1 ? 0.55 : 1.0;
+  outKid.copy(L).addScaledVector(_dir, A).addScaledVector(_r, -1.25 * k).addScaledVector(_u, -1.3);
+  outMom.copy(L).addScaledVector(_dir, A - 0.9).addScaledVector(_r, 1.45 * k).addScaledVector(_u, -0.8);
+  for (const o of [outKid, outMom]) { const fy = floorH(o.x, o.z) + 0.75; if (o.y < fy) o.y = fy; if (o.y > -0.7) o.y = -0.7; const rr = Math.hypot(o.x, o.z), tr = towerBaseR(o.y) * 1.25 + 1.2; if (rr < tr && o.y < TOP + 0.5) { o.x *= tr / Math.max(rr, 0.01); o.z *= tr / Math.max(rr, 0.01); } }
+  const fx = -_dir.x, fz = -_dir.z, fl = Math.hypot(fx, fz) || 1;
+  hk.set(fx / fl * 0.5, 0, fz / fl * 0.5).add(_r).normalize();
+  hm.set(fx / fl * 0.42, 0, fz / fl * 0.42).add(_r).normalize();
+}
+
+// ============================================================ target helpers
+function curTarget() { return G.cur; }
+function targetFrame(t, out) {
+  out.L.copy(t.center); out.az = t.az; out.el = t.el ?? 0.2; out.R = t.radius; return out;
+}
+function placeFree(k) {
+  const obj = freePool[k % freePool.length];
+  const ang = G.freeA0 - k * 0.22, rad = 46 + 1.2 * Math.sin(k * 1.7);
+  const x = Math.cos(ang) * rad, z = Math.sin(ang) * rad, y = floorH(x, z) - 0.08;
+  const radial = new V3(Math.cos(ang), 0, Math.sin(ang));
+  basisMatrix(new V3(x, y, z), new V3((Math.sin(k * 3.1)) * 0.15, 1, Math.cos(k * 2.3) * 0.15).normalize(), radial, tmpM);
+  tmpM.decompose(obj.mesh.position, obj.mesh.quaternion, obj.mesh.scale);
+  obj.col.copy(PALETTE[(k + 1) % 4]);
+  const ac = obj.mesh.geometry.attributes.aCol; for (let i = 0; i < ac.count; i++) ac.setXYZ(i, obj.col.r, obj.col.g, obj.col.b); ac.needsUpdate = true;
+  obj.halo.material.color.copy(obj.col);
+  obj.wake = 0; obj.awake = false; obj.glow = 1; obj.mat.userData.u.uWake.value = 0; obj.halo.material.opacity = 0; obj.grow = 0;
+  obj.az = ang + 0.12; obj.el = 0.24; obj.mesh.visible = true; obj.mesh.scale.setScalar(1);
+  finishTarget(obj);
+  obj.mesh.scale.setScalar(0.01);
+  obj.slot = k;
+  return obj;
+}
+
+// ============================================================ guide bubbles
+const guide = { t: 0, on: false, j: [] };
+for (let j = 0; j < NGUIDE; j++) guide.j.push({ p: new V3(), ph: j / NGUIDE });
+function updateGuide(dt, t) {
+  const active = !!t && (G.state === 'READY' || G.state === 'WAIT_TOUCH' || G.state === 'FREE_PLAY') && (G.mode !== 'free' || t.grow > 0.9);
+  guide.t += dt;
+  const n = t && t.type === 'final' ? 15 : 12;
+  const gold = t && t.type === 'final';
+  for (let j = 0; j < NGUIDE; j++) {
+    const k = j;
+    if (!active || j >= n) { PP.alpha[k] = Math.max(0, PP.alpha[k] - dt * 3); continue; }
+    const P = 4.4, tau = (guide.t + j * (P / n)) % P, R = t.radius;
+    const boost = 1 + G.guideBoost * 0.35;
+    const ang = j * 2.399 + guide.t * 1.25;
+    const orb = _v.set(Math.cos(ang) * R * (1.5 - 0.35 * Math.min(1, tau / 2.4)) * boost, Math.sin(ang * 1.7 + j) * R * 0.45, Math.sin(ang) * R * (1.5 - 0.35 * Math.min(1, tau / 2.4)) * boost).add(t.center);
+    const tip = t.tipsW[j % t.tipsW.length];
+    let a = 1;
+    const p = guide.j[j].p;
+    if (tau < 2.4) { p.copy(orb); a = Math.min(1, tau / 0.4); }
+    else if (tau < 3.6) { p.copy(orb).lerp(tip, easeS((tau - 2.4) / 1.2)); }
+    else { p.copy(tip); p.y += (tau - 3.6) * 0.5; a = 1 - (tau - 3.6) / 0.8; }
+    const c = gold ? C_GOLD : C_BUB;
+    PP.pos[k * 3] = p.x; PP.pos[k * 3 + 1] = p.y; PP.pos[k * 3 + 2] = p.z;
+    PP.col[k * 3] = c.r; PP.col[k * 3 + 1] = c.g; PP.col[k * 3 + 2] = c.b; PP.kind[k] = 0;
+    PP.size[k] = (0.07 + 0.05 * ((j * 7) % 3) / 2) * Math.max(1, R / 0.9) ** 0.5 * (1 + G.guideBoost * 0.25);
+    PP.alpha[k] = a * (gold ? 1.2 : 0.95);
+  }
+}
+
+// ============================================================ awakening
+function assignLight(t, strength) {
+  const n = QP[QM.cur].lights; const L = plights[G.lastLight++ % n];
+  L.target = t; L.i = 0; L.col.copy(t.col); L.l.color.copy(t.col); L.l.position.copy(t.center); L.peak = strength || 1;
+}
+function awaken(t, tapPoint) {
+  t.awake = true; t.wake = 0.001; t.wT = 0;
+  const stg = G.mode === 'free' ? 3 : t.stage;
+  t.dur = [1.0, 1.3, 1.6, 2.0][stg] * (t.type === 'final' ? 1.2 : 1);
+  t.mat.userData.u.uHint.value = 0;
+  spawnRipple(t.center, t.col, t.radius * 0.4, t.radius * 3.2, 1.4, 1.0);
+  if (tapPoint) spawnRipple(tapPoint, C_TIP, 0.1, 1.4, 0.8, 0.7);
+  const nb = Math.round([20, 35, 55, 80][stg] * QP[QM.cur].bub / 80);
+  for (let k = 0; k < nb; k++) {
+    const tip = t.tipsW[k % t.tipsW.length];
+    const c = k % 3 === 0 ? C_TIP : t.col;
+    spawnP(0, tip, new V3((Math.random() - 0.5) * 0.5, 0.3 + Math.random() * 0.6, (Math.random() - 0.5) * 0.5), c, 0.05 + Math.random() * 0.07, 3 + Math.random() * 2.5, 0.9);
+  }
+  for (let k = 0; k < 18; k++) { const d = new V3(Math.random() - 0.5, Math.random() - 0.3, Math.random() - 0.5).normalize(); spawnP(1, t.center, d.multiplyScalar(1 + Math.random() * 1.5), t.col, 0.08 + Math.random() * 0.08, 1.0 + Math.random() * 0.6, 0.8); }
+  assignLight(t, 1);
+  G.flash = 1; G.flashCol.copy(t.col);
+  for (const D of [kid, mom]) D.boost = 1;
+  fishTint.uTint.value.copy(t.col);
+  G.fishMode = 'gather'; G.fishC.copy(t.center); G.fishR = t.radius;
+  if (stg >= 2 && G.mode !== 'free' && t.type !== 'final') G.wave = { o: t.center.y, r0: 0, r1: 12, t: 0, d: 2.6, a: 0.75, multi: 0, col: t.col.clone() };
+  ensureAudio(); sndSuccess(stg);
+  setTimeout(() => sndBubble(1), 120); setTimeout(() => sndSparkle(4), 1000 / TS);
+}
+
+// ============================================================ input
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), sph = new THREE.Sphere();
+let activePointer = null, activeAt = 0;
+function screenOf(p) { _v.copy(p).project(camera); return { x: (_v.x * 0.5 + 0.5) * window.innerWidth, y: (-_v.y * 0.5 + 0.5) * window.innerHeight, z: _v.z }; }
+function handleTap(cx, cy) {
+  ensureAudio();
+  const t = G.cur;
+  const waiting = (G.state === 'READY' || G.state === 'WAIT_TOUCH' || G.state === 'FREE_PLAY') && t && !t.awake && (G.mode !== 'free' || t.grow > 0.6);
+  ndc.set(cx / window.innerWidth * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  if (waiting) {
+    sph.set(t.center, Math.max(0.8, t.radius * 1.2));
+    let hit = ray.ray.intersectsSphere(sph);
+    const sc = screenOf(t.center), edge = screenOf(_v.copy(t.center).addScaledVector(_r, t.radius));
+    const pr = Math.hypot(edge.x - sc.x, edge.y - sc.y);
+    if (Math.hypot(cx - sc.x, cy - sc.y) <= Math.max(pr * 1.15, 72)) hit = true;
+    if (hit) {
+      const tp = ray.ray.at(Math.max(1, camera.position.distanceTo(t.center) - t.radius), new V3());
+      G.tapCenterErr = Math.max(Math.abs(sc.x / window.innerWidth - 0.5), Math.abs(sc.y / window.innerHeight - 0.5));
+      G.maxTapCenterErr = Math.max(G.maxTapCenterErr || 0, G.tapCenterErr);
+      G.taps = (G.taps || 0) + 1;
+      onTargetTapped(t, tp);
+      return true;
+    }
+  }
+  // gentle water ripple for a miss
+  const p = ray.ray.at(4.5, new V3());
+  spawnRipple(p, C_BUB, 0.05, 0.9, 0.9, 0.5);
+  for (let k = 0; k < 3; k++) spawnP(0, p, new V3((Math.random() - 0.5) * 0.3, 0.4, (Math.random() - 0.5) * 0.3), C_BUB, 0.03 + Math.random() * 0.03, 2, 0.7);
+  sndBubble(0.6);
+  return false;
+}
+function onTargetTapped(t, tp) {
+  G.idle = 0; G.guideBoost = 0;
+  if (G.mode === 'free') { G.freeTaps++; awaken(t, tp); setState('AWAKEN'); return; }
+  awaken(t, tp);
+  if (t.type === 'final') { G.climaxT = 0; setState('CLIMAX'); startClimax(); }
+  else setState('AWAKEN');
+}
+const cvs = renderer.domElement;
+cvs.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  const now = performance.now();
+  if (activePointer !== null && activePointer !== e.pointerId && now - activeAt < 1500) return;
+  activePointer = e.pointerId; activeAt = now;
+  try { cvs.setPointerCapture(e.pointerId); } catch (_) {}
+  handleTap(e.clientX, e.clientY);
+}, { passive: false });
+const endPointer = (e) => { if (e.pointerId === activePointer) activePointer = null; };
+cvs.addEventListener('pointerup', endPointer); cvs.addEventListener('pointercancel', endPointer); cvs.addEventListener('lostpointercapture', endPointer);
+for (const ev of ['contextmenu', 'selectstart', 'dragstart', 'gesturestart', 'gesturechange', 'dblclick']) document.addEventListener(ev, e => e.preventDefault(), { passive: false });
+document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+document.addEventListener('touchstart', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+
+// ============================================================ climax
+const CL = { H: new V3(), S: new V3(), B: new V3(), P0: new V3(), P0m: new V3(), Bm: new V3(), vh: 4.2, vy: 7.0, vym: 6.6, land: new V3(), landM: new V3(), Ca: new V3(), az0: 0 };
+function startClimax() {
+  const t = targets[19];
+  dirFrom(t.az, 0, _dir); camBasis(_dir);
+  CL.H.copy(_r).addScaledVector(_dir, 0.35).normalize(); CL.H.y = 0; CL.H.normalize();
+  CL.S.crossVectors(UP, CL.H).normalize();
+  CL.B.set(0, 0, 0).addScaledVector(CL.H, 8.5).addScaledVector(CL.S, -0.3); CL.B.y = 0;
+  CL.Bm.copy(CL.B).addScaledVector(CL.S, 1.6); CL.Bm.y = 0;
+  CL.az0 = t.az;
+  CL.Ca.set(0, -0.8, 0).addScaledVector(CL.H, 6).addScaledVector(CL.S, 3.5);
+  G.cl = { phase: 'A', sDone: {} };
+  sndClimax();
+}
+function bez(p0, p1, p2, p3, u, out) { const a = 1 - u; return out.set(0, 0, 0).addScaledVector(p0, a * a * a).addScaledVector(p1, 3 * a * a * u).addScaledVector(p2, 3 * a * u * u).addScaledVector(p3, u * u * u); }
+const _b1 = new V3(), _b2 = new V3(), _b3 = new V3(), _b4 = new V3(), _b5 = new V3();
+
+// ============================================================ stage transition helpers
+function stageTop(stg) { return [-18.3, -12.6, -7.1, -4.5][stg]; }
+
+// ============================================================ quality
+let composer = null, bloomPass = null, bloomRatio = 0.5, useBloom = false;
+function ensureComposer() {
+  if (composer) return;
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  bloomPass = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.3, 0.45, 0.85);
+  const base = UnrealBloomPass.prototype.setSize;
+  bloomPass.setSize = function (w, h) { base.call(this, Math.max(32, Math.round(w * bloomRatio)), Math.max(32, Math.round(h * bloomRatio))); };
+  composer.addPass(bloomPass);
+  composer.addPass(new OutputPass());
+}
+function applyQuality(q) {
+  const P = QP[q]; QM.cur = q;
+  const pr = Math.min(window.devicePixelRatio || 1, P.pr);
+  renderer.setPixelRatio(pr);
+  sun.castShadow = P.shadow > 0;
+  if (P.shadow && sun.shadow.mapSize.x !== P.shadow) { sun.shadow.mapSize.set(P.shadow, P.shadow); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
+  useBloom = P.bloom > 0; bloomRatio = P.bloom || 0.5;
+  if (useBloom) ensureComposer();
+  plights.forEach((L, i) => { L.l.visible = i < P.lights; });
+  snow.geometry.setDrawRange(0, P.snow);
+  grass.count = Math.min(grass.userData.max, P.grass);
+  onResize();
+  log('quality', q);
+}
+function onResize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.aspect = w / h; camera.fov = w / h < 1 ? 52 : 47; camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  const pr = renderer.getPixelRatio();
+  if (composer) { composer.setPixelRatio(pr); composer.setSize(w, h); }
+  const px = h * pr / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
+  pMat.uniforms.uPx.value = px; snow.material.uniforms.uPx.value = px; stars.material.uniforms.uPR.value = pr;
+}
+window.addEventListener('resize', onResize);
+window.addEventListener('orientationchange', () => setTimeout(onResize, 120));
+function qmUpdate(rdt) {
+  QM.t += rdt;
+  if (QM.forced) return;
+  QM.times.push(QM.t); while (QM.times.length && QM.times[0] < QM.t - 12) QM.times.shift();
+  QM.cool -= rdt; if (QM.cool > 0) return;
+  const since = QM.t - QM.lastChange;
+  const c3 = QM.times.filter(x => x > QM.t - 3).length / 3, c12 = QM.times.length / 12;
+  const i = QORDER.indexOf(QM.cur);
+  if (since > 3 && c3 < 48 && i > 0) { applyQuality(QORDER[i - 1]); QM.lastChange = QM.t; QM.cool = 6; QM.times.length = 0; }
+  else if (since > 12 && c12 >= 57 && i < 2 && G.state !== 'CLIMAX') { applyQuality(QORDER[i + 1]); QM.lastChange = QM.t; QM.cool = 12; QM.times.length = 0; }
+}
+
+// ============================================================ main update
+const _kd = new V3(), _md = new V3(), _hk = new V3(), _hm = new V3(), _tmp = new V3(), _tmp2 = new V3();
+const FR = { L: new V3(), az: 0, el: 0.2, R: 1 };
+const FR2 = { L: new V3(), az: 0, el: 0.2, R: 1 };
+function frameEl(t) { return t.stage === 0 ? 0.24 : 0.2; }
+targets.forEach(t => { t.el = frameEl(t); });
+function startSwim(fromT, toT, opts) {
+  opts = opts || {};
+  const a = opts.fromFrame || targetFrame(fromT, { L: new V3() });
+  const b = targetFrame(toT, { L: new V3() });
+  const stg = Math.min(3, G.mode === 'free' ? 3 : toT.stage);
+  const speed = [1.2, 1.5, 1.8, 2.1][stg] * 1.35;
+  const dist = a.L.distanceTo(b.L) + Math.abs(angDiff(a.az, b.az)) * 6;
+  const dur = opts.dur || clamp(dist / speed, 2.6, 5.5);
+  G.swim = { a: { L: a.L.clone(), az: a.az, el: a.el, R: a.R }, b: { L: b.L.clone(), az: b.az, el: b.el, R: b.R }, t: 0, dur, to: toT };
+  G.fishMode = 'path'; G.fishP0.copy(a.L); G.fishP1.copy(b.L);
+  setState('SWIM');
+}
+function swimFrame(out) {
+  const s = G.swim, u = ease(clamp(s.t / s.dur, 0, 1));
+  out.L.copy(s.a.L).lerp(s.b.L, u);
+  out.az = s.a.az + angDiff(s.a.az, s.b.az) * u; out.el = lerp(s.a.el, s.b.el, u); out.R = lerp(s.a.R, s.b.R, u);
+  return u;
+}
+function setTargetCurrent(t) { G.cur = t; t.mat.userData.u.uHint.value = 0; }
+
+function updateGame(dt) {
+  G.st += dt;
+  const t = G.cur;
+  // progress (time of day)
+  G.p += (G.pTo - G.p) * damp(dt, 1.4);
+  let shot = null; // {L, az, el, under, camY, pts}
+  CAM.np = 0;
+  let poseF = null;
+  switch (G.state) {
+    case 'READY': case 'WAIT_TOUCH': case 'FREE_PLAY': {
+      if (G.mode === 'free' && t) { t.grow = Math.min(1, t.grow + dt / 1.6); t.mesh.scale.setScalar(Math.max(0.01, easeS(t.grow))); }
+      G.idle += dt;
+      const id = G.idle;
+      t.mat.userData.u.uHint.value = (id > 3 ? 1 : 0) * (0.6 + 0.4 * Math.sin(id * 2));
+      G.guideBoost += ((id > 6 ? 1 : 0) - G.guideBoost) * damp(dt, 0.6);
+      if (id > 12) G.idle = 3.01; // repeat cycle
+      poseF = targetFrame(t, FR);
+      shot = { L: t.center, az: t.az, el: t.el, under: true };
+      pushTarget(t);
+      break;
+    }
+    case 'AWAKEN': {
+      poseF = targetFrame(t, FR);
+      shot = { L: t.center, az: t.az, el: t.el, under: true };
+      pushTarget(t);
+      if (G.st > t.dur + 0.65) {
+        if (G.mode === 'free') {
+          const nt = placeFree(G.freeK + 1); G.freeK++;
+          startSwim(t, nt);
+        } else {
+          G.tapsInStage++;
+          const stg = t.stage;
+          G.pTo = Math.min(3, stg + 0.8 * G.tapsInStage / 5);
+          clusters[stg].wakeTo = 0.25 + 0.27 * G.tapsInStage;
+          if (G.tapsInStage >= 5) { G.tapsInStage = 0; G.pTo = stg + 1; clusters[stg].wakeTo = 1.75; setState('STAGE_TRANSITION'); G.trStage = stg;
+            G.wave = { o: -22.5, r0: 0, r1: stageTop(stg) + 23.5, t: 0, d: 3.2, a: 1.0, multi: 1, col: t.col.clone() }; sndRise();
+            for (const tt of targets) if (tt.awake && tt.stage <= stg) { tt.glowKick = 1; }
+          } else { G.idx++; const nt = targets[G.idx]; startSwim(t, nt); setTargetCurrent(nt); G.swim.to = nt; }
+        }
+      }
+      break;
+    }
+    case 'STAGE_TRANSITION': {
+      const stg = G.trStage;
+      const yTop = stageTop(stg) + 1.5;
+      const u = sstep(0, 1.2, G.st) * (1 - sstep(3.6, 4.8, G.st));
+      const Lc = _tmp.set(0, (-21 + yTop) / 2, 0);
+      const L = _tmp2.copy(t.center).lerp(Lc, u);
+      shot = { L, az: t.az + 0.1 * u, el: lerp(t.el, 0.12, u), under: true };
+      if (u > 0.05) { const rb = towerBaseR(-21.5) * 1.1, rt = towerBaseR(yTop) * 1.6 + 1.5; for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; pushPt(_v.set(Math.cos(a) * rb, -21.6, Math.sin(a) * rb)); pushPt(_v.set(Math.cos(a) * rt, yTop, Math.sin(a) * rt)); } }
+      pushTarget(t);
+      poseF = targetFrame(t, FR);
+      if (G.st > 5.2) { G.idx++; const nt = targets[G.idx]; startSwim(t, nt); setTargetCurrent(nt); }
+      break;
+    }
+    case 'SWIM': {
+      const s = G.swim; s.t += dt;
+      const u = swimFrame(FR); poseF = FR;
+      shot = { L: FR.L, az: FR.az, el: FR.el, under: !s.noUnder || u > 0.7 };
+      if (s.free && u < 0.75) shot.under = false;
+      pushTarget(u < 0.45 && s.fromT ? s.fromT : s.to);
+      if (u > 0.3) G.fishMode = 'gather', G.fishC.copy(s.to.center), G.fishR = s.to.radius * 1.4;
+      if (s.t >= s.dur && (CAM.settled || s.t > s.dur + 2.5)) {
+        G.idle = 0; G.guideBoost = 0;
+        setTargetCurrent(s.to);
+        setState(G.mode === 'free' ? 'FREE_PLAY' : 'WAIT_TOUCH');
+      }
+      break;
+    }
+    case 'CLIMAX': shot = updateClimax(dt); break;
+    case 'AFTERGLOW': shot = updateAfterglow(dt); break;
+  }
+  // dolphins
+  if (poseF) {
+    poseFrame(poseF.L, poseF.az, poseF.el, poseF.R, _kd, _md, _hk, _hm);
+    const tt = U.uTime.value;
+    _kd.addScaledVector(_r, 0.22 * Math.sin(tt * 0.5)).addScaledVector(_u, 0.14 * Math.sin(tt * 0.7 + 1));
+    _md.addScaledVector(_r, 0.2 * Math.sin(tt * 0.43 + 2)).addScaledVector(_u, 0.12 * Math.sin(tt * 0.61));
+    if (G.state === 'AWAKEN') { const b = Math.sin(clamp(G.st / 1.2, 0, 1) * Math.PI) * 0.45; _kd.addScaledVector(_f, b); _md.addScaledVector(_f, b * 0.8); }
+    kid.desired.copy(_kd); mom.desired.copy(_md); kid.heading.copy(_hk); mom.heading.copy(_hm);
+    if (G.guideBoost > 0.5 && t) { mom.heading.copy(t.center).sub(mom.pos).normalize(); }
+    else if (Math.sin(tt * 0.31) > 0.75) { mom.heading.lerp(_tmp.copy(kid.pos).sub(mom.pos).normalize(), 0.35).normalize(); }
+    kid.direct = mom.direct = false;
+  }
+  for (const D of [kid, mom]) updateDolphin(D, dt);
+  if (poseF) { pushDolphin(kid); pushDolphin(mom); }
+  return shot;
+}
+const _dq = new THREE.Quaternion(), _prev = new V3();
+function updateDolphin(D, dt) {
+  _prev.copy(D.pos);
+  if (!D.direct) {
+    if (!D.init) { D.pos.copy(D.desired); D.init = true; }
+    D.pos.lerp(D.desired, damp(dt, 0.55));
+  }
+  if (dt > 0) D.vel.subVectors(D.pos, _prev).divideScalar(dt);
+  const sp = D.vel.length();
+  D.boost = Math.max(0, D.boost - dt * 0.8);
+  const h = _tmp.copy(D.heading);
+  if (sp > 0.6) h.lerp(_tmp2.copy(D.vel).normalize(), clamp((sp - 0.6) / 1.2, 0, 1) * (D.direct ? 1 : 0.85));
+  if (!D.direct) h.y = clamp(h.y, -0.5, 0.5);
+  h.normalize();
+  dummy.position.set(0, 0, 0); dummy.up.set(0, 1, 0); dummy.lookAt(h);
+  D.q.slerp(dummy.quaternion, damp(dt, D.direct ? 0.12 : 0.45));
+  D.grp.position.copy(D.pos); D.grp.quaternion.copy(D.q);
+  const freq = (D === kid ? 1.25 : 0.95) * (0.55 + Math.min(sp, 6) * 0.32 + D.boost * 0.8);
+  D.phase += dt * Math.PI * 2 * freq;
+  D.amp += ((0.045 + Math.min(sp / 3, 1) * 0.035 + D.boost * 0.03) - D.amp) * damp(dt, 0.4);
+  D.mat.userData.u.uPhase.value = D.phase; D.mat.userData.u.uAmp.value = D.amp;
+}
+// climax timeline
+function updateClimax(dt) {
+  const T = (G.climaxT += dt), t = targets[19];
+  let shot;
+  G.pTo = 3;
+  const tt = U.uTime.value;
+  // waves
+  if (T > 1.4 && !G.cl.w1) { G.cl.w1 = 1; G.wave = { o: TOP + 2, r0: 0, r1: 25, t: 0, d: 3.6, a: 1.25, multi: 0, col: C_GOLD.clone() }; }
+  if (T > 5.2 && !G.cl.w2) { G.cl.w2 = 1; G.wave = { o: -22.8, r0: 0, r1: 21, t: 0, d: 4.2, a: 1.45, multi: 1, col: C_GOLD.clone() }; sndRise(); }
+  if (T > 5.2 && T < 10.5) {
+    G.fishMode = 'spiral';
+    const nb = Math.max(1, Math.round(QP[QM.cur].bub / 18));
+    for (let k = 0; k < nb; k++) { if (Math.random() < 0.5) continue; const a = Math.random() * 6.28, y = -21 + Math.random() * 17, r = towerBaseR(y) + 0.5 + Math.random() * 2; spawnP(0, _v.set(Math.cos(a) * r, y, Math.sin(a) * r), _tmp.set(0, 0.5, 0), PALETTE[k % 5], 0.06 + Math.random() * 0.08, 3.5, 0.9); }
+  }
+  const K = kid, M = mom;
+  if (T < 10) {
+    // A/B/C: dolphins hover near the top, camera reveals whole tower
+    targetFrame(t, FR); poseFrame(FR.L, FR.az + 0.06 * Math.max(0, T - 1.5), FR.el, FR.R, _kd, _md, _hk, _hm);
+    K.desired.copy(_kd); M.desired.copy(_md); K.heading.copy(_hk); M.heading.copy(_hm); K.direct = M.direct = false;
+    if (T < 1.8) { shot = { L: t.center, az: t.az, el: t.el, under: true }; pushTarget(t); }
+    else {
+      const u = sstep(1.8, 5.5, T);
+      const L = _tmp2.set(0, lerp(t.center.y, -11.5, u), 0);
+      shot = { L, az: t.az + 0.035 * (T - 1.8), el: lerp(t.el, 0.1, u), under: true };
+      const rb = towerBaseR(-21.5) * 1.05, rt = 3.2;
+      if (u > 0.02) for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; pushPt(_v.set(Math.cos(a) * rb, lerp(t.center.y - 3, -21.8, u), Math.sin(a) * rb)); pushPt(_v.set(Math.cos(a) * rt, -1.8, Math.sin(a) * rt)); }
+      pushTarget(t);
+    }
+    pushDolphin(K); pushDolphin(M);
+    CL.P0.copy(K.pos); CL.P0m.copy(M.pos); CL.az1 = shot.az;
+  } else if (T < 14.2) {
+    // D: swim up along the light path to the surface
+    const u = clamp((T - 10) / 4.2, 0, 1), uu = Math.pow(u, 2.1);
+    const ex = _b1.copy(CL.H).multiplyScalar(Math.cos(0.7)).addScaledVector(UP, Math.sin(0.7));
+    bez(CL.P0, _b2.copy(CL.P0).addScaledVector(CL.H, 3).addScaledVector(UP, -0.4), _b3.copy(CL.B).addScaledVector(ex, -4), CL.B, uu, K.desired);
+    bez(CL.P0m, _b4.copy(CL.P0m).addScaledVector(CL.H, 3.2).addScaledVector(UP, -0.3), _b5.copy(CL.Bm).addScaledVector(ex, -4.2), CL.Bm, Math.pow(clamp(u + 0.015, 0, 1), 2.1), M.desired);
+    K.pos.copy(K.desired); M.pos.copy(M.desired); K.direct = M.direct = true;
+    K.heading.copy(ex); M.heading.copy(ex);
+    const sideAz = Math.atan2(-CL.S.z, -CL.S.x) + 0.25;
+    const L = _tmp2.copy(K.pos).lerp(M.pos, 0.5);
+    L.lerp(_b4.copy(CL.B).addScaledVector(CL.H, 2.8).setY(0.8), sstep(0.3, 1.0, u));
+    const yCam = u < 0.45 ? null : lerp(-1.2, 1.5, sstep(0.45, 0.85, u));
+    shot = { L, az: lerp(CL.az1, CL.az1 + angDiff(CL.az1, sideAz), sstep(0, 0.7, u)), el: 0.06, under: false, camY: yCam };
+    pushDolphin(K); pushDolphin(M);
+    if (u > 0.4) { pushPt(CL.B); pushPt(_v.copy(CL.B).addScaledVector(CL.H, CL.vh * 0.72).setY(3.0)); pushPt(_v.copy(CL.B).addScaledVector(CL.H, CL.vh * 1.45).setY(0)); }
+  } else if (T < 16.0) {
+    // E: airborne arc
+    const tj = T - 14.2, tm = Math.max(0, tj - 0.06);
+    const hk = K.desired.copy(CL.B).addScaledVector(CL.H, CL.vh * tj); hk.y = CL.vy * tj - 4.9 * tj * tj;
+    const hm = M.desired.copy(CL.Bm).addScaledVector(CL.H, CL.vh * tm); hm.y = CL.vym * tm - 4.9 * tm * tm;
+    if (!G.cl.splash1) { G.cl.splash1 = 1; splash(CL.B, 1); splash(CL.Bm, 0.8); sndSplash(true); }
+    const Tk = 2 * CL.vy / 9.8;
+    if (tj > Tk && !G.cl.splash2) { G.cl.splash2 = 1; CL.land.copy(CL.B).addScaledVector(CL.H, CL.vh * Tk).setY(0); splash(CL.land, 0.9); sndSplash(false); }
+    const Tm = 2 * CL.vym / 9.8;
+    if (tm > Tm && !G.cl.splash3) { G.cl.splash3 = 1; CL.landM.copy(CL.Bm).addScaledVector(CL.H, CL.vh * Tm).setY(0); splash(CL.landM, 0.7); }
+    if (tj > Tk) { const e = tj - Tk; hk.copy(CL.B).addScaledVector(CL.H, CL.vh * (Tk + e * 0.8)); hk.y = -Math.min(1.4, e * 4.5); }
+    if (tm > Tm) { const e = tm - Tm; hm.copy(CL.Bm).addScaledVector(CL.H, CL.vh * (Tm + e * 0.8)); hm.y = -Math.min(1.4, e * 4.5); }
+    K.heading.copy(CL.H).setY(tj < Tk ? (CL.vy - 9.8 * tj) / CL.vh : -1.0).normalize();
+    M.heading.copy(CL.H).setY(tm < Tm ? (CL.vym - 9.8 * tm) / CL.vh : -1.0).normalize();
+    K.pos.copy(K.desired); M.pos.copy(M.desired); K.direct = M.direct = true;
+    const sideAz = Math.atan2(-CL.S.z, -CL.S.x) + 0.25;
+    const L = _tmp2.copy(CL.B).addScaledVector(CL.H, CL.vh * 0.72); L.y = 1.1;
+    shot = { L, az: sideAz, el: 0.06, under: false, camY: 1.5 };
+    pushDolphin(K); pushDolphin(M); pushPt(_v.copy(CL.B).setY(-0.6)); pushPt(_v.copy(CL.B).addScaledVector(CL.H, CL.vh * 0.72).setY(3.0)); pushPt(_v.copy(CL.B).addScaledVector(CL.H, CL.vh * 1.5).setY(-0.6));
+    CL.Pf.copy(K.pos); CL.Pfm.copy(M.pos);
+  } else {
+    // F: glide back under the surface, reveal the tower through the water
+    const u = clamp((T - 16) / 5, 0, 1);
+    afterglowPose(tt);
+    const k = easeS(u);
+    K.desired.lerpVectors(_b1.copy(CL.Pf).addScaledVector(CL.H, 2.5 * u).setY(-1.2 * Math.sin(u * Math.PI) + lerp(CL.Pf.y, 0, u) * (1 - u)), K.desired, k);
+    M.desired.lerpVectors(_b2.copy(CL.Pfm).addScaledVector(CL.H, 2.5 * u).setY(-1.2 * Math.sin(u * Math.PI) + lerp(CL.Pfm.y, 0, u) * (1 - u)), M.desired, k);
+    K.direct = M.direct = false;
+    if (!G.cl.fpos) { G.cl.fpos = 1; }
+    const sideAz = Math.atan2(-CL.S.z, -CL.S.x) + 0.25;
+    const agAz = Math.atan2(CL.Ca.z, CL.Ca.x) + 0.35;
+    const L = _tmp2.copy(CL.land).setY(0.5).lerp(_b3.set(CL.Ca.x * 0.55, -2.2, CL.Ca.z * 0.55), k);
+    shot = { L, az: sideAz + angDiff(sideAz, agAz) * k, el: lerp(0.06, 0.4, k), under: false, camY: u < 0.5 ? 1.5 : null };
+    pushDolphin(K); pushDolphin(M);
+    if (u > 0.3) { pushPt(_v.set(0, TOP + 2.2, 0)); pushPt(_v.set(2.5, TOP, 2.5)); pushPt(_v.set(-2.5, TOP, -2.5)); }
+    if (T > 21) { G.agT = 0; setState('AFTERGLOW'); }
+  }
+  return shot;
+}
+CL.Pf = new V3(); CL.Pfm = new V3();
+function afterglowPose(tt) {
+  const w = tt * 0.32;
+  kid.desired.set(CL.Ca.x + Math.cos(w) * 3.2, -0.75 + 0.22 * Math.sin(tt * 0.9), CL.Ca.z + Math.sin(w) * 3.2);
+  mom.desired.set(CL.Ca.x + Math.cos(w + 0.55) * 4.0, -0.95 + 0.2 * Math.sin(tt * 0.8 + 1), CL.Ca.z + Math.sin(w + 0.55) * 4.0);
+  kid.heading.set(-Math.sin(w), 0, Math.cos(w)); mom.heading.set(-Math.sin(w + 0.55), 0, Math.cos(w + 0.55));
+}
+function updateAfterglow(dt) {
+  G.agT += dt; const T = G.agT, tt = U.uTime.value;
+  G.fishMode = 'spiralTop';
+  const agAz = Math.atan2(CL.Ca.z, CL.Ca.x) + 0.35 + 0.02 * T;
+  if (T < 10.5) {
+    afterglowPose(tt); kid.direct = mom.direct = false;
+    const L = _tmp2.set(CL.Ca.x * 0.55, -2.2, CL.Ca.z * 0.55);
+    const shot = { L, az: agAz, el: 0.4, under: false };
+    pushDolphin(kid); pushDolphin(mom); pushPt(_v.set(0, TOP + 2.2, 0)); pushPt(_v.set(2.5, TOP, 2.5)); pushPt(_v.set(-2.5, TOP, -2.5));
+    G.agFrame = { L: L.clone(), az: agAz, el: 0.4, R: 2.5 };
+    return shot;
+  }
+  // dive and travel to the first free-play coral
+  if (!G.free) {
+    G.mode = 'free'; G.freeA0 = agAz - 0.15; G.freeK = 0;
+    const nt = placeFree(0); G.free = nt;
+    G.fishMode = 'school';
+    const s = { a: G.agFrame, b: targetFrame(nt, { L: new V3() }), t: 0, dur: 11, to: nt, free: true };
+    G.swim = s; setTargetCurrent(nt);
+    log('return-to-reef');
+  }
+  const s = G.swim; s.t += dt;
+  const u = swimFrame(FR);
+  poseFrame(CAM.L, CAM.az, Math.min(CAM.el, 0.3), FR.R, _kd, _md, _hk, _hm);
+  const k = sstep(0, 0.35, u);
+  afterglowPose(tt);
+  kid.desired.lerp(_kd, k); mom.desired.lerp(_md, k); kid.heading.lerp(_hk, k).normalize(); mom.heading.lerp(_hm, k).normalize();
+  if (u > 0.55) { s.to.grow = Math.min(1, s.to.grow + dt / 1.6); s.to.mesh.scale.setScalar(Math.max(0.01, easeS(s.to.grow))); }
+  const shot = { L: FR.L, az: FR.az, el: FR.el, under: u > 0.7 };
+  pushDolphin(kid); pushDolphin(mom);
+  if (u > 0.6) pushTarget(s.to);
+  if (s.t >= s.dur && (CAM.settled || s.t > s.dur + 2.5)) { G.idle = 0; setState('FREE_PLAY'); }
+  return shot;
+}
+function splash(p, s) {
+  surfaceRipple(p.x, p.z, 0.18 * s);
+  const n = Math.round(46 * s);
+  for (let k = 0; k < n; k++) {
+    const a = Math.random() * 6.28, r = Math.random() * 0.5, up = 2.5 + Math.random() * 4.5 * s;
+    spawnP(2, _v.set(p.x + Math.cos(a) * r, 0.05, p.z + Math.sin(a) * r), _tmp.set(Math.cos(a) * (0.6 + Math.random() * 1.8), up, Math.sin(a) * (0.6 + Math.random() * 1.8)), k % 4 ? C_TIP : C_BUB, 0.04 + Math.random() * 0.05, 1.6, 0.9);
+  }
+  spawnRipple(_v.set(p.x, 0.06, p.z), C_TIP, 0.4, 4.5 * s, 1.8, 0.45, true);
+}
+
+// ============================================================ fish update
+const _fd = new V3(), _fv = new V3();
+function updateFish(dt, commit) {
+  const want = fishTargetCount();
+  if (want > G.fishActive) {
+    const c = G.fishC;
+    for (let i = G.fishActive; i < want; i++) { const f = fish[i]; f.on = true; const a = Math.random() * 6.28; f.pos.set(c.x + Math.cos(a) * 14, c.y + (Math.random() - 0.3) * 5, c.z + Math.sin(a) * 14); if (f.pos.y > -0.6) f.pos.y = -0.6; f.vel.set(-Math.cos(a), 0, -Math.sin(a)).multiplyScalar(2); }
+    G.fishActive = want;
+  } else if (want < G.fishActive) { for (let i = want; i < G.fishActive; i++) fish[i].on = false; G.fishActive = want; }
+  const tt = U.uTime.value, mode = G.fishMode;
+  const counts = new Array(FISH_SP.length).fill(0);
+  camBasis(dirFrom(CAM.az, CAM.el, _dir));
+  for (let i = 0; i < G.fishActive; i++) {
+    const f = fish[i];
+    if (mode === 'gather' || (mode === 'path' && false)) {
+      const R = G.fishR * (1.25 + 0.45 * (f.off.x * 0.5 + 0.5)) + 0.6;
+      const a = f.ph + tt * f.spd * 0.55 * (f.sp % 2 ? 1 : -1);
+      _fd.set(G.fishC.x + Math.cos(a) * R, G.fishC.y + f.off.y * G.fishR * 0.7 + 0.2 * Math.sin(tt + f.ph), G.fishC.z + Math.sin(a) * R);
+    } else if (mode === 'path') {
+      const u = (f.u + tt * 0.09 * f.spd) % 1;
+      _fd.copy(G.fishP0).lerp(G.fishP1, u).addScaledVector(_r, (f.sp - 2.5) * 0.32 + f.off.x * 0.2).addScaledVector(_u, 0.6 + f.off.y * 0.35 + Math.sin(u * Math.PI) * 1.2);
+    } else if (mode === 'spiral' || mode === 'spiralTop') {
+      const top = mode === 'spiralTop';
+      const yy = top ? -9 + 7.5 * ((f.u + tt * 0.02) % 1) : -21.5 + 18 * ((f.u + tt * 0.035 * f.spd) % 1);
+      const a = f.ph + tt * 0.5 * f.spd + yy * 0.35;
+      const R = towerBaseR(yy) + 1.6 + (f.off.x * 0.5 + 0.5) * 1.6 + (f.sp % 3) * 0.3;
+      _fd.set(Math.cos(a) * R, yy, Math.sin(a) * R);
+    } else { // school around dolphins
+      _fd.copy(kid.pos).lerp(mom.pos, 0.5).add(_fv.set(Math.cos(f.ph + tt * 0.6) * 3.2, f.off.y * 1.2 - 0.3, Math.sin(f.ph + tt * 0.6) * 3.2));
+    }
+    if (_fd.y > -0.5) _fd.y = -0.5;
+    const fl = floorH(_fd.x, _fd.z) + 0.4; if (_fd.y < fl) _fd.y = fl;
+    _fv.subVectors(_fd, f.pos).multiplyScalar(2.2).addScaledVector(f.vel, -1.5);
+    f.vel.addScaledVector(_fv, dt);
+    const sp = f.vel.length(), mx = mode.startsWith('spiral') ? 5 : 3.4; if (sp > mx) f.vel.multiplyScalar(mx / sp);
+    f.pos.addScaledVector(f.vel, dt);
+    if (f.vel.lengthSq() > 0.01) { dummy.position.set(0, 0, 0); dummy.lookAt(_fv.copy(f.vel).setY(f.vel.y * 0.5)); f.q.slerp(dummy.quaternion, damp(dt, 0.18)); }
+    if (!commit) continue;
+    const im = fishMeshes[f.sp];
+    dummy.position.copy(f.pos); dummy.quaternion.copy(f.q); dummy.scale.setScalar(f.sc); dummy.updateMatrix();
+    im.setMatrixAt(f.slot, dummy.matrix); counts[f.sp] = Math.max(counts[f.sp], f.slot + 1);
+    if (mode === 'path' && Math.random() < dt * 1.2) spawnP(1, f.pos, _fv.set(0, 0.05, 0), fishTint.uTint.value, 0.035, 0.7, 0.7);
+  }
+  if (commit) fishMeshes.forEach((im, k) => { im.count = counts[k]; im.instanceMatrix.needsUpdate = true; });
+}
+
+// ============================================================ environment update
+const _c1 = new THREE.Color(), _c2 = new THREE.Color();
+function updateEnv(dt) {
+  const p = G.p, above = camera.position.y > 0;
+  stageLerpC(ST.water, p, _c1);
+  const camDepth = clamp(-camera.position.y / 22, 0, 1);
+  _c1.multiplyScalar(0.82 + 0.25 * (1 - camDepth));
+  G.flash = Math.max(0, G.flash - dt / 1.8);
+  _c1.lerp(G.flashCol, G.flash * 0.12);
+  U.uFogCol.value.copy(_c1);
+  WU.uDeep.value.copy(_c1).multiplyScalar(0.85);
+  U.uFogNear.value = stageLerp(ST.fogN, p) * (G.state === 'CLIMAX' || G.state === 'AFTERGLOW' ? 1.6 : 1);
+  U.uFogFar.value = stageLerp(ST.fogF, p) * (G.state === 'CLIMAX' || G.state === 'AFTERGLOW' || G.mode === 'free' ? 1.45 : 1);
+  if (G.state === 'STAGE_TRANSITION') U.uFogFar.value *= 1.25;
+  stageLerpC(ST.top, p, _c2);
+  sun.color.copy(_c2); hemi.color.copy(_c2); hemi.groundColor.copy(_c1).multiplyScalar(0.55);
+  sun.intensity = stageLerp(ST.dirI, p) * 0.78; hemi.intensity = stageLerp(ST.hemI, p) * 0.75;
+  U.uCausCol.value.copy(_c2); U.uCaus.value = 0.55 + 0.2 * (1 - p / 3);
+  stageLerpC(ST.sky, p, SU.uSkyHor.value); stageLerpC(ST.zen, p, SU.uSkyZen.value);
+  SU.uNight.value = stageLerp(ST.night, p);
+  SU.uSunDir.value.set(0.8, lerp(0.09, -0.12, clamp(p / 2, 0, 1)), -0.6).normalize();
+  U.uAbove.value = above ? 1 : 0;
+  scene.background = null; skyMat.uniforms.uUnder.value = above ? 0 : 1; stars.visible = above; stars.material.uniforms.uVis.value = SU.uNight.value;
+  snow.visible = !above; snow.material.uniforms.uCam.value.copy(camera.position);
+  for (const s of shafts) { s.visible = !above; s.material.uniforms.uCol.value.copy(_c2); s.material.uniforms.uStr.value = 0.075 * (1.15 - p * 0.18); }
+  U.uAirFog.value.copy(SU.uSkyHor.value).lerp(SU.uSkyZen.value, 0.5);
+  // glow of tower seen through surface
+  let lit = 0; for (const t of targets) if (t.awake) lit++;
+  WU.uGlowAmt.value = lit / 20 * (G.state === 'CLIMAX' || G.state === 'AFTERGLOW' || G.mode === 'free' ? 1.6 : 0.8);
+  WU.uGlowCol.value.copy(C_PINK).lerp(C_PURP, 0.5 + 0.5 * Math.sin(U.uTime.value * 0.3));
+  WU.uWaveAmp.value = G.state === 'AFTERGLOW' ? 0.7 : 1.0;
+  // moon light when above water at the end
+  if (above) { sun.color.set('#D9E9FF'); sun.intensity = 1.2; }
+  // sun direction & shadow camera follow
+  sun.position.copy(CAM.L).add(_v.set(4, 26, 6)); sun.target.position.copy(CAM.L);
+  // bloom
+  if (bloomPass) bloomPass.strength = stageLerp(ST.bloom, p) * (G.state === 'CLIMAX' ? 1.15 : 1);
+  // waves
+  if (G.wave) {
+    const w = G.wave; w.t += dt; const u = clamp(w.t / w.d, 0, 1);
+    U.uWaveO.value = w.o; U.uWaveR.value = lerp(w.r0, w.r1, u); U.uWaveA.value = w.a * Math.min(1, w.t * 3) * (1 - sstep(0.85, 1, u));
+    U.uWaveMulti.value = w.multi; U.uWaveCol.value.copy(w.col);
+    if (u >= 1) { G.wave = null; U.uWaveA.value = 0; }
+  }
+  audioEnv(dt, camDepth, above);
+}
+function updateCorals(dt) {
+  const all = targets.concat(freePool);
+  const tt = U.uTime.value;
+  const waveY0 = U.uWaveO.value, waveR = U.uWaveR.value, waveA = U.uWaveA.value;
+  for (const t of all) {
+    if (!t.mesh.visible) continue;
+    if (t.awake) {
+      t.wT = (t.wT || 0) + dt;
+      t.wake = Math.min(1.4, t.wT / t.dur * 1.4);
+      let g = 1;
+      if (waveA > 0.05 && Math.abs(Math.abs(t.center.y - waveY0) - waveR) < 1.6) { g = 1.6; if (!t.wb) { t.wb = 1; for (let k = 0; k < 4; k++) spawnP(0, t.tipsW[k % t.tipsW.length], _v.set(0, 0.5, 0), t.col, 0.07, 3, 0.9); } }
+      else t.wb = 0;
+      if (t.glowKick) { t.glowKick = Math.max(0, t.glowKick - dt * 0.5); g = Math.max(g, 1 + t.glowKick * 0.6); }
+      if (G.state === 'CLIMAX' || G.state === 'AFTERGLOW') g = Math.max(g, 1.2);
+      t.glow += (g - t.glow) * damp(dt, 0.3);
+      t.mat.userData.u.uWake.value = t.wake; t.mat.userData.u.uGlow.value = t.glow;
+      const hk = sstep(0.4, 1.2, t.wake);
+      const d = camera.position.distanceTo(t.center);
+      t.halo.material.opacity = hk * (useBloom ? 0.2 : 0.34) * t.glow * (1 - sstep(U.uFogFar.value * 0.5, U.uFogFar.value * 1.4, d)) * (0.9 + 0.1 * Math.sin(tt * 1.7 + t.i));
+      if (t.wT < t.dur * 1.1) { const s = 1 + 0.05 * Math.sin(clamp(t.wT / t.dur, 0, 1) * Math.PI); t.mesh.scale.setScalar(s * (t.grow !== undefined ? easeS(t.grow) || 1 : 1)); }
+    }
+  }
+  for (const c of clusters) { c.wake += (c.wakeTo - c.wake) * damp(dt, 1.4); c.mat.userData.u.uWake.value = c.wake; c.mat.userData.u.uGlow.value = G.state === 'CLIMAX' || G.state === 'AFTERGLOW' ? 1.25 : 1; }
+  // point lights
+  const nL = QP[QM.cur].lights;
+  for (let k = 0; k < plights.length; k++) {
+    const L = plights[k]; if (k >= nL || !L.target) { L.l.intensity = 0; continue; }
+    L.i += dt; const pk = L.peak || 1;
+    L.l.intensity = (6 + 26 * Math.exp(-L.i * 1.3) * sstep(0, 0.25, L.i)) * pk * (0.9 + 0.1 * Math.sin(tt * 2 + k));
+    L.l.position.copy(L.target.center).addScaledVector(UP, 0.3);
+  }
+  if (G.state === 'CLIMAX' && G.wave) { // lights follow the wave
+    for (let k = 0; k < nL; k++) { const L = plights[k]; const y = clamp(U.uWaveO.value + (G.wave.o > -10 ? -1 : 1) * U.uWaveR.value, -21, TOP); const a = k * 1.7 + tt * 0.6, r = towerBaseR(y) + 1.6; L.l.position.set(Math.cos(a) * r, y, Math.sin(a) * r); L.l.color.copy(PALETTE[(k + Math.floor(tt)) % 5]); L.l.intensity = 22; }
+  }
+}
+
+// ============================================================ camera update
+const _Ld = new V3(), _cp = new V3();
+function updateCamera(dt, shot) {
+  if (!shot) return;
+  if (!CAM.init) { CAM.L.copy(shot.L); CAM.az = shot.az; CAM.el = shot.el; CAM.init = true; CAM.d = 0; }
+  // limit look-point speed so the view never swings faster than ~20 deg/s
+  _Ld.subVectors(shot.L, CAM.L);
+  const want = _Ld.clone().multiplyScalar(damp(dt, 0.62));
+  const vmax = Math.max(0.35 * CAM.d, 1.5) * dt;
+  if (want.length() > vmax) want.setLength(vmax);
+  CAM.L.add(want);
+  let da = angDiff(CAM.az, shot.az) * damp(dt, 0.65); const amax = THREE.MathUtils.degToRad(20) * dt; da = clamp(da, -amax, amax); CAM.az += da;
+  let elT = shot.el;
+  // keep camera under the surface (or at a requested height)
+  const d0 = Math.max(CAM.d, 4);
+  if (shot.camY !== null && shot.camY !== undefined) elT = Math.asin(clamp((shot.camY - CAM.L.y) / d0, -0.9, 0.9));
+  else if (shot.under) { const lim = Math.asin(clamp((-0.7 - CAM.L.y) / d0, -0.9, 0.9)); if (elT > lim) elT = lim; }
+  CAM.el += clamp((elT - CAM.el) * damp(dt, 0.6), -amax, amax);
+  dirFrom(CAM.az, CAM.el, _dir);
+  const dReq = fitDistance(CAM.L, _dir, CAM.pts, CAM.np, 6);
+  if (CAM.d === 0) CAM.d = dReq;
+  CAM.d += (dReq - CAM.d) * damp(dt, dReq > CAM.d ? 0.4 : 0.9);
+  _cp.copy(CAM.L).addScaledVector(_dir, CAM.d);
+  const fl = floorH(_cp.x, _cp.z) + 1.0; if (_cp.y < fl) _cp.y = fl;
+  if (shot.under && _cp.y > -0.6) _cp.y = -0.6;
+  const rr = Math.hypot(_cp.x, _cp.z), tr = towerBaseR(clamp(_cp.y, -22, TOP)) * 1.3 + 1.5; if (rr < tr && _cp.y < TOP + 1) { _cp.x *= tr / Math.max(rr, 0.01); _cp.z *= tr / Math.max(rr, 0.01); }
+  camera.position.copy(_cp); camera.up.set(0, 1, 0); camera.lookAt(CAM.L);
+  CAM.settled = _Ld.length() < 0.05 + 0.02 * (shot.R || 1) && Math.abs(angDiff(CAM.az, shot.az)) < 0.03;
+}
+
+// ============================================================ autotest driver
+const AT = { t: 0, missed: false, spam: false, done: false, lastTap: -10, log: [] };
+window.__autotest = { done: false };
+function autoStep(dt) {
+  AT.t += dt;
+  const waiting = (G.state === 'READY' || G.state === 'WAIT_TOUCH' || G.state === 'FREE_PLAY') && G.cur && !G.cur.awake && (G.mode !== 'free' || G.cur.grow > 0.95);
+  if (G.mode === 'free' && G.freeTaps >= 3 && G.state === 'FREE_PLAY' && G.st > 1 && !AT.done) {
+    AT.done = true;
+    window.__autotest = { done: true, taps: G.taps || 0, maxTapCenterErr: G.maxTapCenterErr || 0, freeTaps: G.freeTaps, simTime: U.uTime.value };
+    log('AUTOTEST_DONE', JSON.stringify(window.__autotest));
+    return;
+  }
+  if (!waiting || G.st < 0.9 || !CAM.settled || AT.t - AT.lastTap < 0.5) return;
+  const sc = screenOf(G.cur.center);
+  if (G.idx === 2 && G.mode === 'main' && !AT.missed) { AT.missed = true; AT.lastTap = AT.t; handleTap(window.innerWidth * 0.06, window.innerHeight * 0.08); return; }
+  AT.lastTap = AT.t;
+  if (G.idx === 4 && !AT.spam) { AT.spam = true; handleTap(sc.x + 2, sc.y + 1); handleTap(sc.x, sc.y); handleTap(sc.x - 3, sc.y); return; }
+  handleTap(sc.x + 4, sc.y - 3);
+}
+G.probe = () => {
+  const out = { state: G.state, idx: G.idx, mode: G.mode, p: +G.p.toFixed(2), camY: +camera.position.y.toFixed(2), q: QM.cur };
+  const inF = (p) => { _v.copy(p).project(camera); return Math.abs(_v.x) <= 1 && Math.abs(_v.y) <= 1 && _v.z < 1; };
+  if (G.cur) { _v.copy(G.cur.center).project(camera); out.target = [+(_v.x * 50).toFixed(2), +(_v.y * 50).toFixed(2)]; out.targetIn = G.cur.corners.every(inF); }
+  let allIn = true, minM = 1;
+  for (const D of [kid, mom]) { D.grp.updateMatrixWorld(true); for (const k of DKEY) { _dk.set(k[0], k[1], k[2]).applyMatrix4(D.grp.matrixWorld); _v.copy(_dk).project(camera); if (!(Math.abs(_v.x) <= 1 && Math.abs(_v.y) <= 1)) allIn = false; minM = Math.min(minM, 1 - Math.abs(_v.x), 1 - Math.abs(_v.y)); } }
+  out.dolphinsIn = allIn; out.dolphinMargin = +(minM * 50).toFixed(1);
+  return out;
+};
+
+// ============================================================ skip (debug)
+function applySkip(n) {
+  for (let i = 0; i < n; i++) { const t = targets[i]; t.awake = true; t.wT = 10; t.dur = 1; t.wake = 1.4; }
+  const stg = Math.floor(n / 5);
+  for (let s = 0; s < stg; s++) clusters[s].wakeTo = clusters[s].wake = 1.75;
+  G.tapsInStage = n % 5; if (stg < 4) clusters[stg].wakeTo = clusters[stg].wake = 0.25 + 0.27 * G.tapsInStage;
+  G.p = G.pTo = Math.min(3, stg + 0.8 * G.tapsInStage / 5);
+  G.idx = n;
+}
+
+// ============================================================ loop
+if (DEBUG) window.__dbg = { scene, water, sky, shafts, snow, camera };
+applySkip(SKIP);
+setTargetCurrent(targets[G.idx]);
+G.fishC.copy(G.cur.center); G.fishR = G.cur.radius;
+applyQuality(QM.cur);
+let last = performance.now(), frames = 0, hiddenAt = 0;
+document.addEventListener('visibilitychange', () => { if (document.hidden) hiddenAt = performance.now(); else last = performance.now(); });
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (document.hidden) { last = now; return; }
+  let rdt = (now - last) / 1000; last = now;
+  if (!(rdt > 0)) rdt = 0.016;
+  if (rdt > 0.25) rdt = 0.016;
+  const dt = Math.min(rdt, AUTOTEST ? 0.25 : 0.1) * TS;
+  try {
+    U.uTime.value += dt;
+    if (frames > 30) qmUpdate(rdt);
+    if (AUTOTEST && window.__ready) autoStep(dt);
+    const shot = updateGame(dt);
+    updateCamera(dt, shot);
+    updateGuide(dt, G.cur);
+    updateCorals(dt);
+    { const n = Math.max(1, Math.ceil(dt / 0.06)); for (let k = 0; k < n; k++) updateFish(dt / n, k === n - 1); }
+    updateP(dt);
+    updateRipples(dt);
+    updateEnv(dt);
+    if (useBloom && composer) composer.render(); else renderer.render(scene, camera);
+  } catch (e) {
+    if (window.__errors.length < 50) window.__errors.push('frame: ' + (e && e.stack || e));
+  }
+  frames++;
+  if (frames === 3) { window.__ready = true; const v = document.getElementById('veil'); if (v) v.style.opacity = '0'; log('ready', 'q=' + QM.cur); setState(G.idx === 0 ? 'READY' : 'WAIT_TOUCH'); }
+}
+requestAnimationFrame(frame);
+
+} catch (e) {
+  window.__errors.push('init: ' + (e && e.stack || e));
+  console.error(e);
+}
+</script>
+<script src="../../gf-playlog.js" defer></script>
+</body>
+</html>
