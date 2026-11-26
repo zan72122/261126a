@@ -9,3 +9,4 @@
 - 12:57 クラウド起動 D01: session_017tygc48hYw7ArNbkkxqMqH（job claude-cloud-20261126-125741-97761）
 - 12:58 クラウド起動 D02: session_017tygc5LEs39XmWxuxaDiFd（job claude-cloud-20261126-125757-97876）
 - 13:05 D03 指示文回収。Chrome 実効並列4、待ち11。
+- 13:20 D04〜D13 指示文回収（計13本）。
