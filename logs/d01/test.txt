@@ -1,0 +1,825 @@
+# D01 test log  2026-11-26 04:37 UTC
+# env: headless Chromium (Playwright 1.63.0), ANGLE SwiftShader (--use-angle=swiftshader --enable-unsafe-swiftshader), static server: python3 -m http.server (root=site/)
+# external hosts (gf-playlog beacon) answered locally with 204 because this sandbox has no internet
+## static checks
+meta robots noindex: 1
+playlog tag line: 2067:<script src="../../gf-playlog.js" defer></script>
+tail: 2066:</script>
+tail: 2067:<script src="../../gf-playlog.js" defer></script>
+tail: 2068-</body>
+importmap: "three":"../../vendor/three/build/three.module.min.js","three/addons/":"../../vendor/three/examples/jsm/"
+external URLs in game file: 0
+## runs (autotest, game speed x3)
+[1024x768 q=low] ready=true after 1969 ms
+[1024x768 q=low] t=2.1s state=TRANSFORMING count=1
+[1024x768 q=low] t=2.6s state=JOINING count=1
+[1024x768 q=low] t=3.3s state=ADVANCING count=1
+[1024x768 q=low] t=3.5s state=WAITING count=1
+[1024x768 q=low] t=3.8s state=TRANSFORMING count=2
+[1024x768 q=low] t=4.7s state=JOINING count=2
+[1024x768 q=low] t=5.3s state=ADVANCING count=2
+[1024x768 q=low] t=5.7s state=WAITING count=2
+[1024x768 q=low] t=5.9s state=TRANSFORMING count=3
+[1024x768 q=low] t=6.6s state=JOINING count=3
+[1024x768 q=low] t=7.3s state=ADVANCING count=3
+[1024x768 q=low] t=8.0s state=TRANSFORMING count=4
+[1024x768 q=low] t=8.7s state=JOINING count=4
+[1024x768 q=low] t=9.4s state=ADVANCING count=4
+[1024x768 q=low] t=10.1s state=TRANSFORMING count=5
+[1024x768 q=low] t=11.0s state=JOINING count=5
+[1024x768 q=low] t=11.7s state=ADVANCING count=5
+[1024x768 q=low] t=12.0s state=WAITING count=5
+[1024x768 q=low] screenshot /home/user/261126a/logs/d01/shot-1.jpg state WAITING count 5
+[1024x768 q=low] t=13.9s state=TRANSFORMING count=6
+[1024x768 q=low] t=14.2s state=JOINING count=6
+[1024x768 q=low] t=14.9s state=ADVANCING count=6
+[1024x768 q=low] t=15.6s state=TRANSFORMING count=7
+[1024x768 q=low] t=16.3s state=JOINING count=7
+[1024x768 q=low] t=17.0s state=ADVANCING count=7
+[1024x768 q=low] t=17.6s state=WAITING count=7
+[1024x768 q=low] t=18.0s state=TRANSFORMING count=8
+[1024x768 q=low] t=18.7s state=JOINING count=8
+[1024x768 q=low] t=19.3s state=ADVANCING count=8
+[1024x768 q=low] t=19.7s state=WAITING count=8
+[1024x768 q=low] t=20.0s state=TRANSFORMING count=9
+[1024x768 q=low] t=20.7s state=JOINING count=9
+[1024x768 q=low] t=21.4s state=ADVANCING count=9
+[1024x768 q=low] t=21.8s state=WAITING count=9
+[1024x768 q=low] t=22.2s state=TRANSFORMING count=10
+[1024x768 q=low] t=22.8s state=JOINING count=10
+[1024x768 q=low] t=23.4s state=ADVANCING count=10
+[1024x768 q=low] t=24.2s state=TRANSFORMING count=11
+[1024x768 q=low] t=24.9s state=JOINING count=11
+[1024x768 q=low] t=25.6s state=ADVANCING count=11
+[1024x768 q=low] t=26.2s state=WAITING count=11
+[1024x768 q=low] screenshot /home/user/261126a/logs/d01/shot-2.jpg state WAITING count 11
+[1024x768 q=low] t=27.9s state=TRANSFORMING count=12
+[1024x768 q=low] t=28.6s state=JOINING count=12
+[1024x768 q=low] t=29.3s state=ADVANCING count=12
+[1024x768 q=low] t=29.7s state=WAITING count=12
+[1024x768 q=low] t=30.0s state=TRANSFORMING count=13
+[1024x768 q=low] t=30.6s state=JOINING count=13
+[1024x768 q=low] t=31.3s state=ADVANCING count=13
+[1024x768 q=low] t=32.0s state=WAITING count=13
+[1024x768 q=low] t=32.3s state=TRANSFORMING count=14
+[1024x768 q=low] t=33.1s state=JOINING count=14
+[1024x768 q=low] t=33.7s state=ADVANCING count=14
+[1024x768 q=low] t=34.2s state=WAITING count=14
+[1024x768 q=low] t=34.5s state=TRANSFORMING count=15
+[1024x768 q=low] t=35.1s state=JOINING count=15
+[1024x768 q=low] t=36.0s state=ADVANCING count=15
+[1024x768 q=low] t=36.5s state=WAITING count=15
+[1024x768 q=low] t=36.8s state=TRANSFORMING count=16
+[1024x768 q=low] t=37.4s state=JOINING count=16
+[1024x768 q=low] t=38.1s state=ADVANCING count=16
+[1024x768 q=low] t=38.7s state=WAITING count=16
+[1024x768 q=low] t=38.9s state=TRANSFORMING count=17
+[1024x768 q=low] t=39.9s state=JOINING count=17
+[1024x768 q=low] t=40.5s state=ADVANCING count=17
+[1024x768 q=low] t=41.1s state=WAITING count=17
+[1024x768 q=low] t=41.3s state=TRANSFORMING count=18
+[1024x768 q=low] t=42.1s state=JOINING count=18
+[1024x768 q=low] t=43.0s state=ADVANCING count=18
+[1024x768 q=low] t=44.1s state=STAR_WAITING count=18
+[1024x768 q=low] t=44.5s state=CLIMAX count=18
+[1024x768 q=low] screenshot /home/user/261126a/logs/d01/shot-3.jpg state CLIMAX count 18
+[1024x768 q=low] t=52.8s state=AFTERGLOW count=18
+[1024x768 q=low] t=58.4s state=ADVANCING count=18
+[1024x768 q=low] t=59.0s state=WAITING count=18
+[1024x768 q=low] t=59.7s state=TRANSFORMING count=19
+[1024x768 q=low] t=60.7s state=JOINING count=19
+[1024x768 q=low] t=61.5s state=ADVANCING count=19
+[1024x768 q=low] t=62.1s state=WAITING count=19
+[1024x768 q=low] RESULT {"ready":true,"errors":[],"st":"WAITING","c":19,"reached":true,"free":true,"done":true}
+[1024x768 q=low] states seen: TRANSFORMING,JOINING,ADVANCING,WAITING,STAR_WAITING,CLIMAX,AFTERGLOW
+[1024x768 q=low] target max |NDC| while waiting/climax = 0.000 (screen offset 0.0%)
+[1024x768 q=low] companions max |NDC| x=0.815 y=0.849; wing tips max |NDC| x=0.512 y=0.770; star max extent=0.618 of short side
+[1024x768 q=low] extent by state TRANSFORMING 0.81 0.83 0.46 0.68
+[1024x768 q=low] extent by state JOINING 0.81 0.83 0.46 0.66
+[1024x768 q=low] extent by state ADVANCING 0.81 0.83 0.49 0.77
+[1024x768 q=low] extent by state WAITING 0.81 0.85 0.46 0.49
+[1024x768 q=low] extent by state STAR_WAITING 0.78 0.84 0.51 0.58
+[1024x768 q=low] extent by state CLIMAX0 0.79 0.85 0.51 0.76
+[1024x768 q=low] extent by state CLIMAX2 0.79 0.81 0.51 0.57
+[1024x768 q=low] extent by state CLIMAX4 0.68 0.67 0.51 0.55
+[1024x768 q=low] extent by state CLIMAX6 0.64 0.69 0.50 0.53
+[1024x768 q=low] extent by state CLIMAX8 0.65 0.69 0.49 0.56
+[1024x768 q=low] extent by state CLIMAX10 0.65 0.68 0.49 0.57
+[1024x768 q=low] extent by state CLIMAX12 0.69 0.71 0.45 0.47
+[1024x768 q=low] extent by state CLIMAX14 0.78 0.82 0.46 0.59
+[1024x768 q=low] extent by state AFTERGLOW 0.81 0.85 0.46 0.68
+[1024x768 q=low] console errors: none
+[1024x768 q=low] PASS elapsed 62.5 s
+[768x1024 q=low] ready=true after 2032 ms
+[768x1024 q=low] t=2.1s state=TRANSFORMING count=1
+[768x1024 q=low] t=2.5s state=JOINING count=1
+[768x1024 q=low] t=3.1s state=ADVANCING count=1
+[768x1024 q=low] t=3.7s state=WAITING count=1
+[768x1024 q=low] t=4.1s state=TRANSFORMING count=2
+[768x1024 q=low] t=4.7s state=JOINING count=2
+[768x1024 q=low] t=5.3s state=ADVANCING count=2
+[768x1024 q=low] t=5.7s state=WAITING count=2
+[768x1024 q=low] t=6.1s state=TRANSFORMING count=3
+[768x1024 q=low] t=6.7s state=JOINING count=3
+[768x1024 q=low] t=7.4s state=ADVANCING count=3
+[768x1024 q=low] t=7.8s state=WAITING count=3
+[768x1024 q=low] screenshot /tmp/claude-0/-home-user-261126a/fe404552-4ca1-51ec-8f4c-c77663fd846f/scratchpad/t/finalP-1.jpg state WAITING count 3
+[768x1024 q=low] t=9.7s state=TRANSFORMING count=4
+[768x1024 q=low] t=10.3s state=JOINING count=4
+[768x1024 q=low] t=11.0s state=ADVANCING count=4
+[768x1024 q=low] t=11.4s state=WAITING count=4
+[768x1024 q=low] t=11.7s state=TRANSFORMING count=5
+[768x1024 q=low] t=12.6s state=JOINING count=5
+[768x1024 q=low] t=13.3s state=ADVANCING count=5
+[768x1024 q=low] t=13.7s state=WAITING count=5
+[768x1024 q=low] t=14.1s state=TRANSFORMING count=6
+[768x1024 q=low] t=14.7s state=JOINING count=6
+[768x1024 q=low] t=15.4s state=ADVANCING count=6
+[768x1024 q=low] t=15.8s state=WAITING count=6
+[768x1024 q=low] t=16.2s state=TRANSFORMING count=7
+[768x1024 q=low] t=16.9s state=JOINING count=7
+[768x1024 q=low] t=17.6s state=ADVANCING count=7
+[768x1024 q=low] t=18.0s state=WAITING count=7
+[768x1024 q=low] t=18.2s state=TRANSFORMING count=8
+[768x1024 q=low] t=19.2s state=JOINING count=8
+[768x1024 q=low] t=19.9s state=ADVANCING count=8
+[768x1024 q=low] t=20.3s state=WAITING count=8
+[768x1024 q=low] t=20.7s state=TRANSFORMING count=9
+[768x1024 q=low] t=21.3s state=JOINING count=9
+[768x1024 q=low] t=22.2s state=ADVANCING count=9
+[768x1024 q=low] t=22.7s state=WAITING count=9
+[768x1024 q=low] t=22.9s state=TRANSFORMING count=10
+[768x1024 q=low] t=23.8s state=JOINING count=10
+[768x1024 q=low] t=24.5s state=ADVANCING count=10
+[768x1024 q=low] t=25.0s state=WAITING count=10
+[768x1024 q=low] screenshot /tmp/claude-0/-home-user-261126a/fe404552-4ca1-51ec-8f4c-c77663fd846f/scratchpad/t/finalP-2.jpg state WAITING count 10
+[768x1024 q=low] t=26.7s state=TRANSFORMING count=11
+[768x1024 q=low] t=27.3s state=JOINING count=11
+[768x1024 q=low] t=28.0s state=ADVANCING count=11
+[768x1024 q=low] t=28.6s state=WAITING count=11
+[768x1024 q=low] t=28.8s state=TRANSFORMING count=12
+[768x1024 q=low] t=29.5s state=JOINING count=12
+[768x1024 q=low] t=30.3s state=ADVANCING count=12
+[768x1024 q=low] t=30.9s state=WAITING count=12
+[768x1024 q=low] t=31.1s state=TRANSFORMING count=13
+[768x1024 q=low] t=32.0s state=JOINING count=13
+[768x1024 q=low] t=32.8s state=ADVANCING count=13
+[768x1024 q=low] t=33.4s state=WAITING count=13
+[768x1024 q=low] t=33.6s state=TRANSFORMING count=14
+[768x1024 q=low] t=34.3s state=JOINING count=14
+[768x1024 q=low] t=35.0s state=ADVANCING count=14
+[768x1024 q=low] t=35.5s state=WAITING count=14
+[768x1024 q=low] t=35.8s state=TRANSFORMING count=15
+[768x1024 q=low] t=36.6s state=JOINING count=15
+[768x1024 q=low] t=37.6s state=ADVANCING count=15
+[768x1024 q=low] t=38.2s state=WAITING count=15
+[768x1024 q=low] t=38.5s state=TRANSFORMING count=16
+[768x1024 q=low] t=39.3s state=JOINING count=16
+[768x1024 q=low] t=39.9s state=ADVANCING count=16
+[768x1024 q=low] t=40.4s state=WAITING count=16
+[768x1024 q=low] t=40.7s state=TRANSFORMING count=17
+[768x1024 q=low] t=41.6s state=JOINING count=17
+[768x1024 q=low] t=42.4s state=ADVANCING count=17
+[768x1024 q=low] t=42.9s state=WAITING count=17
+[768x1024 q=low] t=43.2s state=TRANSFORMING count=18
+[768x1024 q=low] t=44.0s state=JOINING count=18
+[768x1024 q=low] t=44.8s state=ADVANCING count=18
+[768x1024 q=low] t=45.9s state=STAR_WAITING count=18
+[768x1024 q=low] t=46.2s state=CLIMAX count=18
+[768x1024 q=low] screenshot /tmp/claude-0/-home-user-261126a/fe404552-4ca1-51ec-8f4c-c77663fd846f/scratchpad/t/finalP-3.jpg state CLIMAX count 18
+[768x1024 q=low] t=54.7s state=AFTERGLOW count=18
+[768x1024 q=low] t=60.0s state=ADVANCING count=18
+[768x1024 q=low] t=60.6s state=WAITING count=18
+[768x1024 q=low] t=61.2s state=TRANSFORMING count=19
+[768x1024 q=low] t=62.0s state=JOINING count=19
+[768x1024 q=low] t=62.8s state=ADVANCING count=19
+[768x1024 q=low] t=63.4s state=WAITING count=19
+[768x1024 q=low] RESULT {"ready":true,"errors":[],"st":"WAITING","c":19,"reached":true,"free":true,"done":true}
+[768x1024 q=low] states seen: TRANSFORMING,JOINING,ADVANCING,WAITING,STAR_WAITING,CLIMAX,AFTERGLOW
+[768x1024 q=low] target max |NDC| while waiting/climax = 0.000 (screen offset 0.0%)
+[768x1024 q=low] companions max |NDC| x=0.829 y=0.819; wing tips max |NDC| x=0.678 y=0.633; star max extent=0.619 of short side
+[768x1024 q=low] extent by state TRANSFORMING 0.83 0.82 0.59 0.53
+[768x1024 q=low] extent by state JOINING 0.83 0.82 0.58 0.52
+[768x1024 q=low] extent by state ADVANCING 0.82 0.81 0.66 0.63
+[768x1024 q=low] extent by state WAITING 0.83 0.81 0.59 0.39
+[768x1024 q=low] extent by state STAR_WAITING 0.82 0.78 0.65 0.41
+[768x1024 q=low] extent by state CLIMAX0 0.83 0.77 0.67 0.49
+[768x1024 q=low] extent by state CLIMAX2 0.81 0.76 0.68 0.48
+[768x1024 q=low] extent by state CLIMAX4 0.72 0.69 0.68 0.47
+[768x1024 q=low] extent by state CLIMAX6 0.68 0.66 0.67 0.45
+[768x1024 q=low] extent by state CLIMAX8 0.67 0.64 0.66 0.47
+[768x1024 q=low] extent by state CLIMAX10 0.65 0.63 0.64 0.47
+[768x1024 q=low] extent by state CLIMAX12 0.72 0.71 0.58 0.37
+[768x1024 q=low] extent by state CLIMAX14 0.83 0.80 0.59 0.46
+[768x1024 q=low] extent by state AFTERGLOW 0.83 0.79 0.58 0.43
+[768x1024 q=low] console errors: none
+[768x1024 q=low] PASS elapsed 63.8 s
+[1024x768 q=mid] ready=true after 2855 ms
+[1024x768 q=mid] t=3.0s state=TRANSFORMING count=1
+[1024x768 q=mid] t=3.8s state=JOINING count=1
+[1024x768 q=mid] t=4.8s state=ADVANCING count=1
+[1024x768 q=mid] t=5.6s state=WAITING count=1
+[1024x768 q=mid] t=5.9s state=TRANSFORMING count=2
+[1024x768 q=mid] t=7.1s state=JOINING count=2
+[1024x768 q=mid] t=8.2s state=ADVANCING count=2
+[1024x768 q=mid] t=9.0s state=WAITING count=2
+[1024x768 q=mid] t=9.4s state=TRANSFORMING count=3
+[1024x768 q=mid] t=10.5s state=JOINING count=3
+[1024x768 q=mid] t=11.7s state=ADVANCING count=3
+[1024x768 q=mid] t=12.5s state=WAITING count=3
+[1024x768 q=mid] t=12.9s state=TRANSFORMING count=4
+[1024x768 q=mid] t=14.1s state=JOINING count=4
+[1024x768 q=mid] t=15.3s state=ADVANCING count=4
+[1024x768 q=mid] t=16.1s state=WAITING count=4
+[1024x768 q=mid] t=16.5s state=TRANSFORMING count=5
+[1024x768 q=mid] t=17.6s state=JOINING count=5
+[1024x768 q=mid] t=19.3s state=ADVANCING count=5
+[1024x768 q=mid] t=20.2s state=WAITING count=5
+[1024x768 q=mid] t=20.5s state=TRANSFORMING count=6
+[1024x768 q=mid] t=21.8s state=JOINING count=6
+[1024x768 q=mid] t=23.0s state=ADVANCING count=6
+[1024x768 q=mid] t=23.8s state=WAITING count=6
+[1024x768 q=mid] t=24.3s state=TRANSFORMING count=7
+[1024x768 q=mid] t=25.5s state=JOINING count=7
+[1024x768 q=mid] t=26.6s state=ADVANCING count=7
+[1024x768 q=mid] t=27.5s state=WAITING count=7
+[1024x768 q=mid] t=27.9s state=TRANSFORMING count=8
+[1024x768 q=mid] t=29.1s state=JOINING count=8
+[1024x768 q=mid] t=30.3s state=ADVANCING count=8
+[1024x768 q=mid] t=31.2s state=WAITING count=8
+[1024x768 q=mid] t=31.7s state=TRANSFORMING count=9
+[1024x768 q=mid] t=32.9s state=JOINING count=9
+[1024x768 q=mid] t=34.3s state=ADVANCING count=9
+[1024x768 q=mid] t=35.5s state=WAITING count=9
+[1024x768 q=mid] t=36.0s state=TRANSFORMING count=10
+[1024x768 q=mid] t=37.1s state=JOINING count=10
+[1024x768 q=mid] t=38.4s state=ADVANCING count=10
+[1024x768 q=mid] t=39.4s state=WAITING count=10
+[1024x768 q=mid] t=39.9s state=TRANSFORMING count=11
+[1024x768 q=mid] t=41.2s state=JOINING count=11
+[1024x768 q=mid] t=42.4s state=ADVANCING count=11
+[1024x768 q=mid] t=43.4s state=WAITING count=11
+[1024x768 q=mid] t=43.8s state=TRANSFORMING count=12
+[1024x768 q=mid] t=45.1s state=JOINING count=12
+[1024x768 q=mid] t=46.4s state=ADVANCING count=12
+[1024x768 q=mid] t=47.3s state=WAITING count=12
+[1024x768 q=mid] t=47.7s state=TRANSFORMING count=13
+[1024x768 q=mid] t=49.3s state=JOINING count=13
+[1024x768 q=mid] t=50.5s state=ADVANCING count=13
+[1024x768 q=mid] t=51.4s state=WAITING count=13
+[1024x768 q=mid] t=51.7s state=TRANSFORMING count=14
+[1024x768 q=mid] t=53.0s state=JOINING count=14
+[1024x768 q=mid] t=54.3s state=ADVANCING count=14
+[1024x768 q=mid] t=55.5s state=WAITING count=14
+[1024x768 q=mid] t=56.0s state=TRANSFORMING count=15
+[1024x768 q=mid] t=57.3s state=JOINING count=15
+[1024x768 q=mid] t=58.8s state=ADVANCING count=15
+[1024x768 q=mid] t=59.7s state=WAITING count=15
+[1024x768 q=mid] t=60.1s state=TRANSFORMING count=16
+[1024x768 q=mid] t=61.5s state=JOINING count=16
+[1024x768 q=mid] t=62.9s state=ADVANCING count=16
+[1024x768 q=mid] t=63.9s state=WAITING count=16
+[1024x768 q=mid] t=64.4s state=TRANSFORMING count=17
+[1024x768 q=mid] t=65.6s state=JOINING count=17
+[1024x768 q=mid] t=66.9s state=ADVANCING count=17
+[1024x768 q=mid] t=68.1s state=WAITING count=17
+[1024x768 q=mid] t=68.6s state=TRANSFORMING count=18
+[1024x768 q=mid] t=70.1s state=JOINING count=18
+[1024x768 q=mid] t=71.5s state=ADVANCING count=18
+[1024x768 q=mid] t=73.2s state=STAR_WAITING count=18
+[1024x768 q=mid] t=74.0s state=CLIMAX count=18
+[1024x768 q=mid] t=87.3s state=AFTERGLOW count=18
+[1024x768 q=mid] t=97.7s state=ADVANCING count=18
+[1024x768 q=mid] t=98.6s state=WAITING count=18
+[1024x768 q=mid] t=99.7s state=TRANSFORMING count=19
+[1024x768 q=mid] t=101.5s state=JOINING count=19
+[1024x768 q=mid] t=103.4s state=ADVANCING count=19
+[1024x768 q=mid] t=104.8s state=WAITING count=19
+[1024x768 q=mid] RESULT {"ready":true,"errors":[],"st":"WAITING","c":19,"reached":true,"free":true,"done":true}
+[1024x768 q=mid] states seen: TRANSFORMING,JOINING,ADVANCING,WAITING,STAR_WAITING,CLIMAX,AFTERGLOW
+[1024x768 q=mid] target max |NDC| while waiting/climax = 0.000 (screen offset 0.0%)
+[1024x768 q=mid] companions max |NDC| x=0.815 y=0.849; wing tips max |NDC| x=0.513 y=0.753; star max extent=0.618 of short side
+[1024x768 q=mid] extent by state TRANSFORMING 0.81 0.83 0.46 0.69
+[1024x768 q=mid] extent by state JOINING 0.81 0.83 0.46 0.68
+[1024x768 q=mid] extent by state ADVANCING 0.81 0.84 0.51 0.60
+[1024x768 q=mid] extent by state WAITING 0.81 0.85 0.46 0.57
+[1024x768 q=mid] extent by state STAR_WAITING 0.78 0.84 0.51 0.59
+[1024x768 q=mid] extent by state CLIMAX0 0.79 0.85 0.51 0.75
+[1024x768 q=mid] extent by state CLIMAX2 0.79 0.81 0.51 0.58
+[1024x768 q=mid] extent by state CLIMAX4 0.71 0.69 0.51 0.57
+[1024x768 q=mid] extent by state CLIMAX6 0.64 0.69 0.50 0.53
+[1024x768 q=mid] extent by state CLIMAX8 0.65 0.69 0.49 0.56
+[1024x768 q=mid] extent by state CLIMAX10 0.65 0.68 0.49 0.57
+[1024x768 q=mid] extent by state CLIMAX12 0.67 0.69 0.45 0.46
+[1024x768 q=mid] extent by state CLIMAX14 0.78 0.82 0.46 0.51
+[1024x768 q=mid] extent by state AFTERGLOW 0.81 0.85 0.46 0.64
+[1024x768 q=mid] console errors: none
+[1024x768 q=mid] PASS elapsed 105.6 s
+[1024x768 q=high] ready=true after 3431 ms
+[1024x768 q=high] t=3.7s state=TRANSFORMING count=1
+[1024x768 q=high] t=4.4s state=JOINING count=1
+[1024x768 q=high] t=5.9s state=ADVANCING count=1
+[1024x768 q=high] t=7.0s state=WAITING count=1
+[1024x768 q=high] t=7.6s state=TRANSFORMING count=2
+[1024x768 q=high] t=9.6s state=JOINING count=2
+[1024x768 q=high] t=10.8s state=ADVANCING count=2
+[1024x768 q=high] t=11.9s state=WAITING count=2
+[1024x768 q=high] t=12.4s state=TRANSFORMING count=3
+[1024x768 q=high] t=14.0s state=JOINING count=3
+[1024x768 q=high] t=15.7s state=ADVANCING count=3
+[1024x768 q=high] t=16.5s state=WAITING count=3
+[1024x768 q=high] t=17.0s state=TRANSFORMING count=4
+[1024x768 q=high] t=18.8s state=JOINING count=4
+[1024x768 q=high] t=20.0s state=ADVANCING count=4
+[1024x768 q=high] t=21.2s state=WAITING count=4
+[1024x768 q=high] t=21.7s state=TRANSFORMING count=5
+[1024x768 q=high] t=23.4s state=JOINING count=5
+[1024x768 q=high] t=25.0s state=ADVANCING count=5
+[1024x768 q=high] t=26.1s state=WAITING count=5
+[1024x768 q=high] t=26.7s state=TRANSFORMING count=6
+[1024x768 q=high] t=28.4s state=JOINING count=6
+[1024x768 q=high] t=30.1s state=ADVANCING count=6
+[1024x768 q=high] t=31.3s state=WAITING count=6
+[1024x768 q=high] t=31.9s state=TRANSFORMING count=7
+[1024x768 q=high] t=33.7s state=JOINING count=7
+[1024x768 q=high] t=35.3s state=ADVANCING count=7
+[1024x768 q=high] t=36.5s state=WAITING count=7
+[1024x768 q=high] t=37.1s state=TRANSFORMING count=8
+[1024x768 q=high] t=38.8s state=JOINING count=8
+[1024x768 q=high] t=40.4s state=ADVANCING count=8
+[1024x768 q=high] t=41.6s state=WAITING count=8
+[1024x768 q=high] t=42.3s state=TRANSFORMING count=9
+[1024x768 q=high] t=44.1s state=JOINING count=9
+[1024x768 q=high] t=45.8s state=ADVANCING count=9
+[1024x768 q=high] t=46.9s state=WAITING count=9
+[1024x768 q=high] t=47.5s state=TRANSFORMING count=10
+[1024x768 q=high] t=49.3s state=JOINING count=10
+[1024x768 q=high] t=51.0s state=ADVANCING count=10
+[1024x768 q=high] t=52.1s state=WAITING count=10
+[1024x768 q=high] t=52.8s state=TRANSFORMING count=11
+[1024x768 q=high] t=54.5s state=JOINING count=11
+[1024x768 q=high] t=56.3s state=ADVANCING count=11
+[1024x768 q=high] t=57.5s state=WAITING count=11
+[1024x768 q=high] t=58.1s state=TRANSFORMING count=12
+[1024x768 q=high] t=59.9s state=JOINING count=12
+[1024x768 q=high] t=61.7s state=ADVANCING count=12
+[1024x768 q=high] t=62.9s state=WAITING count=12
+[1024x768 q=high] t=63.6s state=TRANSFORMING count=13
+[1024x768 q=high] t=65.5s state=JOINING count=13
+[1024x768 q=high] t=67.3s state=ADVANCING count=13
+[1024x768 q=high] t=68.5s state=WAITING count=13
+[1024x768 q=high] t=69.2s state=TRANSFORMING count=14
+[1024x768 q=high] t=71.1s state=JOINING count=14
+[1024x768 q=high] t=72.9s state=ADVANCING count=14
+[1024x768 q=high] t=74.2s state=WAITING count=14
+[1024x768 q=high] t=74.9s state=TRANSFORMING count=15
+[1024x768 q=high] t=76.9s state=JOINING count=15
+[1024x768 q=high] t=79.0s state=ADVANCING count=15
+[1024x768 q=high] t=80.4s state=WAITING count=15
+[1024x768 q=high] t=81.1s state=TRANSFORMING count=16
+[1024x768 q=high] t=83.1s state=JOINING count=16
+[1024x768 q=high] t=85.1s state=ADVANCING count=16
+[1024x768 q=high] t=86.4s state=WAITING count=16
+[1024x768 q=high] t=87.1s state=TRANSFORMING count=17
+[1024x768 q=high] t=89.2s state=JOINING count=17
+[1024x768 q=high] t=91.3s state=ADVANCING count=17
+[1024x768 q=high] t=92.7s state=WAITING count=17
+[1024x768 q=high] t=93.4s state=TRANSFORMING count=18
+[1024x768 q=high] t=95.5s state=JOINING count=18
+[1024x768 q=high] t=97.6s state=ADVANCING count=18
+[1024x768 q=high] t=100.7s state=STAR_WAITING count=18
+[1024x768 q=high] t=102.1s state=CLIMAX count=18
+[1024x768 q=high] t=120.9s state=AFTERGLOW count=18
+[1024x768 q=high] t=136.1s state=ADVANCING count=18
+[1024x768 q=high] t=137.7s state=WAITING count=18
+[1024x768 q=high] t=139.3s state=TRANSFORMING count=19
+[1024x768 q=high] t=141.6s state=JOINING count=19
+[1024x768 q=high] t=143.9s state=ADVANCING count=19
+[1024x768 q=high] t=145.4s state=WAITING count=19
+[1024x768 q=high] RESULT {"ready":true,"errors":[],"st":"WAITING","c":19,"reached":true,"free":true,"done":true}
+[1024x768 q=high] states seen: TRANSFORMING,JOINING,ADVANCING,WAITING,STAR_WAITING,CLIMAX,AFTERGLOW
+[1024x768 q=high] target max |NDC| while waiting/climax = 0.000 (screen offset 0.0%)
+[1024x768 q=high] companions max |NDC| x=0.815 y=0.849; wing tips max |NDC| x=0.513 y=0.781; star max extent=0.619 of short side
+[1024x768 q=high] extent by state TRANSFORMING 0.81 0.83 0.46 0.70
+[1024x768 q=high] extent by state JOINING 0.81 0.83 0.46 0.68
+[1024x768 q=high] extent by state ADVANCING 0.81 0.84 0.51 0.78
+[1024x768 q=high] extent by state WAITING 0.81 0.85 0.46 0.64
+[1024x768 q=high] extent by state STAR_WAITING 0.78 0.84 0.51 0.58
+[1024x768 q=high] extent by state CLIMAX0 0.79 0.85 0.51 0.58
+[1024x768 q=high] extent by state CLIMAX2 0.79 0.82 0.51 0.58
+[1024x768 q=high] extent by state CLIMAX4 0.71 0.69 0.51 0.57
+[1024x768 q=high] extent by state CLIMAX6 0.65 0.69 0.50 0.53
+[1024x768 q=high] extent by state CLIMAX8 0.65 0.69 0.50 0.56
+[1024x768 q=high] extent by state CLIMAX10 0.65 0.68 0.49 0.57
+[1024x768 q=high] extent by state CLIMAX12 0.69 0.71 0.45 0.47
+[1024x768 q=high] extent by state CLIMAX14 0.78 0.82 0.46 0.59
+[1024x768 q=high] extent by state AFTERGLOW 0.81 0.85 0.46 0.66
+[1024x768 q=high] console errors: none
+[1024x768 q=high] PASS elapsed 146.7 s
+[1194x834 q=low] ready=true after 2225 ms
+[1194x834 q=low] t=2.4s state=TRANSFORMING count=1
+[1194x834 q=low] t=2.9s state=JOINING count=1
+[1194x834 q=low] t=3.9s state=ADVANCING count=1
+[1194x834 q=low] t=4.2s state=WAITING count=1
+[1194x834 q=low] t=4.5s state=TRANSFORMING count=2
+[1194x834 q=low] t=5.3s state=JOINING count=2
+[1194x834 q=low] t=6.2s state=ADVANCING count=2
+[1194x834 q=low] t=6.8s state=WAITING count=2
+[1194x834 q=low] t=7.0s state=TRANSFORMING count=3
+[1194x834 q=low] t=8.0s state=JOINING count=3
+[1194x834 q=low] t=8.5s state=ADVANCING count=3
+[1194x834 q=low] t=9.1s state=WAITING count=3
+[1194x834 q=low] t=9.3s state=TRANSFORMING count=4
+[1194x834 q=low] t=10.2s state=JOINING count=4
+[1194x834 q=low] t=10.9s state=ADVANCING count=4
+[1194x834 q=low] t=11.4s state=WAITING count=4
+[1194x834 q=low] t=11.7s state=TRANSFORMING count=5
+[1194x834 q=low] t=12.6s state=JOINING count=5
+[1194x834 q=low] t=13.4s state=ADVANCING count=5
+[1194x834 q=low] t=14.0s state=WAITING count=5
+[1194x834 q=low] t=14.3s state=TRANSFORMING count=6
+[1194x834 q=low] t=15.2s state=JOINING count=6
+[1194x834 q=low] t=16.0s state=ADVANCING count=6
+[1194x834 q=low] t=16.6s state=WAITING count=6
+[1194x834 q=low] t=16.9s state=TRANSFORMING count=7
+[1194x834 q=low] t=17.8s state=JOINING count=7
+[1194x834 q=low] t=18.6s state=ADVANCING count=7
+[1194x834 q=low] t=19.1s state=WAITING count=7
+[1194x834 q=low] t=19.4s state=TRANSFORMING count=8
+[1194x834 q=low] t=20.2s state=JOINING count=8
+[1194x834 q=low] t=21.0s state=ADVANCING count=8
+[1194x834 q=low] t=21.5s state=WAITING count=8
+[1194x834 q=low] t=21.8s state=TRANSFORMING count=9
+[1194x834 q=low] t=22.6s state=JOINING count=9
+[1194x834 q=low] t=23.4s state=ADVANCING count=9
+[1194x834 q=low] t=24.0s state=WAITING count=9
+[1194x834 q=low] t=24.3s state=TRANSFORMING count=10
+[1194x834 q=low] t=25.1s state=JOINING count=10
+[1194x834 q=low] t=25.9s state=ADVANCING count=10
+[1194x834 q=low] t=26.5s state=WAITING count=10
+[1194x834 q=low] t=26.8s state=TRANSFORMING count=11
+[1194x834 q=low] t=27.6s state=JOINING count=11
+[1194x834 q=low] t=28.4s state=ADVANCING count=11
+[1194x834 q=low] t=29.0s state=WAITING count=11
+[1194x834 q=low] t=29.3s state=TRANSFORMING count=12
+[1194x834 q=low] t=30.1s state=JOINING count=12
+[1194x834 q=low] t=31.0s state=ADVANCING count=12
+[1194x834 q=low] t=31.6s state=WAITING count=12
+[1194x834 q=low] t=31.9s state=TRANSFORMING count=13
+[1194x834 q=low] t=32.8s state=JOINING count=13
+[1194x834 q=low] t=33.7s state=ADVANCING count=13
+[1194x834 q=low] t=34.2s state=WAITING count=13
+[1194x834 q=low] t=34.5s state=TRANSFORMING count=14
+[1194x834 q=low] t=35.4s state=JOINING count=14
+[1194x834 q=low] t=36.2s state=ADVANCING count=14
+[1194x834 q=low] t=36.8s state=WAITING count=14
+[1194x834 q=low] t=37.2s state=TRANSFORMING count=15
+[1194x834 q=low] t=38.1s state=JOINING count=15
+[1194x834 q=low] t=38.9s state=ADVANCING count=15
+[1194x834 q=low] t=39.5s state=WAITING count=15
+[1194x834 q=low] t=39.7s state=TRANSFORMING count=16
+[1194x834 q=low] t=40.6s state=JOINING count=16
+[1194x834 q=low] t=41.5s state=ADVANCING count=16
+[1194x834 q=low] t=42.1s state=WAITING count=16
+[1194x834 q=low] t=42.4s state=TRANSFORMING count=17
+[1194x834 q=low] t=43.4s state=JOINING count=17
+[1194x834 q=low] t=44.3s state=ADVANCING count=17
+[1194x834 q=low] t=44.9s state=WAITING count=17
+[1194x834 q=low] t=45.3s state=TRANSFORMING count=18
+[1194x834 q=low] t=46.2s state=JOINING count=18
+[1194x834 q=low] t=47.1s state=ADVANCING count=18
+[1194x834 q=low] t=48.6s state=STAR_WAITING count=18
+[1194x834 q=low] t=49.1s state=CLIMAX count=18
+[1194x834 q=low] t=57.6s state=AFTERGLOW count=18
+[1194x834 q=low] t=63.9s state=ADVANCING count=18
+[1194x834 q=low] t=64.5s state=WAITING count=18
+[1194x834 q=low] t=65.2s state=TRANSFORMING count=19
+[1194x834 q=low] t=66.2s state=JOINING count=19
+[1194x834 q=low] t=67.1s state=ADVANCING count=19
+[1194x834 q=low] t=67.8s state=WAITING count=19
+[1194x834 q=low] RESULT {"ready":true,"errors":[],"st":"WAITING","c":19,"reached":true,"free":true,"done":true}
+[1194x834 q=low] states seen: TRANSFORMING,JOINING,ADVANCING,WAITING,STAR_WAITING,CLIMAX,AFTERGLOW
+[1194x834 q=low] target max |NDC| while waiting/climax = 0.000 (screen offset 0.0%)
+[1194x834 q=low] companions max |NDC| x=0.807 y=0.850; wing tips max |NDC| x=0.477 y=0.699; star max extent=0.619 of short side
+[1194x834 q=low] extent by state TRANSFORMING 0.81 0.83 0.43 0.69
+[1194x834 q=low] extent by state JOINING 0.81 0.83 0.43 0.67
+[1194x834 q=low] extent by state ADVANCING 0.81 0.84 0.48 0.67
+[1194x834 q=low] extent by state WAITING 0.80 0.85 0.43 0.54
+[1194x834 q=low] extent by state STAR_WAITING 0.78 0.84 0.47 0.58
+[1194x834 q=low] extent by state CLIMAX0 0.78 0.85 0.47 0.58
+[1194x834 q=low] extent by state CLIMAX2 0.79 0.82 0.48 0.70
+[1194x834 q=low] extent by state CLIMAX4 0.69 0.68 0.48 0.56
+[1194x834 q=low] extent by state CLIMAX6 0.64 0.69 0.47 0.53
+[1194x834 q=low] extent by state CLIMAX8 0.64 0.69 0.46 0.56
+[1194x834 q=low] extent by state CLIMAX10 0.64 0.67 0.45 0.57
+[1194x834 q=low] extent by state CLIMAX12 0.67 0.69 0.42 0.46
+[1194x834 q=low] extent by state CLIMAX14 0.77 0.82 0.43 0.51
+[1194x834 q=low] extent by state AFTERGLOW 0.80 0.85 0.42 0.66
+[1194x834 q=low] console errors: none
+[1194x834 q=low] PASS elapsed 68.3 s
+[834x1194 q=low] ready=true after 2259 ms
+[834x1194 q=low] t=2.4s state=TRANSFORMING count=1
+[834x1194 q=low] t=3.0s state=JOINING count=1
+[834x1194 q=low] t=3.7s state=ADVANCING count=1
+[834x1194 q=low] t=4.2s state=WAITING count=1
+[834x1194 q=low] t=4.5s state=TRANSFORMING count=2
+[834x1194 q=low] t=5.3s state=JOINING count=2
+[834x1194 q=low] t=6.2s state=ADVANCING count=2
+[834x1194 q=low] t=6.8s state=WAITING count=2
+[834x1194 q=low] t=7.0s state=TRANSFORMING count=3
+[834x1194 q=low] t=7.9s state=JOINING count=3
+[834x1194 q=low] t=8.7s state=ADVANCING count=3
+[834x1194 q=low] t=9.3s state=WAITING count=3
+[834x1194 q=low] t=9.6s state=TRANSFORMING count=4
+[834x1194 q=low] t=10.4s state=JOINING count=4
+[834x1194 q=low] t=11.3s state=ADVANCING count=4
+[834x1194 q=low] t=11.9s state=WAITING count=4
+[834x1194 q=low] t=12.2s state=TRANSFORMING count=5
+[834x1194 q=low] t=13.0s state=JOINING count=5
+[834x1194 q=low] t=13.9s state=ADVANCING count=5
+[834x1194 q=low] t=14.5s state=WAITING count=5
+[834x1194 q=low] t=14.8s state=TRANSFORMING count=6
+[834x1194 q=low] t=15.7s state=JOINING count=6
+[834x1194 q=low] t=16.6s state=ADVANCING count=6
+[834x1194 q=low] t=17.2s state=WAITING count=6
+[834x1194 q=low] t=17.5s state=TRANSFORMING count=7
+[834x1194 q=low] t=18.4s state=JOINING count=7
+[834x1194 q=low] t=19.2s state=ADVANCING count=7
+[834x1194 q=low] t=19.9s state=WAITING count=7
+[834x1194 q=low] t=20.2s state=TRANSFORMING count=8
+[834x1194 q=low] t=21.2s state=JOINING count=8
+[834x1194 q=low] t=22.1s state=ADVANCING count=8
+[834x1194 q=low] t=22.7s state=WAITING count=8
+[834x1194 q=low] t=23.1s state=TRANSFORMING count=9
+[834x1194 q=low] t=24.0s state=JOINING count=9
+[834x1194 q=low] t=24.8s state=ADVANCING count=9
+[834x1194 q=low] t=25.4s state=WAITING count=9
+[834x1194 q=low] t=25.7s state=TRANSFORMING count=10
+[834x1194 q=low] t=26.6s state=JOINING count=10
+[834x1194 q=low] t=27.5s state=ADVANCING count=10
+[834x1194 q=low] t=28.1s state=WAITING count=10
+[834x1194 q=low] t=28.4s state=TRANSFORMING count=11
+[834x1194 q=low] t=29.2s state=JOINING count=11
+[834x1194 q=low] t=30.1s state=ADVANCING count=11
+[834x1194 q=low] t=30.8s state=WAITING count=11
+[834x1194 q=low] t=31.1s state=TRANSFORMING count=12
+[834x1194 q=low] t=32.0s state=JOINING count=12
+[834x1194 q=low] t=32.8s state=ADVANCING count=12
+[834x1194 q=low] t=33.5s state=WAITING count=12
+[834x1194 q=low] t=33.8s state=TRANSFORMING count=13
+[834x1194 q=low] t=34.6s state=JOINING count=13
+[834x1194 q=low] t=35.5s state=ADVANCING count=13
+[834x1194 q=low] t=36.1s state=WAITING count=13
+[834x1194 q=low] t=36.4s state=TRANSFORMING count=14
+[834x1194 q=low] t=37.3s state=JOINING count=14
+[834x1194 q=low] t=38.3s state=ADVANCING count=14
+[834x1194 q=low] t=38.9s state=WAITING count=14
+[834x1194 q=low] t=39.2s state=TRANSFORMING count=15
+[834x1194 q=low] t=40.1s state=JOINING count=15
+[834x1194 q=low] t=41.0s state=ADVANCING count=15
+[834x1194 q=low] t=41.6s state=WAITING count=15
+[834x1194 q=low] t=41.9s state=TRANSFORMING count=16
+[834x1194 q=low] t=42.8s state=JOINING count=16
+[834x1194 q=low] t=43.7s state=ADVANCING count=16
+[834x1194 q=low] t=44.3s state=WAITING count=16
+[834x1194 q=low] t=44.6s state=TRANSFORMING count=17
+[834x1194 q=low] t=45.5s state=JOINING count=17
+[834x1194 q=low] t=46.4s state=ADVANCING count=17
+[834x1194 q=low] t=47.1s state=WAITING count=17
+[834x1194 q=low] t=47.4s state=TRANSFORMING count=18
+[834x1194 q=low] t=48.3s state=JOINING count=18
+[834x1194 q=low] t=49.2s state=ADVANCING count=18
+[834x1194 q=low] t=50.3s state=STAR_WAITING count=18
+[834x1194 q=low] t=50.8s state=CLIMAX count=18
+[834x1194 q=low] t=59.0s state=AFTERGLOW count=18
+[834x1194 q=low] t=65.5s state=ADVANCING count=18
+[834x1194 q=low] t=66.2s state=WAITING count=18
+[834x1194 q=low] t=66.9s state=TRANSFORMING count=19
+[834x1194 q=low] t=67.9s state=JOINING count=19
+[834x1194 q=low] t=68.8s state=ADVANCING count=19
+[834x1194 q=low] t=69.5s state=WAITING count=19
+[834x1194 q=low] RESULT {"ready":true,"errors":[],"st":"WAITING","c":19,"reached":true,"free":true,"done":true}
+[834x1194 q=low] states seen: TRANSFORMING,JOINING,ADVANCING,WAITING,STAR_WAITING,CLIMAX,AFTERGLOW
+[834x1194 q=low] target max |NDC| while waiting/climax = 0.000 (screen offset 0.0%)
+[834x1194 q=low] companions max |NDC| x=0.829 y=0.813; wing tips max |NDC| x=0.687 y=0.625; star max extent=0.618 of short side
+[834x1194 q=low] extent by state TRANSFORMING 0.83 0.81 0.60 0.52
+[834x1194 q=low] extent by state JOINING 0.83 0.81 0.58 0.47
+[834x1194 q=low] extent by state ADVANCING 0.82 0.81 0.66 0.63
+[834x1194 q=low] extent by state WAITING 0.83 0.80 0.58 0.51
+[834x1194 q=low] extent by state STAR_WAITING 0.82 0.78 0.68 0.49
+[834x1194 q=low] extent by state CLIMAX0 0.83 0.77 0.68 0.49
+[834x1194 q=low] extent by state CLIMAX2 0.82 0.76 0.69 0.49
+[834x1194 q=low] extent by state CLIMAX4 0.74 0.70 0.69 0.47
+[834x1194 q=low] extent by state CLIMAX6 0.68 0.65 0.67 0.45
+[834x1194 q=low] extent by state CLIMAX8 0.67 0.63 0.66 0.46
+[834x1194 q=low] extent by state CLIMAX10 0.66 0.62 0.65 0.48
+[834x1194 q=low] extent by state CLIMAX12 0.72 0.71 0.58 0.36
+[834x1194 q=low] extent by state CLIMAX14 0.83 0.79 0.59 0.45
+[834x1194 q=low] extent by state AFTERGLOW 0.83 0.78 0.58 0.46
+[834x1194 q=low] console errors: none
+[834x1194 q=low] PASS elapsed 70.0 s
+[390x844 q=low] ready=true after 1921 ms
+[390x844 q=low] t=2.0s state=TRANSFORMING count=1
+[390x844 q=low] t=2.6s state=JOINING count=1
+[390x844 q=low] t=3.2s state=ADVANCING count=1
+[390x844 q=low] t=3.5s state=WAITING count=1
+[390x844 q=low] t=3.8s state=TRANSFORMING count=2
+[390x844 q=low] t=4.3s state=JOINING count=2
+[390x844 q=low] t=4.9s state=ADVANCING count=2
+[390x844 q=low] t=5.1s state=WAITING count=2
+[390x844 q=low] t=5.4s state=TRANSFORMING count=3
+[390x844 q=low] t=5.9s state=JOINING count=3
+[390x844 q=low] t=6.7s state=ADVANCING count=3
+[390x844 q=low] t=7.0s state=WAITING count=3
+[390x844 q=low] t=7.3s state=TRANSFORMING count=4
+[390x844 q=low] t=7.9s state=JOINING count=4
+[390x844 q=low] t=8.5s state=ADVANCING count=4
+[390x844 q=low] t=8.8s state=WAITING count=4
+[390x844 q=low] t=9.1s state=TRANSFORMING count=5
+[390x844 q=low] t=9.7s state=JOINING count=5
+[390x844 q=low] t=10.2s state=ADVANCING count=5
+[390x844 q=low] t=10.5s state=WAITING count=5
+[390x844 q=low] t=10.8s state=TRANSFORMING count=6
+[390x844 q=low] t=11.4s state=JOINING count=6
+[390x844 q=low] t=11.9s state=ADVANCING count=6
+[390x844 q=low] t=12.6s state=TRANSFORMING count=7
+[390x844 q=low] t=13.4s state=JOINING count=7
+[390x844 q=low] t=13.7s state=ADVANCING count=7
+[390x844 q=low] t=14.3s state=TRANSFORMING count=8
+[390x844 q=low] t=14.9s state=JOINING count=8
+[390x844 q=low] t=15.6s state=ADVANCING count=8
+[390x844 q=low] t=16.1s state=TRANSFORMING count=9
+[390x844 q=low] t=17.1s state=JOINING count=9
+[390x844 q=low] t=17.4s state=ADVANCING count=9
+[390x844 q=low] t=17.7s state=WAITING count=9
+[390x844 q=low] t=18.0s state=TRANSFORMING count=10
+[390x844 q=low] t=18.6s state=JOINING count=10
+[390x844 q=low] t=19.2s state=ADVANCING count=10
+[390x844 q=low] t=19.5s state=WAITING count=10
+[390x844 q=low] t=19.8s state=TRANSFORMING count=11
+[390x844 q=low] t=20.4s state=JOINING count=11
+[390x844 q=low] t=21.1s state=ADVANCING count=11
+[390x844 q=low] t=21.4s state=WAITING count=11
+[390x844 q=low] t=21.7s state=TRANSFORMING count=12
+[390x844 q=low] t=22.3s state=JOINING count=12
+[390x844 q=low] t=22.9s state=ADVANCING count=12
+[390x844 q=low] t=23.2s state=WAITING count=12
+[390x844 q=low] t=23.5s state=TRANSFORMING count=13
+[390x844 q=low] t=24.1s state=JOINING count=13
+[390x844 q=low] t=24.7s state=ADVANCING count=13
+[390x844 q=low] t=25.0s state=WAITING count=13
+[390x844 q=low] t=25.4s state=TRANSFORMING count=14
+[390x844 q=low] t=25.9s state=JOINING count=14
+[390x844 q=low] t=26.6s state=ADVANCING count=14
+[390x844 q=low] t=26.9s state=WAITING count=14
+[390x844 q=low] t=27.2s state=TRANSFORMING count=15
+[390x844 q=low] t=27.7s state=JOINING count=15
+[390x844 q=low] t=28.3s state=ADVANCING count=15
+[390x844 q=low] t=28.6s state=WAITING count=15
+[390x844 q=low] t=29.0s state=TRANSFORMING count=16
+[390x844 q=low] t=29.6s state=JOINING count=16
+[390x844 q=low] t=30.0s state=ADVANCING count=16
+[390x844 q=low] t=30.5s state=TRANSFORMING count=17
+[390x844 q=low] t=31.3s state=JOINING count=17
+[390x844 q=low] t=32.0s state=ADVANCING count=17
+[390x844 q=low] t=32.3s state=TRANSFORMING count=18
+[390x844 q=low] t=32.9s state=JOINING count=18
+[390x844 q=low] t=33.5s state=ADVANCING count=18
+[390x844 q=low] t=34.4s state=STAR_WAITING count=18
+[390x844 q=low] t=35.0s state=CLIMAX count=18
+[390x844 q=low] t=40.4s state=AFTERGLOW count=18
+[390x844 q=low] t=44.6s state=ADVANCING count=18
+[390x844 q=low] t=44.8s state=WAITING count=18
+[390x844 q=low] t=45.5s state=TRANSFORMING count=19
+[390x844 q=low] t=46.1s state=JOINING count=19
+[390x844 q=low] t=46.6s state=ADVANCING count=19
+[390x844 q=low] t=47.0s state=WAITING count=19
+[390x844 q=low] RESULT {"ready":true,"errors":[],"st":"WAITING","c":19,"reached":true,"free":true,"done":true}
+[390x844 q=low] states seen: TRANSFORMING,JOINING,ADVANCING,WAITING,STAR_WAITING,CLIMAX,AFTERGLOW
+[390x844 q=low] target max |NDC| while waiting/climax = 0.000 (screen offset 0.0%)
+[390x844 q=low] companions max |NDC| x=0.832 y=0.781; wing tips max |NDC| x=0.761 y=0.498; star max extent=0.619 of short side
+[390x844 q=low] extent by state TRANSFORMING 0.83 0.78 0.67 0.33
+[390x844 q=low] extent by state JOINING 0.83 0.78 0.58 0.36
+[390x844 q=low] extent by state ADVANCING 0.83 0.77 0.74 0.50
+[390x844 q=low] extent by state WAITING 0.82 0.77 0.57 0.32
+[390x844 q=low] extent by state STAR_WAITING 0.83 0.75 0.75 0.50
+[390x844 q=low] extent by state CLIMAX0 0.83 0.73 0.75 0.48
+[390x844 q=low] extent by state CLIMAX2 0.83 0.73 0.76 0.48
+[390x844 q=low] extent by state CLIMAX4 0.74 0.67 0.76 0.48
+[390x844 q=low] extent by state CLIMAX6 0.68 0.62 0.75 0.46
+[390x844 q=low] extent by state CLIMAX8 0.67 0.60 0.74 0.46
+[390x844 q=low] extent by state CLIMAX10 0.66 0.58 0.73 0.47
+[390x844 q=low] extent by state CLIMAX12 0.68 0.63 0.56 0.29
+[390x844 q=low] extent by state CLIMAX14 0.81 0.76 0.57 0.31
+[390x844 q=low] extent by state AFTERGLOW 0.83 0.76 0.57 0.37
+[390x844 q=low] console errors: none
+[390x844 q=low] PASS elapsed 47.1 s
+[1440x900 q=low] ready=true after 2211 ms
+[1440x900 q=low] t=2.4s state=TRANSFORMING count=1
+[1440x900 q=low] t=2.9s state=JOINING count=1
+[1440x900 q=low] t=3.7s state=ADVANCING count=1
+[1440x900 q=low] t=4.3s state=WAITING count=1
+[1440x900 q=low] t=4.6s state=TRANSFORMING count=2
+[1440x900 q=low] t=5.5s state=JOINING count=2
+[1440x900 q=low] t=6.4s state=ADVANCING count=2
+[1440x900 q=low] t=7.0s state=WAITING count=2
+[1440x900 q=low] t=7.3s state=TRANSFORMING count=3
+[1440x900 q=low] t=8.3s state=JOINING count=3
+[1440x900 q=low] t=9.2s state=ADVANCING count=3
+[1440x900 q=low] t=9.9s state=WAITING count=3
+[1440x900 q=low] t=10.3s state=TRANSFORMING count=4
+[1440x900 q=low] t=11.4s state=JOINING count=4
+[1440x900 q=low] t=12.4s state=ADVANCING count=4
+[1440x900 q=low] t=13.1s state=WAITING count=4
+[1440x900 q=low] t=13.4s state=TRANSFORMING count=5
+[1440x900 q=low] t=14.4s state=JOINING count=5
+[1440x900 q=low] t=15.3s state=ADVANCING count=5
+[1440x900 q=low] t=16.0s state=WAITING count=5
+[1440x900 q=low] t=16.3s state=TRANSFORMING count=6
+[1440x900 q=low] t=17.3s state=JOINING count=6
+[1440x900 q=low] t=18.2s state=ADVANCING count=6
+[1440x900 q=low] t=18.9s state=WAITING count=6
+[1440x900 q=low] t=19.2s state=TRANSFORMING count=7
+[1440x900 q=low] t=20.1s state=JOINING count=7
+[1440x900 q=low] t=21.0s state=ADVANCING count=7
+[1440x900 q=low] t=21.6s state=WAITING count=7
+[1440x900 q=low] t=22.0s state=TRANSFORMING count=8
+[1440x900 q=low] t=22.9s state=JOINING count=8
+[1440x900 q=low] t=23.9s state=ADVANCING count=8
+[1440x900 q=low] t=24.6s state=WAITING count=8
+[1440x900 q=low] t=24.9s state=TRANSFORMING count=9
+[1440x900 q=low] t=25.9s state=JOINING count=9
+[1440x900 q=low] t=26.9s state=ADVANCING count=9
+[1440x900 q=low] t=27.7s state=WAITING count=9
+[1440x900 q=low] t=28.1s state=TRANSFORMING count=10
+[1440x900 q=low] t=29.2s state=JOINING count=10
+[1440x900 q=low] t=30.1s state=ADVANCING count=10
+[1440x900 q=low] t=30.9s state=WAITING count=10
+[1440x900 q=low] t=31.2s state=TRANSFORMING count=11
+[1440x900 q=low] t=32.2s state=JOINING count=11
+[1440x900 q=low] t=33.2s state=ADVANCING count=11
+[1440x900 q=low] t=33.8s state=WAITING count=11
+[1440x900 q=low] t=34.2s state=TRANSFORMING count=12
+[1440x900 q=low] t=35.2s state=JOINING count=12
+[1440x900 q=low] t=36.1s state=ADVANCING count=12
+[1440x900 q=low] t=36.8s state=WAITING count=12
+[1440x900 q=low] t=37.2s state=TRANSFORMING count=13
+[1440x900 q=low] t=38.1s state=JOINING count=13
+[1440x900 q=low] t=39.0s state=ADVANCING count=13
+[1440x900 q=low] t=39.7s state=WAITING count=13
+[1440x900 q=low] t=40.0s state=TRANSFORMING count=14
+[1440x900 q=low] t=41.0s state=JOINING count=14
+[1440x900 q=low] t=42.0s state=ADVANCING count=14
+[1440x900 q=low] t=42.7s state=WAITING count=14
+[1440x900 q=low] t=43.0s state=TRANSFORMING count=15
+[1440x900 q=low] t=44.0s state=JOINING count=15
+[1440x900 q=low] t=45.1s state=ADVANCING count=15
+[1440x900 q=low] t=45.8s state=WAITING count=15
+[1440x900 q=low] t=46.1s state=TRANSFORMING count=16
+[1440x900 q=low] t=47.2s state=JOINING count=16
+[1440x900 q=low] t=48.2s state=ADVANCING count=16
+[1440x900 q=low] t=48.9s state=WAITING count=16
+[1440x900 q=low] t=49.2s state=TRANSFORMING count=17
+[1440x900 q=low] t=50.3s state=JOINING count=17
+[1440x900 q=low] t=51.3s state=ADVANCING count=17
+[1440x900 q=low] t=52.0s state=WAITING count=17
+[1440x900 q=low] t=52.4s state=TRANSFORMING count=18
+[1440x900 q=low] t=53.5s state=JOINING count=18
+[1440x900 q=low] t=54.6s state=ADVANCING count=18
+[1440x900 q=low] t=56.1s state=STAR_WAITING count=18
+[1440x900 q=low] t=56.7s state=CLIMAX count=18
+[1440x900 q=low] t=66.5s state=AFTERGLOW count=18
+[1440x900 q=low] t=73.9s state=ADVANCING count=18
+[1440x900 q=low] t=74.7s state=WAITING count=18
+[1440x900 q=low] t=75.5s state=TRANSFORMING count=19
+[1440x900 q=low] t=76.7s state=JOINING count=19
+[1440x900 q=low] t=77.8s state=ADVANCING count=19
+[1440x900 q=low] t=78.9s state=WAITING count=19
+[1440x900 q=low] RESULT {"ready":true,"errors":[],"st":"WAITING","c":19,"reached":true,"free":true,"done":true}
+[1440x900 q=low] states seen: TRANSFORMING,JOINING,ADVANCING,WAITING,STAR_WAITING,CLIMAX,AFTERGLOW
+[1440x900 q=low] target max |NDC| while waiting/climax = 0.000 (screen offset 0.0%)
+[1440x900 q=low] companions max |NDC| x=0.797 y=0.850; wing tips max |NDC| x=0.428 y=0.786; star max extent=0.618 of short side
+[1440x900 q=low] extent by state TRANSFORMING 0.80 0.82 0.38 0.70
+[1440x900 q=low] extent by state JOINING 0.80 0.83 0.38 0.63
+[1440x900 q=low] extent by state ADVANCING 0.79 0.84 0.41 0.79
+[1440x900 q=low] extent by state WAITING 0.79 0.85 0.38 0.69
+[1440x900 q=low] extent by state STAR_WAITING 0.77 0.84 0.42 0.59
+[1440x900 q=low] extent by state CLIMAX0 0.78 0.85 0.42 0.58
+[1440x900 q=low] extent by state CLIMAX2 0.78 0.81 0.43 0.59
+[1440x900 q=low] extent by state CLIMAX4 0.70 0.69 0.43 0.57
+[1440x900 q=low] extent by state CLIMAX6 0.63 0.69 0.42 0.53
+[1440x900 q=low] extent by state CLIMAX8 0.63 0.69 0.41 0.56
+[1440x900 q=low] extent by state CLIMAX10 0.63 0.68 0.41 0.57
+[1440x900 q=low] extent by state CLIMAX12 0.68 0.71 0.38 0.47
+[1440x900 q=low] extent by state CLIMAX14 0.76 0.82 0.38 0.59
+[1440x900 q=low] extent by state AFTERGLOW 0.79 0.85 0.38 0.61
+[1440x900 q=low] console errors: none
+[1440x900 q=low] PASS elapsed 79.5 s
+## forbidden-word check (grep, incl. hiragana/katakana)
+no matches in site/games/d01, site/thumbs/d01.jpg, logs/d01
+## artifact sizes
+68137 logs/d01/shot-1.jpg
+56659 logs/d01/shot-2.jpg
+36737 logs/d01/shot-3.jpg
+29027 site/thumbs/d01.jpg
+thumb size (640, 480)
