@@ -1,0 +1,1883 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#e9c99a">
+<title>D03 光の平原</title>
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#e6cfa4;
+  touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+canvas{display:block;position:fixed;left:0;top:0;width:100vw;height:100vh;touch-action:none;outline:none}
+#fade{position:fixed;inset:0;background:#fff1cf;opacity:0;pointer-events:none}
+</style>
+<script>
+window.__ready = false;
+window.__errors = [];
+window.addEventListener('error', function (e) {
+  window.__errors.push('error: ' + String((e && (e.message || (e.error && e.error.message))) || e));
+});
+window.addEventListener('unhandledrejection', function (e) {
+  var r = e && e.reason;
+  window.__errors.push('rejection: ' + String((r && r.message) || r));
+});
+</script>
+<script type="importmap">
+{"imports":{"three":"../../vendor/three/build/three.module.min.js","three/addons/":"../../vendor/three/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="fade"></div>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const V3 = THREE.Vector3;
+const QS = new URLSearchParams(location.search);
+const AUTOTEST = QS.has('autotest');
+const QFIX = ['low', 'mid', 'high'].includes(QS.get('q')) ? QS.get('q') : null;
+const TS = AUTOTEST ? 1.8 : 1.0;
+const PRESET = {
+  high: { pr: 1.75, shadow: 2048, grass: 18000, parts: 1000, bloom: 1.0, water: 2 },
+  mid:  { pr: 1.25, shadow: 1024, grass: 8000,  parts: 450,  bloom: 0.5, water: 1 },
+  low:  { pr: 1.0,  shadow: 0,    grass: 3000,  parts: 160,  bloom: 0,   water: 0 },
+};
+const LEVELS = ['low', 'mid', 'high'];
+function reportError(e) { const m = String((e && (e.stack || e.message)) || e); window.__errors.push(m); console.error(e); }
+
+// ---------------------------------------------------------------- math helpers
+const clamp = (x, a, b) => x < a ? a : x > b ? b : x;
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const damp = (dt, tau) => 1 - Math.exp(-dt / tau);
+function angDiff(a, b) { let d = b - a; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; }
+function hash(i, j) { let h = (Math.imul(i, 374761393) + Math.imul(j, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); h ^= h >>> 16; return (h >>> 0) / 4294967296; }
+function vnoise(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y); let fx = x - xi, fy = y - yi;
+  fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+}
+function fbm(x, y, o) { let s = 0, a = 0.5, f = 1, n = 0; for (let i = 0; i < o; i++) { s += a * vnoise(x * f + i * 17.3, y * f - i * 9.1); n += a; a *= 0.5; f *= 2.03; } return s / n; }
+let seedR = 20261126;
+function rnd() { seedR = (Math.imul(seedR, 1664525) + 1013904223) >>> 0; return seedR / 4294967296; }
+const rr = (a, b) => a + (b - a) * rnd();
+function cr(p0, p1, p2, p3, t) { const t2 = t * t, t3 = t2 * t; return 0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3); }
+function kelvin(k, out) {
+  const t = k / 100; let r, g, b;
+  if (t <= 66) { r = 255; g = 99.47 * Math.log(t) - 161.12; b = t <= 19 ? 0 : 138.52 * Math.log(t - 10) - 305.04; }
+  else { r = 329.7 * Math.pow(t - 60, -0.1332); g = 288.12 * Math.pow(t - 60, -0.0755); b = 255; }
+  return out.setRGB(clamp(r, 0, 255) / 255, clamp(g, 0, 255) / 255, clamp(b, 0, 255) / 255, THREE.SRGBColorSpace);
+}
+
+// ---------------------------------------------------------------- renderer
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: false });
+} catch (e) { reportError(e); throw e; }
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+document.body.appendChild(renderer.domElement);
+renderer.domElement.addEventListener('webglcontextlost', e => { e.preventDefault(); window.__errors.push('webgl context lost'); });
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xd6d9ba, 60, 250);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.3, 2600);
+
+// shared uniforms for every animal skin
+const SH = {
+  uRimCol: { value: new THREE.Color(0, 0, 0) },
+  uSunV: { value: new V3(0, 1, 0) },
+  uGold: { value: 0 },
+  uGoldCol: { value: new THREE.Color(1.0, 0.78, 0.42) },
+};
+// shared uniforms for ground + grass
+const TU = {
+  uTime: { value: 0 },
+  uGrass: { value: new THREE.Color() },
+  uWaves: { value: [new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4()] },
+  uWaveCol: { value: new THREE.Color(0.9, 0.66, 0.3) },
+  uSweep: { value: new THREE.Vector4() },
+  uMask: { value: null },
+};
+
+const GLSL_NOISE = `
+float h31(vec3 p){ p = fract(p*0.3183099 + 0.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float vn3(vec3 x){ vec3 i = floor(x); vec3 f = fract(x); f = f*f*(3.0-2.0*f);
+  return mix(mix(mix(h31(i),h31(i+vec3(1,0,0)),f.x),mix(h31(i+vec3(0,1,0)),h31(i+vec3(1,1,0)),f.x),f.y),
+             mix(mix(h31(i+vec3(0,0,1)),h31(i+vec3(1,0,1)),f.x),mix(h31(i+vec3(0,1,1)),h31(i+vec3(1,1,1)),f.x),f.y),f.z); }
+float fb3(vec3 p){ return vn3(p)*0.5 + vn3(p*2.03+1.7)*0.3 + vn3(p*4.1+3.1)*0.2; }
+`;
+const GLSL_WAVES = `
+uniform vec4 uWaves[4]; uniform vec3 uWaveCol; uniform vec4 uSweep;
+vec3 waveGlow(vec3 w){
+  vec3 g = vec3(0.0);
+  for (int i = 0; i < 4; i++) {
+    vec4 v = uWaves[i];
+    if (v.w > 0.001) {
+      float d = distance(w.xz, v.xy);
+      float ring = exp(-pow((d - v.z) / 1.7, 2.0));
+      float fill = (1.0 - smoothstep(0.0, max(v.z, 0.1), d)) * 0.08;
+      g += uWaveCol * v.w * (ring * 0.45 + fill);
+    }
+  }
+  if (uSweep.w > 0.001) {
+    float d = distance(w.xz, uSweep.xy);
+    float ring = exp(-pow((d - uSweep.z) / 7.0, 2.0));
+    float fill = 1.0 - smoothstep(uSweep.z - 6.0, uSweep.z, d);
+    g += uWaveCol * uSweep.w * (ring * 0.7 + fill * 0.16);
+  }
+  return g;
+}
+`;
+
+// ---------------------------------------------------------------- skin materials
+const SKIN_GLSL = `
+uniform float uMode, uScale, uSeed, uY, uHoofH;
+uniform vec3 uC1, uC2, uC3;
+uniform vec3 uRimCol, uSunV, uGoldCol; uniform float uGold;
+varying vec3 vObj;
+vec3 h33(vec3 p){ p = vec3(dot(p,vec3(127.1,311.7,74.7)), dot(p,vec3(269.5,183.3,246.1)), dot(p,vec3(113.5,271.9,124.6))); return fract(sin(p)*43758.5453); }
+vec3 voro(vec3 p){
+  vec3 i = floor(p), f = fract(p); float d1 = 8.0, d2 = 8.0, id = 0.0;
+  for (int z = -1; z <= 1; z++) for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
+    vec3 g = vec3(float(x), float(y), float(z)); vec3 o = h33(i + g); vec3 r = g + o - f; float d = dot(r, r);
+    if (d < d1) { d2 = d1; d1 = d; id = h31(i + g); } else if (d < d2) { d2 = d; }
+  }
+  return vec3(sqrt(d1), sqrt(d2), id);
+}
+vec3 bumpN(vec3 sp, vec3 sn, float h){
+  vec3 sx = dFdx(sp), sy = dFdy(sp); vec3 r1 = cross(sy, sn), r2 = cross(sn, sx);
+  float det = dot(sx, r1); float bx = dFdx(h), by = dFdy(h);
+  vec3 gr = sign(det) * (bx * r1 + by * r2);
+  return normalize(abs(det) * sn - gr);
+}
+vec3 skinCol(vec3 p, out float bh){
+  float yw = p.y + uY;
+  bh = 0.0;
+#if SKIN == 1
+  vec3 q = p * uScale + vec3(uSeed);
+  q += (vec3(vn3(q*1.6), vn3(q*1.6+5.2), vn3(q*1.6+9.1)) - 0.5) * 0.42;
+  vec3 v = voro(q);
+  float e = v.y - v.x;
+  float w = 0.045 + 0.03 * vn3(q * 3.1);
+  float aa = fwidth(e) * 1.2 + 0.004;
+  float line = 1.0 - smoothstep(w, w + aa, e);
+  vec3 pc = mix(uC1, uC2, v.z) * (1.08 - 0.22 * smoothstep(0.12, 0.55, e));
+  vec3 c = mix(pc, uC3, line);
+  if (uMode > 0.5) { float f = smoothstep(1.25, 0.45, yw); c = mix(c, uC3 * 0.96, f * 0.85); }
+  if (uMode > 1.5) { c = mix(c, uC3 * 1.04, 0.35); }
+  if (yw < uHoofH) c = vec3(0.09, 0.075, 0.06);
+  bh = fb3(p * 14.0) * 0.04 - line * 0.03;
+  return c;
+#elif SKIN == 2
+  float q;
+  if (uMode < 0.5) { float rump = smoothstep(-0.25, -0.62, p.z); q = mix(p.z * 5.4 + p.y * 0.7, p.y * 4.6 - p.z * 2.2, rump); }
+  else if (uMode < 1.5) { q = dot(p, vec3(0.0, 0.8, 0.6)) * 7.5; }
+  else if (uMode < 2.5) { q = yw * 10.5; }
+  else { q = p.z * 9.5 + p.y * 4.0; }
+  q += (fb3(p * 2.6 + uSeed) - 0.5) * 1.3;
+  float s = sin(q * 6.2831);
+  float aa = fwidth(s) * 1.3 + 0.02;
+  float st = smoothstep(-aa, aa, s + 0.12);
+  vec3 c = mix(uC1, uC2, st);
+  if (uMode > 2.5) c = mix(c, vec3(0.07, 0.06, 0.06), smoothstep(0.3, 0.4, p.z));
+  if (yw < uHoofH) c = vec3(0.06, 0.055, 0.05);
+  bh = fb3(p * 16.0) * 0.04;
+  return c;
+#elif SKIN == 3
+  float n = fb3(p * 1.4 + uSeed);
+  float c1 = abs(sin(p.y * 24.0 + fb3(p * 4.0) * 7.0));
+  float c2 = abs(sin((p.x + p.z) * 19.0 + fb3(p * 3.0 + 2.0) * 6.0));
+  float crease = smoothstep(0.0, 0.2, c1) * smoothstep(0.0, 0.22, c2);
+  crease = mix(crease, 0.75, clamp(fwidth(p.y * 24.0) * 0.6 + fwidth((p.x + p.z) * 19.0) * 0.6, 0.0, 1.0));
+  vec3 c = uC1 * (0.86 + 0.28 * n);
+  c = mix(c, uC2, smoothstep(1.1, 0.15, yw) * 0.6);
+  c *= 0.8 + 0.2 * crease;
+  if (uMode > 0.5) c = mix(c, uC3, 0.55);
+  bh = (crease * 0.45 + fb3(p * 9.0) * 0.55) * 0.25;
+  return c;
+#else
+  bh = fb3(p * 30.0) * 0.05;
+  return uC1 * (0.92 + 0.16 * vn3(p * 8.0 + uSeed));
+#endif
+}
+`;
+function skinMat(kind, o = {}) {
+  const m = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: o.rough ?? 0.78, metalness: 0, vertexColors: true, side: o.side || THREE.FrontSide });
+  const u = {
+    uMode: { value: o.mode || 0 }, uScale: { value: o.scale || 1 }, uSeed: { value: o.seed || 0 },
+    uY: { value: o.y || 0 }, uHoofH: { value: o.hoof ?? -9 },
+    uC1: { value: new THREE.Color(o.c1 || '#ffffff') }, uC2: { value: new THREE.Color(o.c2 || '#ffffff') }, uC3: { value: new THREE.Color(o.c3 || '#ffffff') },
+  };
+  m.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, u, SH);
+    sh.vertexShader = 'varying vec3 vObj;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvObj = position;');
+    sh.fragmentShader = '#define SKIN ' + kind + '\n' + GLSL_NOISE + SKIN_GLSL + sh.fragmentShader
+      .replace('#include <color_fragment>', '#include <color_fragment>\nfloat bumpH = 0.0; diffuseColor.rgb *= skinCol(vObj, bumpH);')
+      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = bumpN(-vViewPosition, normal, bumpH);')
+      .replace('#include <opaque_fragment>', `
+        { vec3 Vv = normalize(vViewPosition);
+          float fres = pow(1.0 - clamp(dot(normal, Vv), 0.0, 1.0), 3.0);
+          float ss = clamp(dot(normal, uSunV) * 0.6 + 0.45, 0.0, 1.0);
+          outgoingLight += uRimCol * fres * ss;
+          outgoingLight += uGoldCol * uGold * (0.18 + 0.82 * clamp(normal.y, 0.0, 1.0)) * (0.35 + fres); }
+        #include <opaque_fragment>`);
+  };
+  m.customProgramCacheKey = () => 'skin' + kind;
+  return m;
+}
+
+// ---------------------------------------------------------------- loft geometry
+const _T = new V3(), _U = new V3(), _S = new V3(), _C = new V3(), _N = new V3(), _E = new V3();
+function loft(pts, rads, o = {}) {
+  const seg = o.seg || 16, rs = o.rs || 14;
+  const vs = pts.map(p => new V3(p[0], p[1], p[2]));
+  const curve = vs.length === 2 ? new THREE.LineCurve3(vs[0], vs[1]) : new THREE.CatmullRomCurve3(vs, false, 'centripetal');
+  const len = curve.getLength();
+  const side0 = new V3().fromArray(o.side || [1, 0, 0]);
+  const n = rads.length;
+  const rAt = (u, k) => {
+    const f = clamp(u, 0, 1) * (n - 1); const i = Math.min(n - 2, Math.floor(f)); const t = f - i;
+    const g = j => rads[clamp(j, 0, n - 1)][k];
+    return Math.max(1e-4, cr(g(i - 1), g(i), g(i + 1), g(i + 2), t));
+  };
+  const col = o.col || [1, 1, 1];
+  const pos = [], nor = [], uv = [], cols = [], idx = [];
+  for (let j = 0; j <= seg; j++) {
+    const u = j / seg;
+    curve.getPointAt(u, _C); curve.getTangentAt(u, _T);
+    _U.crossVectors(_T, side0); if (_U.lengthSq() < 1e-6) _U.set(0, 0, 1); _U.normalize();
+    _S.crossVectors(_U, _T).normalize();
+    const rx = rAt(u, 0), ry = rAt(u, 1), e = 0.02;
+    const drx = (rAt(u + e, 0) - rAt(u - e, 0)) / (2 * e * len), dry = (rAt(u + e, 1) - rAt(u - e, 1)) / (2 * e * len);
+    const cc = o.colFn ? o.colFn(u) : col;
+    for (let k = 0; k <= rs; k++) {
+      const a = k / rs * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a);
+      const pr = o.prof ? o.prof(a, u) : 1;
+      const px = rx * ca * pr, py = ry * sa * pr;
+      pos.push(_C.x + _S.x * px + _U.x * py, _C.y + _S.y * px + _U.y * py, _C.z + _S.z * px + _U.z * py);
+      _E.copy(_S).multiplyScalar(ca / rx).addScaledVector(_U, sa / ry).normalize();
+      _N.copy(_E).addScaledVector(_T, -(drx * ca * ca + dry * sa * sa)).normalize();
+      nor.push(_N.x, _N.y, _N.z); uv.push(k / rs, u * len); cols.push(cc[0], cc[1], cc[2]);
+    }
+  }
+  const R = rs + 1;
+  for (let j = 0; j < seg; j++) for (let k = 0; k < rs; k++) { const a = j * R + k, b = a + R; idx.push(a, a + 1, b, a + 1, b + 1, b); }
+  if (o.cap !== false) {
+    for (const end of [0, 1]) {
+      curve.getPointAt(end, _C); curve.getTangentAt(end, _T);
+      const r = Math.min(rAt(end, 0), rAt(end, 1)), sg = end ? 1 : -1, ci = pos.length / 3;
+      const cc = o.colFn ? o.colFn(end) : col;
+      pos.push(_C.x + _T.x * sg * r * 0.55, _C.y + _T.y * sg * r * 0.55, _C.z + _T.z * sg * r * 0.55);
+      nor.push(_T.x * sg, _T.y * sg, _T.z * sg); uv.push(0.5, end * len); cols.push(cc[0], cc[1], cc[2]);
+      const ring = end ? seg * R : 0;
+      for (let k = 0; k < rs; k++) { if (end) idx.push(ring + k, ring + k + 1, ci); else idx.push(ring + k + 1, ring + k, ci); }
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+  g.setIndex(idx);
+  return g;
+}
+function sphereGeo(r, x, y, z, col) {
+  const g = new THREE.SphereGeometry(r, 12, 8); g.translate(x, y, z);
+  const c = new Float32Array(g.attributes.position.count * 3); for (let i = 0; i < c.length; i += 3) { c[i] = col[0]; c[i + 1] = col[1]; c[i + 2] = col[2]; }
+  g.setAttribute('color', new THREE.BufferAttribute(c, 3)); return g;
+}
+const merge = gs => mergeGeometries(gs, false);
+const HOOF = [0.32, 0.3, 0.28];
+function hoofCol(start) { return u => u > start ? HOOF : [1, 1, 1]; }
+
+// ---------------------------------------------------------------- path
+const CP = [[0, 190], [6, 160], [-4, 128], [5, 96], [-7, 62], [-2, 30], [9, -4], [3, -38], [-8, -70], [-3, -102], [4, -130], [8, -160]];
+const pathCurve = new THREE.CatmullRomCurve3(CP.map(p => new V3(p[0], 0, p[1])), false, 'centripetal');
+const PL = pathCurve.getLength();
+const PNS = Math.ceil(PL / 0.5);
+const PS = new Float32Array((PNS + 1) * 4);
+for (let i = 0; i <= PNS; i++) {
+  const u = i / PNS, p = pathCurve.getPointAt(u), t = pathCurve.getTangentAt(u);
+  const l = Math.hypot(t.x, t.z) || 1;
+  PS[i * 4] = p.x; PS[i * 4 + 1] = p.z; PS[i * 4 + 2] = t.x / l; PS[i * 4 + 3] = t.z / l;
+}
+const PP = { x: 0, z: 0, tx: 0, tz: -1, nx: 1, nz: 0 };
+function pathAt(s, out = PP) {
+  const f = clamp(s, 0, PL) / PL * PNS; const i = Math.min(PNS - 1, Math.floor(f)), t = f - i;
+  const a = i * 4, b = a + 4;
+  out.x = lerp(PS[a], PS[b], t); out.z = lerp(PS[a + 1], PS[b + 1], t);
+  let tx = lerp(PS[a + 2], PS[b + 2], t), tz = lerp(PS[a + 3], PS[b + 3], t); const l = Math.hypot(tx, tz) || 1;
+  out.tx = tx / l; out.tz = tz / l; out.nx = -out.tz; out.nz = out.tx;
+  if (s > PL) { out.x += out.tx * (s - PL); out.z += out.tz * (s - PL); }
+  return out;
+}
+const HX = PS[PNS * 4], HZ = PS[PNS * 4 + 1];
+
+// distance-to-path grid (1m, capped at 18m)
+const DG = 600, DGN = 600, DCAP = 18;
+const distGrid = new Float32Array(DGN * DGN).fill(DCAP);
+for (let i = 0; i <= PNS; i += 2) {
+  const px = PS[i * 4], pz = PS[i * 4 + 1];
+  const gx = Math.round(px + 300), gz = Math.round(pz + 300);
+  for (let dz = -DCAP; dz <= DCAP; dz++) for (let dx = -DCAP; dx <= DCAP; dx++) {
+    const x = gx + dx, z = gz + dz; if (x < 0 || z < 0 || x >= DGN || z >= DGN) continue;
+    const d = Math.hypot(x - 300 - px, z - 300 - pz); const k = z * DGN + x; if (d < distGrid[k]) distGrid[k] = d;
+  }
+}
+function pathDist(x, z) {
+  const fx = clamp(x + 300, 0, DGN - 1.001), fz = clamp(z + 300, 0, DGN - 1.001);
+  const ix = Math.floor(fx), iz = Math.floor(fz), tx = fx - ix, tz = fz - iz, k = iz * DGN + ix;
+  return lerp(lerp(distGrid[k], distGrid[k + 1], tx), lerp(distGrid[k + DGN], distGrid[k + DGN + 1], tx), tz);
+}
+
+// ponds
+const PONDS = [];
+function addPond(s, lat, r) { pathAt(s); PONDS.push({ x: PP.x + PP.nx * lat, z: PP.z + PP.nz * lat, r, depth: 2.2, level: 0, wr: 0 }); }
+addPond(72, 25, 9); addPond(205, -27, 11);
+function Hbase(x, z) {
+  const pd = pathDist(x, z), near = 1 - smooth(4, 16, pd);
+  let h = (fbm(x * 0.0095 + 3.1, z * 0.0095 - 1.7, 3) - 0.5) * 9 * (1 - near * 0.45);
+  h += (fbm(x * 0.045 + 11, z * 0.045 - 4, 3) - 0.5) * 2.4 * (1 - near * 0.9);
+  const dh = Math.hypot(x - HX, z - HZ);
+  h += 16 * Math.exp(-Math.pow(Math.max(dh - 9, 0), 2) / (2 * 34 * 34));
+  const ro = Math.hypot(x * 0.9, z * 0.75);
+  h += smooth(230, 300, ro) * 10;
+  return h;
+}
+function H(x, z) {
+  let h = Hbase(x, z);
+  for (const p of PONDS) { const d = Math.hypot(x - p.x, z - p.z), q = 1 - (d / (p.r * 1.4)) ** 2; if (q > 0) h -= p.depth * q * q; }
+  return h;
+}
+for (const p of PONDS) { p.level = Hbase(p.x, p.z) - p.depth + 1.0; const kw = (p.depth - 1) / p.depth; p.wr = p.r * 1.4 * Math.sqrt(1 - Math.sqrt(kw)); }
+
+// call plan: 3 stages x 6
+const PLAN = [
+  ['zebra', 'zebra', 'elephant', 'birds', 'zebra', 'birds'],
+  ['zebra', 'elephant', 'birds', 'zebra', 'elephant', 'birds'],
+  ['elephant', 'zebra', 'birds', 'elephant', 'birds', 'elephant'],
+];
+const S0 = 24, SEND = PL - 3, SP = (PL - S0 - 52) / 17;
+const CALLS = [];
+for (let i = 0; i < 18; i++) CALLS.push({ i, kind: PLAN[Math.floor(i / 6)][i % 6], s: S0 + i * SP, side: i % 2 === 0 ? -1 : 1 });
+
+// ---------------------------------------------------------------- textures (canvas)
+function canvasTex(size, draw) { const c = document.createElement('canvas'); c.width = c.height = size; draw(c.getContext('2d'), size); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+const glowTex = canvasTex(128, (g, s) => {
+  const gr = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.18, 'rgba(255,250,225,0.8)'); gr.addColorStop(0.45, 'rgba(255,225,160,0.25)'); gr.addColorStop(1, 'rgba(255,200,120,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, s, s);
+});
+const blobTex = canvasTex(64, (g, s) => {
+  const gr = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.5, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, s, s);
+});
+blobTex.colorSpace = THREE.NoColorSpace;
+
+// ---------------------------------------------------------------- sky
+const SKY = {
+  uZen: { value: new THREE.Color() }, uHor: { value: new THREE.Color() }, uCloud: { value: new THREE.Color() }, uHaze: { value: new THREE.Color() },
+  uSunDir: { value: new V3(0, 0.3, -1).normalize() }, uSunCol: { value: new THREE.Color(1, 0.9, 0.7) },
+  uTime: { value: 0 }, uRays: { value: 0 }, uRingDir: { value: new V3(0, 0.2, -1).normalize() }, uRingGlow: { value: 0 }, uPulse: { value: 0 }, uGoldSky: { value: 0 },
+};
+const skyMat = new THREE.ShaderMaterial({
+  uniforms: SKY, side: THREE.BackSide, depthWrite: false, fog: false,
+  vertexShader: `varying vec3 vDir; void main(){ vDir = position; vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }`,
+  fragmentShader: `
+  uniform vec3 uZen, uHor, uCloud, uHaze, uSunDir, uSunCol, uRingDir; uniform float uTime, uRays, uRingGlow, uPulse, uGoldSky;
+  varying vec3 vDir;
+  float h21(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+  float vn2(vec2 x){ vec2 i=floor(x), f=fract(x); f=f*f*(3.-2.*f); return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y); }
+  float fb2(vec2 p){ float s=0., a=.5; for(int i=0;i<5;i++){ s+=a*vn2(p); p=p*2.02+vec2(1.7,9.2); a*=.5; } return s; }
+  void main(){
+    vec3 d = normalize(vDir);
+    float h = d.y;
+    float t = pow(clamp(1.0 - max(h, 0.0), 0.0, 1.0), 5.0);
+    vec3 col = mix(uZen, uHor, t);
+    float lm = dot(col, vec3(0.2126, 0.7152, 0.0722));
+    col = max(mix(vec3(lm), col, 1.0 + 0.9 * t * (1.0 - t) * 4.0 * 0.5), 0.0);
+    col = mix(col, uHaze, smoothstep(0.0, -0.08, h)) * 0.6;
+    float sd = max(dot(d, uSunDir), 0.0);
+    col += uSunCol * (pow(sd, 10.0) * 0.22 + pow(sd, 60.0) * 0.5);
+    col += uSunCol * smoothstep(0.99955, 0.99975, sd) * 5.0;
+    if (h > -0.02) {
+      vec2 uv = d.xz / (max(h, 0.0) + 0.13) * 0.55 + vec2(uTime * 0.004, uTime * 0.0015);
+      float n = fb2(uv * 1.3);
+      vec2 sdir = normalize(uSunDir.xz + 1e-4);
+      float n2 = fb2(uv * 1.3 + sdir * 0.09);
+      float cov = smoothstep(0.52, 0.72, n) * smoothstep(0.02, 0.16, h) * (1.0 - 0.6 * smoothstep(0.4, 0.85, h));
+      float lit = clamp(0.5 + (n - n2) * 3.5, 0.0, 1.0);
+      vec3 shade = mix(vec3(0.86, 0.6, 0.8), uZen, 0.18) * (0.95 + uPulse * 0.25);
+      vec3 cc = mix(shade, uCloud * (1.12 + uPulse * 0.35), lit) + uSunCol * pow(sd, 5.0) * 0.6 * lit;
+      cc += vec3(1.0, 0.8, 0.45) * uGoldSky * (0.3 + lit * 0.5);
+      col = mix(col, cc * 0.66, cov * 0.88);
+      // rays from the ring centre
+      vec3 rgt = normalize(cross(uRingDir, vec3(0.0, 1.0, 0.0)));
+      vec3 up = cross(rgt, uRingDir);
+      vec2 q = vec2(dot(d, rgt), dot(d, up));
+      float ang = atan(q.y, q.x);
+      float cd = 1.0 - dot(d, uRingDir);
+      float ray = pow(0.5 + 0.5 * sin(ang * 11.0 + sin(ang * 3.0 + uTime * 0.05) * 1.6), 5.0) * exp(-cd * 5.0) * smoothstep(0.0, 0.03, cd);
+      col += vec3(1.0, 0.93, 0.72) * ray * uRays * (1.0 - cov * 0.55) * 0.9;
+      col += vec3(1.0, 0.95, 0.8) * exp(-cd * 260.0) * uRingGlow * 2.5 + vec3(1.0, 0.85, 0.6) * exp(-cd * 30.0) * uRingGlow * 0.4;
+    }
+    gl_FragColor = vec4(col, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }`,
+});
+const sky = new THREE.Mesh(new THREE.SphereGeometry(1200, 48, 24), skyMat);
+sky.renderOrder = -10; sky.frustumCulled = false;
+scene.add(sky);
+
+// ---------------------------------------------------------------- lights
+const sun = new THREE.DirectionalLight(0xffe0b0, 2.6);
+scene.add(sun); scene.add(sun.target);
+sun.shadow.camera.left = -38; sun.shadow.camera.right = 38; sun.shadow.camera.top = 38; sun.shadow.camera.bottom = -38;
+sun.shadow.camera.near = 5; sun.shadow.camera.far = 220; sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.04;
+const hemi = new THREE.HemisphereLight(0xbcd6f0, 0x6a7040, 1.6); scene.add(hemi);
+const fill = new THREE.DirectionalLight(0xa8c4ee, 0.45); scene.add(fill); scene.add(fill.target);
+
+// ---------------------------------------------------------------- terrain
+const TSEG = 170;
+const terrainGeo = new THREE.PlaneGeometry(600, 600, TSEG, TSEG); terrainGeo.rotateX(-Math.PI / 2);
+{
+  const p = terrainGeo.attributes.position, rock = new Float32Array(p.count);
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), z = p.getZ(i); p.setY(i, H(x, z));
+    const pd = pathDist(x, z);
+    rock[i] = smooth(0.64, 0.74, fbm(x * 0.03 + 40, z * 0.03 - 20, 3)) * smooth(12, 22, pd) * 0.7;
+  }
+  terrainGeo.setAttribute('aRock', new THREE.BufferAttribute(rock, 1));
+  terrainGeo.computeVertexNormals();
+}
+// path mask texture (R dirt, G trampled)
+const MN = 1024, maskData = new Uint8Array(MN * MN * 4);
+{
+  const md = new Float32Array(MN * MN).fill(99), cell = 600 / MN, rad = Math.ceil(5 / cell);
+  for (let i = 0; i <= PNS; i++) {
+    const px = PS[i * 4], pz = PS[i * 4 + 1];
+    const gx = Math.floor((px + 300) / cell), gz = Math.floor((pz + 300) / cell);
+    for (let dz = -rad; dz <= rad; dz++) for (let dx = -rad; dx <= rad; dx++) {
+      const x = gx + dx, z = gz + dz; if (x < 0 || z < 0 || x >= MN || z >= MN) continue;
+      const wx = (x + 0.5) * cell - 300, wz = (z + 0.5) * cell - 300, d = Math.hypot(wx - px, wz - pz), k = z * MN + x;
+      if (d < md[k]) md[k] = d;
+    }
+  }
+  for (let z = 0; z < MN; z++) for (let x = 0; x < MN; x++) {
+    const k = z * MN + x, d = md[k]; if (d > 50) continue;
+    const wx = (x + 0.5) * cell - 300, wz = (z + 0.5) * cell - 300;
+    const e = (vnoise(wx * 0.7, wz * 0.7) - 0.5) * 0.9 + (vnoise(wx * 2.3, wz * 2.3) - 0.5) * 0.4;
+    maskData[k * 4] = Math.round(255 * (1 - smooth(1.1, 2.3, d + e)));
+    maskData[k * 4 + 1] = Math.round(255 * (1 - smooth(2.0, 4.6, d + e)));
+  }
+}
+function maskAt(x, z) { const cell = 600 / MN, ix = clamp(Math.floor((x + 300) / cell), 0, MN - 1), iz = clamp(Math.floor((z + 300) / cell), 0, MN - 1); return maskData[(iz * MN + ix) * 4] / 255; }
+const maskTex = new THREE.DataTexture(maskData, MN, MN, THREE.RGBAFormat);
+maskTex.magFilter = THREE.LinearFilter; maskTex.minFilter = THREE.LinearFilter; maskTex.needsUpdate = true;
+TU.uMask.value = maskTex;
+const terrainMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, metalness: 0 });
+terrainMat.onBeforeCompile = sh => {
+  Object.assign(sh.uniforms, TU);
+  sh.vertexShader = 'attribute float aRock;\nvarying float vRock;\nvarying vec3 vW;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvRock = aRock; vW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+  sh.fragmentShader = 'uniform sampler2D uMask; uniform vec3 uGrass; varying float vRock; varying vec3 vW;\n' + GLSL_NOISE + GLSL_WAVES + sh.fragmentShader
+    .replace('#include <color_fragment>', `#include <color_fragment>
+      vec4 mk = texture2D(uMask, (vW.xz + 300.0) / 600.0);
+      float n1 = vn3(vec3(vW.xz * 0.11, 1.0)), n2 = vn3(vec3(vW.xz * 0.65, 3.0)), n3 = vn3(vec3(vW.xz * 3.2, 5.0));
+      vec3 g = uGrass * (0.74 + 0.34 * n1 + 0.14 * n2);
+      g = mix(g, g * vec3(1.22, 1.02, 0.62), smoothstep(0.45, 0.75, vn3(vec3(vW.xz * 0.028, 7.0))));
+      g = mix(g, g * vec3(0.78, 0.86, 0.7), smoothstep(0.55, 0.8, vn3(vec3(vW.x * 0.09, 9.0, vW.z * 0.3))) * 0.6);
+      g *= 0.9 + 0.2 * vn3(vec3(vW.xz * 2.2, 11.0));
+      vec3 dirt = vec3(0.50, 0.38, 0.26) * (0.84 + 0.26 * n2);
+      dirt = mix(dirt, vec3(0.6, 0.5, 0.39), smoothstep(0.74, 0.86, n3) * 0.6);
+      dirt = mix(dirt, dirt * 0.78, smoothstep(0.2, 0.08, n3));
+      vec3 rockc = mix(vec3(0.56, 0.45, 0.33), vec3(0.6, 0.55, 0.48), n3) * (0.8 + 0.3 * n2);
+      vec3 c = mix(g, mix(g * vec3(1.06, 0.98, 0.84), dirt, 0.4), mk.g * 0.55);
+      c = mix(c, dirt, mk.r);
+      c = mix(c, rockc, smoothstep(0.3, 0.7, vRock + (n2 - 0.5) * 0.3));
+      diffuseColor.rgb = c;`)
+    .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += waveGlow(vW);');
+};
+const terrain = new THREE.Mesh(terrainGeo, terrainMat);
+terrain.receiveShadow = true;
+scene.add(terrain);
+
+// distant hills ring
+{
+  const N = 180, rows = [[300, -4, 0], [335, 1, 1], [390, 1, 1.25], [470, 0, 0.6]];
+  const pos = [], idx = [];
+  for (let r = 0; r < rows.length; r++) for (let i = 0; i <= N; i++) {
+    const a = i / N * Math.PI * 2, rad = rows[r][0];
+    const hh = rows[r][1] + rows[r][2] * (8 + 26 * fbm(Math.cos(a) * 3 + r * 0.7, Math.sin(a) * 3, 4));
+    pos.push(Math.cos(a) * rad, hh, Math.sin(a) * rad);
+  }
+  for (let r = 0; r < rows.length - 1; r++) for (let i = 0; i < N; i++) { const a = r * (N + 1) + i, b = a + N + 1; idx.push(a, b, a + 1, a + 1, b, b + 1); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  scene.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x7c8a52, roughness: 1 })));
+}
+
+// water
+const waterMats = [];
+for (const p of PONDS) {
+  const u = THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
+    uZen: { value: SKY.uZen.value }, uHor: { value: SKY.uHor.value }, uSunDir: { value: SKY.uSunDir.value }, uSunCol: { value: SKY.uSunCol.value },
+    uDeep: { value: new THREE.Color('#769FA6') }, uShallow: { value: new THREE.Color('#A8C2AF') },
+    uTime: { value: 0 }, uR: { value: p.wr }, uC: { value: new THREE.Vector2(p.x, p.z) }, uDetail: { value: 1 },
+  }]);
+  u.uZen.value = SKY.uZen.value; u.uHor.value = SKY.uHor.value; u.uSunDir.value = SKY.uSunDir.value; u.uSunCol.value = SKY.uSunCol.value;
+  const m = new THREE.ShaderMaterial({
+    uniforms: u, transparent: true, depthWrite: false, fog: true,
+    vertexShader: `varying vec3 vW;
+      #include <fog_pars_vertex>
+      void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; vec4 mvPosition = viewMatrix * w; gl_Position = projectionMatrix * mvPosition;
+      #include <fog_vertex>
+      }`,
+    fragmentShader: `uniform vec3 uZen, uHor, uSunDir, uSunCol, uDeep, uShallow; uniform float uTime, uR, uDetail; uniform vec2 uC; varying vec3 vW;
+      #include <fog_pars_fragment>
+      void main(){
+        vec2 p = vW.xz; float t = uTime; vec2 g = vec2(0.0);
+        g += 0.026 * vec2(1.0, 0.3) * cos(dot(p, vec2(1.0, 0.3)) * 1.3 + t * 1.4);
+        g += 0.028 * vec2(-0.4, 1.0) * cos(dot(p, vec2(-0.4, 1.0)) * 1.9 + t * 1.9);
+        if (uDetail > 0.5) g += 0.03 * vec2(0.7, -0.7) * cos(dot(p, vec2(0.7, -0.7)) * 4.1 + t * 2.7);
+        if (uDetail > 1.5) g += 0.02 * vec2(0.2, 0.9) * cos(dot(p, vec2(0.2, 0.9)) * 7.3 - t * 3.3);
+        vec3 n = normalize(vec3(-g.x, 1.0, -g.y));
+        vec3 V = normalize(cameraPosition - vW);
+        vec3 R = reflect(-V, n);
+        float fres = 0.02 + 0.98 * pow(1.0 - max(dot(n, V), 0.0), 5.0);
+        vec3 skyc = mix(uHor, uZen, pow(clamp(R.y, 0.0, 1.0), 0.6)) * 0.62;
+        float sd = max(dot(R, uSunDir), 0.0);
+        vec3 glint = uSunCol * (pow(sd, 260.0) * 7.0 + pow(sd, 22.0) * 0.45);
+        float d = length(p - uC) / uR;
+        vec3 base = mix(uDeep, uShallow, smoothstep(0.35, 1.0, d)) * 0.5;
+        vec3 col = mix(base, skyc, clamp(fres + 0.12, 0.0, 1.0)) + glint;
+        gl_FragColor = vec4(col, 0.93 - 0.35 * smoothstep(0.85, 1.05, d));
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+        #include <fog_fragment>
+      }`,
+  });
+  const w = new THREE.Mesh(new THREE.CircleGeometry(p.wr * 1.18, 48), m);
+  w.rotation.x = -Math.PI / 2; w.position.set(p.x, p.level, p.z); w.renderOrder = 1;
+  scene.add(w); waterMats.push(m);
+}
+
+// ---------------------------------------------------------------- grass
+const GRASS_MAX = 18000;
+function grassClumpGeo() {
+  const pos = [], col = [], nor = [], idx = []; const B = 7, SEG = 3; seedR = 777;
+  for (let b = 0; b < B; b++) {
+    const ang = b / B * Math.PI + rr(-0.3, 0.3), la = rr(0, Math.PI * 2), lean = rr(0.12, 0.35), hgt = rr(0.75, 1.05), w = 0.045;
+    const ox = rr(-0.22, 0.22), oz = rr(-0.22, 0.22), dx = Math.cos(ang), dz = Math.sin(ang); const base = pos.length / 3;
+    for (let s = 0; s <= SEG; s++) {
+      const t = s / SEG, y = t * hgt, bend = lean * t * t, cx = ox + Math.cos(la) * bend, cz = oz + Math.sin(la) * bend;
+      const c = 0.62 + 0.55 * t, cc = [c * (1 + t * 0.12), c, c * (1 - t * 0.2)];
+      if (s < SEG) { const ww = w * (1 - t * 0.7) * 0.5; pos.push(cx - dx * ww, y, cz - dz * ww, cx + dx * ww, y, cz + dz * ww); col.push(...cc, ...cc); nor.push(0, 1, 0, 0, 1, 0); }
+      else { pos.push(cx, y, cz); col.push(...cc); nor.push(0, 1, 0); }
+    }
+    for (let s = 0; s < SEG - 1; s++) { const a = base + s * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    const a = base + (SEG - 1) * 2; idx.push(a, a + 1, a + 2);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx); return g;
+}
+const grassMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, vertexColors: true, side: THREE.DoubleSide });
+grassMat.onBeforeCompile = sh => {
+  Object.assign(sh.uniforms, TU);
+  sh.vertexShader = 'uniform float uTime;\nvarying vec3 vW;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+    vec4 io = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+    float sw = sin(uTime * 1.7 + io.x * 0.16 + io.z * 0.11) * 0.55 + sin(uTime * 2.9 + io.x * 0.45 - io.z * 0.2) * 0.25;
+    float k = position.y * position.y;
+    transformed.x += sw * k * 0.22; transformed.z += sw * k * 0.12;
+    vW = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;`);
+  sh.fragmentShader = 'uniform vec3 uGrass;\nvarying vec3 vW;\n' + GLSL_WAVES + sh.fragmentShader
+    .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nnormal = normalize((viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz);')
+    .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= uGrass * 1.35;')
+    .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += waveGlow(vW) * 1.3;');
+};
+const grass = new THREE.InstancedMesh(grassClumpGeo(), grassMat, GRASS_MAX);
+grass.frustumCulled = false; grass.receiveShadow = true;
+{
+  seedR = 4242; const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new V3(), p = new V3(), c = new THREE.Color(); let n = 0, tries = 0;
+  const targetSpots = CALLS.map(cl => { pathAt(cl.s); return [PP.x + PP.nx * cl.side * 8, PP.z + PP.nz * cl.side * 8]; });
+  while (n < GRASS_MAX && tries < GRASS_MAX * 6) {
+    tries++;
+    const sAlong = rr(-10, PL + 30); pathAt(sAlong);
+    const lat = (rnd() < 0.75 ? rr(-20, 20) : rr(-55, 55));
+    const x = PP.x + PP.nx * lat + rr(-2, 2), z = PP.z + PP.nz * lat + rr(-2, 2);
+    if (maskAt(x, z) > 0.25) continue;
+    let wet = false; for (const pd of PONDS) if (Math.hypot(x - pd.x, z - pd.z) < pd.wr * 1.02) wet = true; if (wet) continue;
+    let nearT = false; for (const t of targetSpots) if (Math.hypot(x - t[0], z - t[1]) < 1.6) nearT = true; if (nearT) continue;
+    const h = rr(0.15, 0.65) * (0.7 + 0.6 * fbm(x * 0.08, z * 0.08, 2));
+    p.set(x, H(x, z) - 0.02, z); q.setFromAxisAngle(new V3(0, 1, 0), rr(0, 6.28)); const wd = rr(1.0, 2.0); s.set(wd, h, wd);
+    m.compose(p, q, s); grass.setMatrixAt(n, m);
+    const v = rr(0.85, 1.12); c.setRGB(v * rr(0.95, 1.06), v, v * rr(0.85, 1.0)); grass.setColorAt(n, c); n++;
+  }
+  grass.count = n; grass.userData.max = n;
+}
+scene.add(grass);
+
+// ---------------------------------------------------------------- trees and rocks
+const barkMat = new THREE.MeshStandardMaterial({ color: 0x5a4a3c, roughness: 0.92, vertexColors: true });
+const leafMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.88, vertexColors: true });
+const leafRim = { value: new THREE.Color(0, 0, 0) };
+leafMat.onBeforeCompile = sh => {
+  sh.uniforms.uLeafRim = leafRim;
+  sh.fragmentShader = 'uniform vec3 uLeafRim;\n' + sh.fragmentShader.replace('#include <opaque_fragment>', `
+    { float fr = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 2.0); outgoingLight += uLeafRim * fr; }
+    #include <opaque_fragment>`);
+};
+{
+  seedR = 9191; const barks = [], leaves = [];
+  const spots = [];
+  const avoid = CALLS.map(cl => { pathAt(cl.s); return [PP.x + PP.nx * cl.side * 8, PP.z + PP.nz * cl.side * 8]; });
+  for (let i = 0; i < 70 && spots.length < 22; i++) {
+    const s = rr(10, PL - 20); pathAt(s); const side = rnd() < 0.5 ? -1 : 1; const lat = side * (spots.length < 12 ? rr(17, 40) : rr(40, 110));
+    const x = PP.x + PP.nx * lat, z = PP.z + PP.nz * lat;
+    let ok = Math.hypot(x - HX, z - HZ) > 28;
+    for (const p of PONDS) if (Math.hypot(x - p.x, z - p.z) < p.r * 1.6) ok = false;
+    for (const a of avoid) if (Math.hypot(x - a[0], z - a[1]) < 12) ok = false;
+    for (const sp of spots) if (Math.hypot(x - sp[0], z - sp[1]) < 14) ok = false;
+    if (ok) spots.push([x, z, rr(0.75, 1.25)]);
+  }
+  for (const [x, z, sc] of spots) {
+    const y = H(x, z), lean = [rr(-0.4, 0.4), rr(-0.4, 0.4)], th = rr(2.0, 2.8) * sc;
+    barks.push(loft([[x, y - 0.3, z], [x + lean[0] * 0.5, y + th * 0.5, z + lean[1] * 0.5], [x + lean[0], y + th, z + lean[1]]], [[0.32 * sc, 0.32 * sc], [0.22 * sc, 0.22 * sc], [0.17 * sc, 0.17 * sc]], { seg: 6, rs: 7, side: [0, 0, 1], col: [1, 1, 1] }));
+    const nb = 3 + Math.floor(rnd() * 3), top = [x + lean[0], y + th, z + lean[1]];
+    const crownY = y + th + rr(1.8, 2.8) * sc;
+    for (let b = 0; b < nb; b++) {
+      const a = b / nb * Math.PI * 2 + rr(-0.4, 0.4), r = rr(2.0, 3.6) * sc;
+      const tip = [x + Math.cos(a) * r, crownY + rr(-0.4, 0.4), z + Math.sin(a) * r];
+      const mid = [lerp(top[0], tip[0], 0.45), lerp(top[1], tip[1], 0.6), lerp(top[2], tip[2], 0.45)];
+      barks.push(loft([top, mid, tip], [[0.15 * sc, 0.15 * sc], [0.1 * sc, 0.1 * sc], [0.05 * sc, 0.05 * sc]], { seg: 6, rs: 6, side: [0, 0, 1] }));
+      for (let k = 0; k < 2; k++) {
+        const ico = new THREE.IcosahedronGeometry(1, 2); const pp = ico.attributes.position; const cc = [];
+        const bx = tip[0] + rr(-0.8, 0.8), by = tip[1] + rr(0.1, 0.5), bz = tip[2] + rr(-0.8, 0.8), sx = rr(1.8, 2.6) * sc, sy = rr(0.45, 0.65) * sc;
+        for (let v = 0; v < pp.count; v++) {
+          let px = pp.getX(v), py = pp.getY(v), pz = pp.getZ(v);
+          const nn = 0.75 + 0.5 * vnoise(px * 2.3 + bx, pz * 2.3 + py * 2 + bz);
+          px *= sx * nn; pz *= sx * nn; py = (py < 0 ? py * 0.45 : py) * sy * nn;
+          pp.setXYZ(v, px + bx, py + by, pz + bz);
+          const lc = 0.55 + 0.45 * clamp(pp.getY(v) - by + 0.3, 0, 1) + rr(-0.06, 0.06);
+          cc.push(0.36 * lc, 0.43 * lc, 0.2 * lc);
+        }
+        ico.setAttribute('color', new THREE.Float32BufferAttribute(cc, 3)); ico.deleteAttribute('uv'); ico.computeVertexNormals();
+        leaves.push(ico);
+      }
+    }
+  }
+  const bm = new THREE.Mesh(merge(barks), barkMat); bm.castShadow = true; bm.receiveShadow = true; scene.add(bm);
+  leaves.forEach(g => { if (!g.index) {} });
+  const lm = new THREE.Mesh(merge(leaves), leafMat); lm.castShadow = true; scene.add(lm);
+  // rocks
+  const rg = new THREE.DodecahedronGeometry(1, 1); const rp = rg.attributes.position;
+  for (let v = 0; v < rp.count; v++) { const x = rp.getX(v), y = rp.getY(v), z = rp.getZ(v); const k = 0.8 + 0.35 * vnoise(x * 2 + 5, z * 2 + y * 3); rp.setXYZ(v, x * k, y * k * 0.7, z * k); }
+  rg.computeVertexNormals();
+  const rocks = new THREE.InstancedMesh(rg, new THREE.MeshStandardMaterial({ color: 0x9a8e80, roughness: 0.93 }), 90);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new V3(), p = new V3(); let n = 0;
+  for (let i = 0; i < 400 && n < 90; i++) {
+    const sa = rr(0, PL); pathAt(sa); const side = rnd() < 0.5 ? -1 : 1; const big = rnd() < 0.25;
+    const lat = side * (big ? rr(14, 45) : rr(2.6, 5.5));
+    const x = PP.x + PP.nx * lat, z = PP.z + PP.nz * lat;
+    let ok = true; for (const a of avoid) if (Math.hypot(x - a[0], z - a[1]) < 4) ok = false;
+    for (const pd of PONDS) if (Math.hypot(x - pd.x, z - pd.z) < pd.wr * 1.1) ok = false;
+    if (!ok) continue;
+    const sc = big ? rr(0.8, 2.0) : rr(0.12, 0.35);
+    p.set(x, H(x, z) + sc * 0.05, z); q.setFromEuler(new THREE.Euler(rr(-0.3, 0.3), rr(0, 6.28), rr(-0.3, 0.3))); s.set(sc * rr(0.9, 1.4), sc, sc * rr(0.9, 1.3));
+    m.compose(p, q, s); rocks.setMatrixAt(n++, m);
+  }
+  rocks.count = n; rocks.castShadow = true; rocks.receiveShadow = true; scene.add(rocks);
+}
+
+// ---------------------------------------------------------------- animal geometry
+const DARK = [0.3, 0.24, 0.2];
+function giraffeGeo() {
+  const g = {};
+  g.body = loft([[0, 2.36, -1.08], [0, 2.55, -0.72], [0, 2.68, -0.1], [0, 2.82, 0.5], [0, 2.8, 0.95], [0, 2.6, 1.2]],
+    [[0.12, 0.14], [0.36, 0.41], [0.42, 0.48], [0.43, 0.52], [0.36, 0.46], [0.14, 0.18]], { seg: 28, rs: 18, prof: a => 1 - 0.05 * Math.sin(a) });
+  const npts = [[0, -0.14, -0.12], [0, 0.45, 0.32], [0, 1.0, 0.72], [0, 1.5, 1.02], [0, 1.72, 1.14]];
+  const neck = loft(npts, [[0.3, 0.37], [0.22, 0.28], [0.16, 0.2], [0.12, 0.15], [0.11, 0.135]], { seg: 22, rs: 14 });
+  const mane = loft(npts.map((p, i) => [0, p[1] + 0.2 - i * 0.02, p[2] - [0.3, 0.24, 0.18, 0.13, 0.12][i]]), [[0.022, 0.05], [0.02, 0.06], [0.018, 0.055], [0.016, 0.05], [0.012, 0.03]], { seg: 16, rs: 6, col: [0.62, 0.48, 0.38] });
+  g.neck = merge([neck, mane]);
+  const head = loft([[0, 0.05, -0.14], [0, 0.08, 0.02], [0, 0.02, 0.22], [0, -0.08, 0.42], [0, -0.13, 0.56]],
+    [[0.1, 0.12], [0.12, 0.15], [0.1, 0.12], [0.075, 0.085], [0.05, 0.055]], { seg: 16, rs: 14, prof: (a, u) => 1 + 0.08 * Math.sin(a) * u });
+  const oss = [-1, 1].map(s => loft([[s * 0.055, 0.12, -0.02], [s * 0.065, 0.25, -0.04], [s * 0.07, 0.33, -0.05]], [[0.028, 0.028], [0.022, 0.022], [0.03, 0.03]], { seg: 5, rs: 8, colFn: u => u > 0.75 ? DARK : [0.95, 0.9, 0.85] }));
+  g.head = merge([head, ...oss]);
+  g.ear = loft([[0, 0, 0], [0.09, 0.02, -0.03], [0.18, 0.03, -0.06]], [[0.012, 0.03], [0.02, 0.05], [0.004, 0.008]], { seg: 6, rs: 8, side: [0, 1, 0] });
+  g.eyes = merge([sphereGeo(0.034, 0.104, 0, 0, [1, 1, 1]), sphereGeo(0.034, -0.104, 0, 0, [1, 1, 1])]);
+  g.tail = merge([loft([[0, 0, 0], [0, -0.4, -0.12], [0, -0.9, -0.16], [0, -1.02, -0.15]], [[0.05, 0.05], [0.035, 0.035], [0.025, 0.025], [0.02, 0.02]], { seg: 10, rs: 6 }),
+    loft([[0, -0.95, -0.16], [0, -1.22, -0.15], [0, -1.4, -0.13]], [[0.03, 0.03], [0.075, 0.06], [0.02, 0.02]], { seg: 6, rs: 7, col: [0.25, 0.2, 0.18] })]);
+  g.legUF = loft([[0, 0.32, 0], [0, -0.3, 0.02], [0, -0.75, 0], [0, -1.15, 0]], [[0.17, 0.2], [0.15, 0.17], [0.1, 0.11], [0.085, 0.09]], { seg: 12, rs: 10 });
+  g.legUH = loft([[0, 0.32, 0.05], [0, -0.2, 0], [0, -0.7, -0.1], [0, -1.1, -0.04]], [[0.2, 0.24], [0.16, 0.19], [0.1, 0.12], [0.085, 0.09]], { seg: 12, rs: 10 });
+  g.legLF = loft([[0, 0.06, 0], [0, -0.5, 0], [0, -1.08, 0.01], [0, -1.24, 0.03], [0, -1.3, 0.05]], [[0.085, 0.09], [0.06, 0.066], [0.05, 0.055], [0.068, 0.07], [0.072, 0.078]], { seg: 14, rs: 10 });
+  g.legLH = loft([[0, 0.06, 0], [0, -0.5, 0], [0, -1.03, 0.01], [0, -1.19, 0.03], [0, -1.25, 0.05]], [[0.085, 0.09], [0.06, 0.066], [0.05, 0.055], [0.068, 0.07], [0.072, 0.078]], { seg: 14, rs: 10 });
+  return g;
+}
+function zebraGeo() {
+  const g = {};
+  g.body = loft([[0, 0.98, -0.8], [0, 1.1, -0.56], [0, 1.08, -0.05], [0, 1.1, 0.4], [0, 1.07, 0.68], [0, 0.97, 0.82]],
+    [[0.1, 0.12], [0.28, 0.32], [0.31, 0.36], [0.29, 0.35], [0.22, 0.28], [0.1, 0.12]], { seg: 24, rs: 16, prof: a => 1 - 0.04 * Math.sin(a) });
+  const npts = [[0, -0.1, -0.08], [0, 0.2, 0.18], [0, 0.45, 0.36], [0, 0.55, 0.42]];
+  const neck = loft(npts, [[0.2, 0.27], [0.15, 0.22], [0.11, 0.16], [0.1, 0.13]], { seg: 14, rs: 12 });
+  const mane = loft([[0, 0.16, -0.28], [0, 0.36, -0.08], [0, 0.58, 0.18], [0, 0.7, 0.36]], [[0.03, 0.09], [0.028, 0.09], [0.025, 0.08], [0.02, 0.05]], { seg: 12, rs: 6 });
+  g.neck = merge([neck, mane]);
+  g.head = loft([[0, 0.04, -0.08], [0, 0.03, 0.06], [0, -0.08, 0.26], [0, -0.2, 0.42], [0, -0.25, 0.49]],
+    [[0.08, 0.11], [0.09, 0.11], [0.075, 0.085], [0.06, 0.066], [0.046, 0.05]], { seg: 14, rs: 12 });
+  g.ear = loft([[0, 0, 0], [0.015, 0.08, -0.01], [0.03, 0.16, -0.02]], [[0.012, 0.035], [0.015, 0.04], [0.003, 0.005]], { seg: 6, rs: 8, side: [0, 0, 1] });
+  g.eyes = merge([sphereGeo(0.024, 0.082, 0, 0, [1, 1, 1]), sphereGeo(0.024, -0.082, 0, 0, [1, 1, 1])]);
+  g.tail = merge([loft([[0, 0, 0], [0, -0.25, -0.08], [0, -0.5, -0.1]], [[0.035, 0.035], [0.025, 0.025], [0.02, 0.02]], { seg: 8, rs: 6 }),
+    loft([[0, -0.42, -0.1], [0, -0.62, -0.1], [0, -0.76, -0.09]], [[0.025, 0.025], [0.05, 0.045], [0.015, 0.015]], { seg: 6, rs: 6, col: [0.3, 0.3, 0.3] })]);
+  g.legUF = loft([[0, 0.16, 0], [0, -0.2, 0.02], [0, -0.5, 0]], [[0.1, 0.13], [0.075, 0.085], [0.045, 0.05]], { seg: 10, rs: 10 });
+  g.legUH = loft([[0, 0.18, 0.03], [0, -0.15, -0.02], [0, -0.52, -0.06]], [[0.13, 0.16], [0.09, 0.11], [0.045, 0.05]], { seg: 10, rs: 10 });
+  g.legLF = loft([[0, 0.03, 0], [0, -0.3, 0], [0, -0.4, 0.02], [0, -0.45, 0.04]], [[0.045, 0.05], [0.032, 0.036], [0.04, 0.04], [0.046, 0.05]], { seg: 10, rs: 9 });
+  g.legLH = loft([[0, 0.03, 0], [0, -0.3, 0], [0, -0.4, 0.02], [0, -0.45, 0.04]], [[0.045, 0.05], [0.032, 0.036], [0.04, 0.04], [0.046, 0.05]], { seg: 10, rs: 9 });
+  return g;
+}
+function elephantGeo() {
+  const g = {};
+  g.body = loft([[0, 1.95, -1.36], [0, 2.25, -1.05], [0, 2.42, -0.4], [0, 2.48, 0.35], [0, 2.38, 0.95], [0, 2.15, 1.25]],
+    [[0.3, 0.35], [0.75, 0.82], [0.88, 0.95], [0.86, 0.93], [0.7, 0.8], [0.35, 0.4]], { seg: 26, rs: 20, prof: (a) => 1 - 0.05 * Math.sin(a) + 0.03 * Math.cos(a * 2) });
+  g.neck = loft([[0, -0.05, -0.15], [0, 0.05, 0.2], [0, 0.1, 0.36]], [[0.62, 0.72], [0.58, 0.66], [0.55, 0.62]], { seg: 6, rs: 16 });
+  const head = loft([[0, 0.2, -0.15], [0, 0.32, 0.12], [0, 0.18, 0.42], [0, -0.15, 0.6], [0, -0.42, 0.64]],
+    [[0.5, 0.55], [0.52, 0.58], [0.44, 0.5], [0.3, 0.34], [0.2, 0.22]], { seg: 16, rs: 16 });
+  const tusks = [-1, 1].map(s => loft([[s * 0.17, -0.3, 0.55], [s * 0.19, -0.52, 0.74], [s * 0.18, -0.56, 0.92]], [[0.055, 0.055], [0.042, 0.042], [0.015, 0.015]], { seg: 8, rs: 8, col: [2.2, 2.05, 1.75] }));
+  g.head = merge([head, ...tusks]);
+  g.trunk = [];
+  for (let i = 0; i < 7; i++) { const r0 = lerp(0.2, 0.065, i / 7), r1 = lerp(0.2, 0.065, (i + 1) / 7); g.trunk.push(loft([[0, 0.04, 0], [0, -0.27, 0]], [[r0, r0 * 1.06], [r1, r1 * 1.06]], { seg: 3, rs: 12, cap: i === 6 })); }
+  g.ear = loft([[0.02, 0.32, -0.22], [0.06, 0.0, -0.45], [0.05, -0.5, -0.45], [0.02, -0.86, -0.3], [0, -1.0, -0.14]], [[0.04, 0.2], [0.05, 0.42], [0.05, 0.45], [0.04, 0.32], [0.02, 0.1]], { seg: 14, rs: 14 });
+  g.eyes = merge([sphereGeo(0.032, 0.4, 0, 0, [1, 1, 1]), sphereGeo(0.032, -0.4, 0, 0, [1, 1, 1])]);
+  g.tail = merge([loft([[0, 0, 0], [0, -0.5, -0.1], [0, -1.0, -0.08]], [[0.06, 0.06], [0.04, 0.04], [0.025, 0.025]], { seg: 8, rs: 6 }),
+    loft([[0, -0.95, -0.08], [0, -1.15, -0.07]], [[0.025, 0.025], [0.045, 0.03]], { seg: 4, rs: 6, col: [0.3, 0.3, 0.3] })]);
+  g.legUF = loft([[0, 0.38, 0], [0, -0.3, 0.02], [0, -0.95, 0]], [[0.36, 0.4], [0.3, 0.32], [0.25, 0.26]], { seg: 10, rs: 14 });
+  g.legUH = loft([[0, 0.4, 0.05], [0, -0.3, -0.03], [0, -0.9, -0.02]], [[0.42, 0.46], [0.3, 0.33], [0.24, 0.25]], { seg: 10, rs: 14 });
+  g.legLF = loft([[0, 0.06, 0], [0, -0.5, 0], [0, -0.78, 0.01], [0, -0.85, 0.02]], [[0.25, 0.26], [0.23, 0.24], [0.26, 0.27], [0.27, 0.28]], { seg: 8, rs: 14 });
+  g.legLH = g.legLF;
+  return g;
+}
+const eyeMat = new THREE.MeshStandardMaterial({ color: 0x140e0a, roughness: 0.18, metalness: 0 });
+const SPECIES = {
+  giraffe: {
+    geo: giraffeGeo(), legLen: 2.4, a0: 0.1, aK: 0.1, maxA: 0.36, runV: 99, runMul: 1, bob: 0.06, knee: 1.9, turn: 1.0,
+    walk: [0.0, 0.5, 0.12, 0.62], run: [0, 0.5, 0.5, 0],
+    legs: [[0.24, 0.78, 1.15, 1.3, 1], [-0.24, 0.78, 1.15, 1.3, 1], [0.22, -0.72, 1.1, 1.25, 0], [-0.22, -0.72, 1.1, 1.25, 0]],
+    neckAt: [0, 2.78, 0.82], headAt: [0, 1.72, 1.14], earAt: [0.1, 0.11, -0.05], eyeAt: [0, 0.06, 0.18], tailAt: [0, 2.45, -1.02],
+    neckRest: 0.0, headRest: 0.3, len: 2.4, rad: 1.4,
+  },
+  zebra: {
+    geo: zebraGeo(), legLen: 0.95, a0: 0.12, aK: 0.12, maxA: 0.5, runV: 2.6, runMul: 1.4, bob: 0.03, knee: 2.0, turn: 2.2,
+    walk: [0.25, 0.75, 0.0, 0.5], run: [0.0, 0.5, 0.5, 0.0],
+    legs: [[0.15, 0.48, 0.5, 0.45, 1], [-0.15, 0.48, 0.5, 0.45, 1], [0.15, -0.5, 0.52, 0.45, 0], [-0.15, -0.5, 0.52, 0.45, 0]],
+    neckAt: [0, 1.15, 0.6], headAt: [0, 0.55, 0.42], earAt: [0.06, 0.1, -0.05], eyeAt: [0, 0.04, 0.1], tailAt: [0, 1.06, -0.78],
+    neckRest: 0.15, headRest: 0.1, len: 1.6, rad: 1.1, orbH: 2.55, run: [0.0, 0.5, 0.5, 0.0],
+  },
+  elephant: {
+    geo: elephantGeo(), legLen: 1.75, a0: 0.08, aK: 0.08, maxA: 0.32, runV: 99, runMul: 1, bob: 0.05, knee: 1.4, turn: 1.0,
+    walk: [0.25, 0.75, 0.0, 0.5], run: [0.25, 0.75, 0.0, 0.5],
+    legs: [[0.45, 0.75, 0.95, 0.85, 1], [-0.45, 0.75, 0.95, 0.85, 1], [0.42, -0.85, 0.9, 0.85, 0], [-0.42, -0.85, 0.9, 0.85, 0]],
+    neckAt: [0, 2.35, 1.05], headAt: [0, 0.1, 0.36], earAt: [0.42, 0.15, 0.05], eyeAt: [0, 0.12, 0.42], tailAt: [0, 2.05, -1.32],
+    neckRest: 0.0, headRest: 0.05, len: 2.8, rad: 2.0, orbH: 4.25,
+  },
+};
+SPECIES.zebra.run = [0.0, 0.5, 0.5, 0.0];
+const MATS = {
+  giraffe: (() => {
+    const o = { c1: '#a35a22', c2: '#743815', c3: '#eee0c0', rough: 0.72 };
+    return {
+      body: skinMat(1, { ...o, scale: 2.5 }), neck: skinMat(1, { ...o, scale: 3.1, seed: 3 }), head: skinMat(1, { ...o, scale: 5.5, mode: 2, seed: 7, y: 4.4 }),
+      ear: skinMat(4, { c1: '#c9a47a' }), tail: skinMat(1, { ...o, scale: 6, y: 1.5 }),
+      legUF: skinMat(1, { ...o, scale: 4.0, mode: 1, y: 2.45 }), legUH: skinMat(1, { ...o, scale: 4.0, mode: 1, y: 2.35 }),
+      legLF: skinMat(1, { ...o, scale: 5.0, mode: 1, y: 1.3, hoof: 0.06 }), legLH: skinMat(1, { ...o, scale: 5.0, mode: 1, y: 1.25, hoof: 0.06 }),
+    };
+  })(),
+  zebra: (() => {
+    const o = { c1: '#151312', c2: '#efe9de', rough: 0.7 };
+    return {
+      body: skinMat(2, { ...o, mode: 0 }), neck: skinMat(2, { ...o, mode: 1 }), head: skinMat(2, { ...o, mode: 3 }), ear: skinMat(2, { ...o, mode: 3 }),
+      tail: skinMat(2, { ...o, mode: 2, y: 1.0 }),
+      legUF: skinMat(2, { ...o, mode: 2, y: 0.95 }), legUH: skinMat(2, { ...o, mode: 2, y: 0.97 }),
+      legLF: skinMat(2, { ...o, mode: 2, y: 0.45, hoof: 0.06 }), legLH: skinMat(2, { ...o, mode: 2, y: 0.45, hoof: 0.06 }),
+    };
+  })(),
+  elephant: (() => {
+    const o = { c1: '#8a817a', c2: '#8f6c55', c3: '#b69a90', rough: 0.9 };
+    return {
+      body: skinMat(3, { ...o }), neck: skinMat(3, { ...o, y: 2.4 }), head: skinMat(3, { ...o, y: 2.5 }), ear: skinMat(3, { ...o, y: 2.5, side: THREE.DoubleSide }),
+      earIn: null, trunk: skinMat(3, { ...o, y: 1.2 }), tail: skinMat(3, { ...o, y: 1.6 }),
+      legUF: skinMat(3, { ...o, y: 1.8 }), legUH: skinMat(3, { ...o, y: 1.75 }), legLF: skinMat(3, { ...o, y: 0.85 }), legLH: skinMat(3, { ...o, y: 0.85 }),
+    };
+  })(),
+};
+
+function mesh(geo, mat, parent) { const m = new THREE.Mesh(geo, mat); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m; }
+function buildAnimal(kind, idx) {
+  const S = SPECIES[kind], g = S.geo, M = MATS[kind];
+  const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
+  mesh(g.body, M.body, body);
+  const neck = new THREE.Group(); neck.position.fromArray(S.neckAt); neck.rotation.order = 'YXZ'; body.add(neck);
+  mesh(g.neck, M.neck, neck);
+  const head = new THREE.Group(); head.position.fromArray(S.headAt); head.rotation.order = 'YXZ'; neck.add(head);
+  mesh(g.head, M.head, head);
+  const eyes = new THREE.Mesh(g.eyes, eyeMat); eyes.position.fromArray(S.eyeAt); head.add(eyes);
+  const ears = [];
+  for (const s of [1, -1]) { const p = new THREE.Group(); p.position.set(S.earAt[0] * s, S.earAt[1], S.earAt[2]); p.scale.x = s; head.add(p); mesh(g.ear, M.ear, p); ears.push(p); }
+  const trunk = [];
+  if (g.trunk) {
+    let par = new THREE.Group(); par.position.set(0, -0.42, 0.66); head.add(par);
+    for (let i = 0; i < g.trunk.length; i++) { const seg = new THREE.Group(); if (i > 0) seg.position.y = -0.27; par.add(seg); mesh(g.trunk[i], M.trunk, seg); trunk.push(seg); par = seg; }
+  }
+  const tail = new THREE.Group(); tail.position.fromArray(S.tailAt); body.add(tail); mesh(g.tail, M.tail, tail);
+  const legs = [];
+  for (const [x, z, lu, ll, front] of S.legs) {
+    const hip = new THREE.Group(); hip.position.set(x, lu + ll, z); body.add(hip);
+    mesh(front ? g.legUF : g.legUH, front ? M.legUF : M.legUH, hip);
+    const knee = new THREE.Group(); knee.position.y = -lu; hip.add(knee);
+    mesh(front ? g.legLF : g.legLH, front ? M.legLF : M.legLH, knee);
+    legs.push({ hip, knee, front });
+  }
+  root.visible = false;
+  scene.add(root);
+  const sd = idx * 1.618 + (kind === 'zebra' ? 0.3 : kind === 'elephant' ? 0.7 : 0);
+  return {
+    kind, S, root, body, neck, head, eyes, ears, trunk, tail, legs, idx,
+    pos: new V3(), vel: new V3(), yaw: 0, faceYaw: 0, speed: 0, phase: rnd(), amp: 0, seed: sd,
+    sc: kind === 'giraffe' ? 1 : 0.92 + 0.16 * ((idx * 0.37) % 1),
+    state: 'hidden', side: 1, neckP: S.neckRest, headP: S.headRest, neckY: 0, neckPT: S.neckRest, headPT: S.headRest, neckYT: 0,
+    earT: 0, ear: 0, trunkRaise: 0, trunkRaiseT: 0, blink: 0, blinkT: 2 + rnd() * 3, grazeT: rnd() * 6, lookAt: null, stepAcc: 0, lastLegs: [0, 0, 0, 0],
+    reactT: 0, joinT: 0, gx: 0, gz: 0, vmax: 1.5, top: new V3(),
+  };
+}
+
+// ---------------------------------------------------------------- birds (instanced)
+function birdGeos() {
+  const W = [0.95, 0.93, 0.88];
+  const body = merge([
+    loft([[0, 0.0, -0.22], [0, 0.02, -0.02], [0, 0.03, 0.08], [0, 0.04, 0.13]], [[0.03, 0.025], [0.068, 0.075], [0.062, 0.07], [0.035, 0.04]], { seg: 10, rs: 10, col: W }),
+    loft([[0, 0.04, 0.11], [0, 0.11, 0.15], [0, 0.17, 0.19], [0, 0.19, 0.22]], [[0.032, 0.035], [0.028, 0.03], [0.026, 0.028], [0.03, 0.032]], { seg: 8, rs: 8, col: [0.96, 0.88, 0.74] }),
+    loft([[0, 0.19, 0.18], [0, 0.2, 0.23], [0, 0.19, 0.27]], [[0.032, 0.034], [0.034, 0.036], [0.02, 0.022]], { seg: 6, rs: 8, col: [0.97, 0.86, 0.66] }),
+    loft([[0, 0.187, 0.26], [0, 0.18, 0.35]], [[0.012, 0.014], [0.002, 0.002]], { seg: 3, rs: 6, col: [1.0, 0.72, 0.22] }),
+    sphereGeo(0.008, 0.024, 0.2, 0.245, [0.06, 0.05, 0.04]), sphereGeo(0.008, -0.024, 0.2, 0.245, [0.06, 0.05, 0.04]),
+    loft([[0, 0.0, -0.18], [0, -0.005, -0.27], [0, -0.01, -0.33]], [[0.06, 0.008], [0.07, 0.008], [0.05, 0.004]], { seg: 4, rs: 6, col: W }),
+  ]);
+  const legs = merge([0.03, -0.03].map(x => loft([[x, -0.03, 0.0], [x, -0.16, 0.0], [x, -0.28, 0.02]], [[0.009, 0.009], [0.006, 0.006], [0.006, 0.006]], { seg: 4, rs: 5, col: [0.35, 0.3, 0.22] })));
+  const sec = [];
+  sec.push(loft([[0, 0, -0.03], [0.12, 0.005, -0.045], [0.23, 0, -0.04]], [[0.012, 0.075], [0.01, 0.07], [0.008, 0.05]], { seg: 6, rs: 8, side: [0, 1, 0], col: W }));
+  for (let i = 0; i < 6; i++) { const x = 0.03 + i * 0.037; sec.push(loft([[x, -0.002, -0.07], [x + 0.008, -0.004, -0.17]], [[0.003, 0.018], [0.002, 0.012]], { seg: 2, rs: 6, side: [0, 1, 0], col: W })); }
+  const inner = merge(sec);
+  const prim = [loft([[0, 0, -0.02], [0.06, 0.0, -0.025], [0.12, 0, -0.02]], [[0.009, 0.05], [0.008, 0.045], [0.006, 0.035]], { seg: 5, rs: 8, side: [0, 1, 0], col: W })];
+  for (let i = 0; i < 7; i++) {
+    const a = 0.1 + i * 0.14, l = 0.24 - i * 0.012, x0 = 0.04 + i * 0.012;
+    prim.push(loft([[x0, 0, -0.03], [x0 + Math.cos(a) * l * 0.5, 0, -0.03 - Math.sin(a) * l * 0.5], [x0 + Math.cos(a) * l, 0, -0.03 - Math.sin(a) * l]], [[0.003, 0.016], [0.003, 0.02], [0.001, 0.01]], { seg: 4, rs: 6, side: [0, 1, 0], col: i < 3 ? [0.9, 0.88, 0.84] : W }));
+  }
+  return { body, legs, inner, outer: merge(prim) };
+}
+const BG = birdGeos();
+const birdMat = skinMat(4, { c1: '#ffffff', rough: 0.75 });
+const birdWingMat = skinMat(4, { c1: '#ffffff', rough: 0.8, side: THREE.DoubleSide });
+const NB = 27;
+const bBody = new THREE.InstancedMesh(BG.body, birdMat, NB), bLegs = new THREE.InstancedMesh(BG.legs, birdMat, NB);
+const bIn = new THREE.InstancedMesh(BG.inner, birdWingMat, NB * 2), bOut = new THREE.InstancedMesh(BG.outer, birdWingMat, NB * 2);
+for (const m of [bBody, bLegs, bIn, bOut]) { m.frustumCulled = false; m.castShadow = true; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(m); }
+const BIRDS = [], FLOCKS = [];
+{
+  let k = 0;
+  for (let gI = 0; gI < 6; gI++) {
+    const n = gI % 2 === 0 ? 5 : 4, fl = { birds: [], state: 'hidden', cx: 0, cz: 0, idx: gI };
+    for (let j = 0; j < n; j++) {
+      const b = { i: k++, fl, pos: new V3(), vel: new V3(), yaw: 0, pitch: 0, roll: 0, state: 'hidden', flap: rnd() * 6, fold: 0, flapAmt: 0, t: 0,
+        ox: 0, oz: 0, peck: rnd() * 5, orR: 5 + rnd() * 5, orW: (0.25 + rnd() * 0.2) * (rnd() < 0.5 ? 1 : -1), orP: rnd() * 6.28, orH: rnd() * 3, sc: 0.85 + rnd() * 0.15, lastYaw: 0, sndT: rnd() * 4 };
+      fl.birds.push(b); BIRDS.push(b);
+    }
+    FLOCKS.push(fl);
+  }
+}
+const _m0 = new THREE.Matrix4(), _m1 = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _q0 = new THREE.Quaternion(), _e0 = new THREE.Euler(0, 0, 0, 'YXZ'), _v0 = new V3(), _v1 = new V3(), _v2 = new V3(), _s1 = new V3(1, 1, 1);
+const ZERO_M = new THREE.Matrix4().makeScale(0, 0, 0);
+const MIRROR = new THREE.Matrix4().makeScale(-1, 1, 1);
+function writeBird(b) {
+  if (b.state === 'hidden') { bBody.setMatrixAt(b.i, ZERO_M); bLegs.setMatrixAt(b.i, ZERO_M); for (let s = 0; s < 2; s++) { bIn.setMatrixAt(b.i * 2 + s, ZERO_M); bOut.setMatrixAt(b.i * 2 + s, ZERO_M); } return; }
+  _e0.set(b.pitch, b.yaw, b.roll); _q0.setFromEuler(_e0); _s1.setScalar(b.sc * 1.15);
+  _m0.compose(b.pos, _q0, _s1); bBody.setMatrixAt(b.i, _m0);
+  const fly = b.state !== 'ground';
+  _m1.makeRotationX(fly ? 1.25 : 0); _m2.copy(_m0).multiply(_m1); bLegs.setMatrixAt(b.i, _m2);
+  const f = b.fold, flapA = (0.62 * Math.sin(b.flap) + 0.12) * b.flapAmt + 0.06 * f, outA = (0.4 * Math.sin(b.flap - 0.7)) * b.flapAmt;
+  for (let s = 0; s < 2; s++) {
+    _m1.copy(_m0); if (s === 1) _m1.multiply(MIRROR);
+    _m2.makeTranslation(0.045, 0.055, 0.04); _m1.multiply(_m2);
+    _m2.makeRotationY(1.45 * (1 - f)); _m1.multiply(_m2);
+    _m2.makeRotationZ(flapA); _m1.multiply(_m2);
+    bIn.setMatrixAt(b.i * 2 + s, _m1);
+    _m2.makeTranslation(0.225, 0, -0.01); _m1.multiply(_m2);
+    _m2.makeRotationY(0.1 * (1 - f) - 0.05); _m1.multiply(_m2);
+    _m2.makeRotationZ(outA + 0.03 * f); _m1.multiply(_m2);
+    bOut.setMatrixAt(b.i * 2 + s, _m1);
+  }
+}
+
+// ---------------------------------------------------------------- animals
+seedR = 31337;
+const giraffe = buildAnimal('giraffe', 0);
+const ZEBRAS = [], ELEPHANTS = [];
+for (let i = 0; i < 6; i++) ZEBRAS.push(buildAnimal('zebra', i));
+for (let i = 0; i < 6; i++) ELEPHANTS.push(buildAnimal('elephant', i));
+const GROUND = [giraffe, ...ZEBRAS, ...ELEPHANTS];
+for (const a of [...ZEBRAS, ...ELEPHANTS]) a.root.scale.setScalar(a.sc);
+// blob shadows
+const blobs = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x2b1d10, alphaMap: blobTex, transparent: true, opacity: 0.5, depthWrite: false }), GROUND.length);
+blobs.frustumCulled = false; blobs.renderOrder = 2; scene.add(blobs);
+
+// ---------------------------------------------------------------- glow particles
+function makeParticles(N, additive) {
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(N * 3), col = new Float32Array(N * 3), size = new Float32Array(N), alpha = new Float32Array(N);
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('aCol', new THREE.BufferAttribute(col, 3).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('aSize', new THREE.BufferAttribute(size, 1).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('aAlpha', new THREE.BufferAttribute(alpha, 1).setUsage(THREE.DynamicDrawUsage));
+  geo.setDrawRange(0, 0);
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uPx: { value: 500 } }, transparent: true, depthWrite: false,
+    blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+    vertexShader: `attribute float aSize; attribute float aAlpha; attribute vec3 aCol; uniform float uPx; varying vec3 vC; varying float vA;
+      void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
+        gl_PointSize = clamp(aSize * uPx / max(-mv.z, 0.2), 0.0, 220.0); vC = aCol; vA = aAlpha; }`,
+    fragmentShader: additive
+      ? `varying vec3 vC; varying float vA; void main(){ vec2 p = gl_PointCoord * 2.0 - 1.0; float r2 = dot(p, p); if (r2 > 1.0) discard;
+          float a = exp(-r2 * 4.5) + exp(-r2 * 22.0) * 1.4; gl_FragColor = vec4(vC * a * vA, 1.0);
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
+        }`
+      : `varying vec3 vC; varying float vA; void main(){ vec2 p = gl_PointCoord * 2.0 - 1.0; float r2 = dot(p, p); if (r2 > 1.0) discard;
+          gl_FragColor = vec4(vC, exp(-r2 * 3.0) * vA * 0.55);
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
+        }`,
+  });
+  const pts = new THREE.Points(geo, mat); pts.frustumCulled = false; pts.renderOrder = 5; scene.add(pts);
+  return {
+    N, cap: N, n: 0, geo, mat, pos, col, size, alpha,
+    vel: new Float32Array(N * 3), life: new Float32Array(N), max: new Float32Array(N), s0: new Float32Array(N), a0: new Float32Array(N),
+    mode: new Uint8Array(N), b0: new Float32Array(N * 3), b1: new Float32Array(N * 3), b2: new Float32Array(N * 3), drag: new Float32Array(N), grav: new Float32Array(N), tw: new Float32Array(N),
+  };
+}
+const GLOW = makeParticles(1000, true), DUST = makeParticles(260, false);
+const PCOL = [new THREE.Color('#FFF4BC'), new THREE.Color('#FFF4BC'), new THREE.Color('#FFE6A0'), new THREE.Color('#FFD1DD'), new THREE.Color('#C9F3FF')];
+function spawn(P, o) {
+  if (P.n >= P.cap) return -1;
+  const i = P.n++, i3 = i * 3;
+  P.pos[i3] = o.x; P.pos[i3 + 1] = o.y; P.pos[i3 + 2] = o.z;
+  P.vel[i3] = o.vx || 0; P.vel[i3 + 1] = o.vy || 0; P.vel[i3 + 2] = o.vz || 0;
+  const c = o.c || PCOL[Math.floor(Math.random() * PCOL.length)], k = o.k ?? 1.6;
+  P.col[i3] = c.r * k; P.col[i3 + 1] = c.g * k; P.col[i3 + 2] = c.b * k;
+  P.life[i] = 0; P.max[i] = o.life || 2; P.s0[i] = o.size || 0.12; P.a0[i] = o.a ?? 1; P.drag[i] = o.drag ?? 0.8; P.grav[i] = o.grav ?? 0; P.tw[i] = Math.random() * 6.28;
+  P.mode[i] = o.bez ? 1 : 0;
+  if (o.bez) { const b = o.bez; for (let j = 0; j < 3; j++) { P.b0[i3 + j] = b[0][j]; P.b1[i3 + j] = b[1][j]; P.b2[i3 + j] = b[2][j]; } }
+  return i;
+}
+function copyP(P, a, b) {
+  const a3 = a * 3, b3 = b * 3;
+  for (let j = 0; j < 3; j++) { P.pos[a3 + j] = P.pos[b3 + j]; P.vel[a3 + j] = P.vel[b3 + j]; P.col[a3 + j] = P.col[b3 + j]; P.b0[a3 + j] = P.b0[b3 + j]; P.b1[a3 + j] = P.b1[b3 + j]; P.b2[a3 + j] = P.b2[b3 + j]; }
+  P.life[a] = P.life[b]; P.max[a] = P.max[b]; P.s0[a] = P.s0[b]; P.a0[a] = P.a0[b]; P.drag[a] = P.drag[b]; P.grav[a] = P.grav[b]; P.tw[a] = P.tw[b]; P.mode[a] = P.mode[b];
+}
+function updateParticles(P, dt, t) {
+  for (let i = 0; i < P.n; i++) {
+    P.life[i] += dt;
+    if (P.life[i] >= P.max[i]) { P.n--; if (i !== P.n) copyP(P, i, P.n); i--; continue; }
+    const i3 = i * 3, u = P.life[i] / P.max[i];
+    if (P.mode[i] === 1) {
+      const e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2, w = 1 - e;
+      for (let j = 0; j < 3; j++) P.pos[i3 + j] = w * w * P.b0[i3 + j] + 2 * w * e * P.b1[i3 + j] + e * e * P.b2[i3 + j];
+      P.size[i] = P.s0[i] * (1 + e * 6);
+    } else {
+      const dr = Math.exp(-P.drag[i] * dt);
+      P.vel[i3] *= dr; P.vel[i3 + 1] = P.vel[i3 + 1] * dr - P.grav[i] * dt; P.vel[i3 + 2] *= dr;
+      P.pos[i3] += P.vel[i3] * dt; P.pos[i3 + 1] += P.vel[i3 + 1] * dt; P.pos[i3 + 2] += P.vel[i3 + 2] * dt;
+      P.size[i] = P.s0[i] * (P === DUST ? 1 + u * 2.5 : 1);
+    }
+    const fade = Math.min(1, u * 8) * (1 - smooth(0.6, 1, u));
+    P.alpha[i] = P.a0[i] * fade * (P === GLOW ? 0.75 + 0.25 * Math.sin(t * 6 + P.tw[i]) : 1);
+  }
+  P.geo.setDrawRange(0, P.n);
+  for (const k of ['position', 'aCol', 'aSize', 'aAlpha']) { const at = P.geo.attributes[k]; at.clearUpdateRanges(); at.addUpdateRange(0, P.n * at.itemSize); at.needsUpdate = true; }
+}
+
+// ---------------------------------------------------------------- orbs, ring, beams
+function makeOrb() {
+  const g = new THREE.Group();
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 12), new THREE.MeshBasicMaterial({ color: new THREE.Color(3.2, 2.8, 1.8), transparent: true, depthWrite: false }));
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(1.6, 1.35, 0.85), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false }));
+  const outer = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(1.0, 0.72, 0.55), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false }));
+  halo.scale.setScalar(1.5); outer.scale.setScalar(3.4);
+  g.add(outer, halo, core); g.renderOrder = 8; core.renderOrder = 9; halo.renderOrder = 8; outer.renderOrder = 7;
+  g.visible = false; scene.add(g);
+  return { g, core, halo, outer, alpha: 0, alphaT: 0, base: new V3(), boost: 0, bob: 0 };
+}
+const orb = makeOrb();
+const ringGroup = new THREE.Group(); ringGroup.visible = false; scene.add(ringGroup);
+const ringLayers = [];
+for (const [r0, w, tint, tiltX, tiltY, sc] of [[0.8, 0.026, 0, 0, 0, 1], [0.74, 0.018, 1, 0.28, 0, 0.9], [0.86, 0.03, 2, 0, -0.22, 0.97]]) {
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uT: { value: 0 }, uA: { value: 0 }, uR0: { value: r0 }, uW: { value: w }, uTint: { value: tint } },
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, side: THREE.DoubleSide,
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: `varying vec2 vUv; uniform float uT, uA, uR0, uW, uTint;
+      void main(){ vec2 p = vUv * 2.0 - 1.0; float r = length(p); float a = atan(p.y, p.x);
+        vec3 cMain = vec3(1.0, 0.95, 0.68), cIn = vec3(1.0, 0.985, 0.91), cOut = vec3(1.0, 0.83, 0.79);
+        if (uTint > 1.5) { cMain = vec3(1.0, 0.86, 0.8); } else if (uTint > 0.5) { cMain = vec3(1.0, 0.97, 0.86); }
+        float mr = exp(-pow((r - uR0) / uW, 2.0));
+        float halo = exp(-pow((r - uR0) / (uW * 4.0), 2.0)) * 0.35;
+        float inner = exp(-pow((r - uR0 * 0.78) / 0.012, 2.0)) * 0.35 + (1.0 - smoothstep(0.0, uR0, r)) * 0.08;
+        float outer = exp(-pow((r - uR0 * 1.12) / 0.035, 2.0)) * 0.4;
+        float spark = pow(0.5 + 0.5 * sin(a * 42.0 + uT * 0.6), 14.0) * exp(-pow((r - uR0) / 0.06, 2.0)) * 0.7;
+        float pulse = 0.85 + 0.15 * sin(a * 3.0 - uT * 0.8);
+        vec3 col = cMain * (mr * 1.7 + halo + spark) * pulse + cIn * inner + cOut * outer;
+        col *= 1.0 - smoothstep(0.95, 1.0, r);
+        gl_FragColor = vec4(col * uA, 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+  });
+  const piv = new THREE.Group(); piv.rotation.set(tiltX, tiltY, 0); piv.scale.setScalar(sc);
+  const ms = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m); ms.renderOrder = 6; piv.add(ms); ringGroup.add(piv); ringLayers.push(m);
+}
+const BEAMS = [];
+const beamMat = () => new THREE.ShaderMaterial({
+  uniforms: { uA: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, side: THREE.DoubleSide,
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `varying vec2 vUv; uniform float uA; void main(){ float x = 1.0 - abs(vUv.x * 2.0 - 1.0); float a = x * x * (1.0 - smoothstep(0.6, 1.0, vUv.y)) * smoothstep(0.0, 0.08, vUv.y);
+    gl_FragColor = vec4(vec3(1.0, 0.9, 0.66) * a * uA, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }`,
+});
+const beamGeo = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
+for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(beamGeo, beamMat()); m.visible = false; m.renderOrder = 4; scene.add(m); BEAMS.push({ m, t: 0, life: 0, base: new V3(), dir: new V3(), len: 30, w: 2, a: 0.5, active: false }); }
+function beam(x, y, z, dx, dy, dz, len, w, life, a) {
+  const b = BEAMS.find(b => !b.active) || BEAMS[0];
+  b.active = true; b.t = 0; b.life = life; b.base.set(x, y, z); b.dir.set(dx, dy, dz).normalize(); b.len = len; b.w = w; b.a = a; b.m.visible = true;
+}
+function updateBeams(dt) {
+  for (const b of BEAMS) {
+    if (!b.active) continue;
+    b.t += dt; const u = b.t / b.life; if (u >= 1) { b.active = false; b.m.visible = false; continue; }
+    const f = smooth(0, 0.25, u) * (1 - smooth(0.6, 1, u));
+    b.m.material.uniforms.uA.value = f * b.a;
+    // cylindrical billboard
+    _v0.copy(camera.position).sub(b.base); _v1.crossVectors(b.dir, _v0).normalize(); _v2.crossVectors(_v1, b.dir).normalize();
+    _m0.makeBasis(_v1, b.dir, _v2); b.m.quaternion.setFromRotationMatrix(_m0);
+    b.m.position.copy(b.base); b.m.scale.set(b.w, b.len * (0.4 + 0.6 * smooth(0, 0.4, u)), 1);
+  }
+}
+
+// ground waves
+const WAVES = [0, 1, 2, 3].map(() => ({ x: 0, z: 0, r: 0, v: 0, t: 0, life: 0, str: 0 }));
+function wave(x, z, v, life, str) { let w = WAVES.reduce((a, b) => (a.life - a.t) < (b.life - b.t) ? a : b); Object.assign(w, { x, z, r: 0.5, v, t: 0, life, str }); }
+function updateWaves(dt) {
+  WAVES.forEach((w, i) => {
+    const U = TU.uWaves.value[i];
+    if (w.t < w.life) { w.t += dt; w.r += w.v * dt * (1 - 0.5 * w.t / w.life); U.set(w.x, w.z, w.r, w.str * (1 - smooth(0.3, 1, w.t / w.life)) * smooth(0, 0.12, w.t)); }
+    else U.w = 0;
+  });
+}
+
+// ---------------------------------------------------------------- audio (procedural)
+const AU = { ctx: null, ok: false };
+function audioInit() {
+  try {
+    if (AU.ctx) { if (AU.ctx.state !== 'running') AU.ctx.resume().catch(() => {}); return; }
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    const ctx = new C(); AU.ctx = ctx;
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; comp.connect(ctx.destination);
+    const master = ctx.createGain(); master.gain.value = 0.28; master.connect(comp); AU.master = master;
+    const len = Math.floor(ctx.sampleRate * 2.8), ir = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    const rev = ctx.createConvolver(); rev.buffer = ir; const revG = ctx.createGain(); revG.gain.value = 0.32; rev.connect(revG); revG.connect(master); AU.rev = rev;
+    const dl = ctx.createDelay(1); dl.delayTime.value = 0.31; const fb = ctx.createGain(); fb.gain.value = 0.28; const dlG = ctx.createGain(); dlG.gain.value = 0.2;
+    dl.connect(fb); fb.connect(dl); dl.connect(dlG); dlG.connect(master); AU.dl = dl;
+    const nb = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1; AU.noise = nb;
+    // wind
+    const ws = ctx.createBufferSource(); ws.buffer = nb; ws.loop = true;
+    const wf = ctx.createBiquadFilter(); wf.type = 'bandpass'; wf.frequency.value = 420; wf.Q.value = 0.55;
+    const wg = ctx.createGain(); wg.gain.value = 0.05; ws.connect(wf); wf.connect(wg); wg.connect(master); ws.start(); AU.wind = { f: wf, g: wg };
+    // pad
+    const pg = ctx.createGain(); pg.gain.value = 0.0; const pf = ctx.createBiquadFilter(); pf.type = 'lowpass'; pf.frequency.value = 700; pf.connect(pg); pg.connect(master); pg.connect(rev);
+    AU.pad = { g: pg, f: pf, osc: [130.81, 196.0, 329.63, 392.0].map((fq, i) => { const o = ctx.createOscillator(); o.type = i % 2 ? 'sine' : 'triangle'; o.frequency.value = fq; o.detune.value = (i - 1.5) * 4; const g = ctx.createGain(); g.gain.value = i < 2 ? 0.5 : 0.25; o.connect(g); g.connect(pf); o.start(); return o; }) };
+    pg.gain.setTargetAtTime(0.05, ctx.currentTime, 3);
+    AU.ok = true;
+  } catch (e) { AU.ok = false; }
+}
+const NOTE = n => 440 * Math.pow(2, (n - 69) / 12);
+function tone(f, at, dur, o = {}) {
+  if (!AU.ok) return; const c = AU.ctx, t = c.currentTime + (at || 0);
+  const osc = c.createOscillator(); osc.type = o.type || 'sine'; osc.frequency.setValueAtTime(f, t);
+  if (o.glide) osc.frequency.exponentialRampToValueAtTime(f * o.glide, t + dur);
+  const g = c.createGain(); const v = o.v ?? 0.15; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + (o.att || 0.008)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(g); g.connect(AU.master); if (o.rev !== false) g.connect(AU.rev); if (o.delay) g.connect(AU.dl);
+  osc.start(t); osc.stop(t + dur + 0.05);
+}
+function bell(f, at, v, dur) { [1, 2.0, 2.76, 4.07, 5.4].forEach((m, i) => tone(f * m, at, dur * (1 - i * 0.15), { v: v / (1 + i * 1.6), type: 'sine', delay: i === 0 })); }
+function noiseHit(at, dur, freq, q, v, type = 'bandpass') {
+  if (!AU.ok) return; const c = AU.ctx, t = c.currentTime + (at || 0);
+  const s = c.createBufferSource(); s.buffer = AU.noise; const f = c.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+  const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  s.connect(f); f.connect(g); g.connect(AU.master); s.start(t, Math.random() * 1.5); s.stop(t + dur + 0.05);
+}
+const SFX = {
+  start() { [72, 76, 79, 84].forEach((n, i) => bell(NOTE(n), i * 0.09, 0.07, 1.6)); },
+  success(stage) {
+    const sets = [[72, 76, 79], [72, 76, 79, 81], [72, 76, 79, 84]];
+    const ns = sets[clamp(stage, 0, 2)];
+    ns.forEach((n, i) => { bell(NOTE(n), i * (stage === 0 ? 0.05 : 0.08), 0.08, 1.4); if (stage === 2) tone(NOTE(n + 12), i * 0.08, 1.2, { v: 0.025 }); });
+    tone(NOTE(60), 0, 1.6, { v: 0.05, type: 'triangle' });
+  },
+  sparkle() { tone(NOTE(91 + Math.floor(Math.random() * 3) * 2), 0, 0.5, { v: 0.03 }); },
+  hoof(v) { noiseHit(0, 0.05, 2600 + Math.random() * 800, 2.5, 0.05 * v); },
+  thump(v) { if (!AU.ok) return; tone(48 + Math.random() * 8, 0, 0.28, { v: 0.12 * v, glide: 0.6, rev: false }); noiseHit(0, 0.12, 300, 1, 0.025 * v, 'lowpass'); },
+  step(v) { tone(70 + Math.random() * 10, 0, 0.2, { v: 0.06 * v, glide: 0.7, rev: false }); noiseHit(0, 0.07, 900, 1.2, 0.02 * v); },
+  rustle() { noiseHit(0, 0.25, 3800, 0.8, 0.012); },
+  chirp() { if (!AU.ok) return; const base = 2600 + Math.random() * 1400, n = 2 + Math.floor(Math.random() * 3); for (let i = 0; i < n; i++) tone(base * (1 + Math.random() * 0.2), i * 0.09, 0.07, { v: 0.018, glide: 1.25 + Math.random() * 0.3, rev: true }); },
+  flap() { noiseHit(0, 0.09, 700, 0.7, 0.02); },
+  climaxSwell() { [48, 55, 60, 64, 67].forEach((n, i) => tone(NOTE(n), i * 0.25, 5.5, { v: 0.04, att: 2.5, type: 'triangle' })); },
+  climax() {
+    [36, 48, 55, 60, 64, 67, 72, 76, 79, 84].forEach((n, i) => tone(NOTE(n), i * 0.03, 7.5 - i * 0.2, { v: 0.05 - i * 0.003, att: 0.15, type: i < 3 ? 'triangle' : 'sine' }));
+    [72, 76, 79, 84, 88].forEach((n, i) => bell(NOTE(n), 0.2 + i * 0.22, 0.09, 4.5));
+    [84, 88, 91, 96].forEach((n, i) => bell(NOTE(n), 2.2 + i * 0.35, 0.05, 3.5));
+  },
+};
+let stepBudget = 0, chirpT = 3;
+
+// ---------------------------------------------------------------- game state
+const G = {
+  state: 'INIT', stage: 0, call: 0, joined: [], sg: 4, speed: 0, stopS: 0, t: 0, st: 0, idleT: 0, readyT: 0,
+  palT: 0, palTT: 0, target: null, joining: [], camSide: 1, camSideS: 1, climaxT: 0, ringR: 0, ringRT: 0, ringC: new V3(), ringDir: new V3(),
+  bloomT: 0.28, reset: 0, loops: 0, climaxReached: false, afterOrb: false, orbKind: '', log: [],
+};
+const colL = [], colR = [];
+function unitFor(i) {
+  const k = CALLS[i].kind; let n = 0;
+  for (let j = 0; j < i; j++) if (CALLS[j].kind === k) n++;
+  return k === 'zebra' ? ZEBRAS[n] : k === 'elephant' ? ELEPHANTS[n] : FLOCKS[n];
+}
+function spawnTarget(i) {
+  if (i >= 18) return;
+  const cl = CALLS[i], u = unitFor(i); pathAt(cl.s);
+  const lat = cl.side * (innerWidth < innerHeight ? 6.2 : 8);
+  const x = PP.x + PP.nx * lat, z = PP.z + PP.nz * lat;
+  pathAt(cl.s - 12); const fy = Math.atan2(PP.x - x, PP.z - z);
+  if (cl.kind === 'birds') {
+    u.state = 'ground'; u.cx = x; u.cz = z;
+    u.birds.forEach((b, j) => { const a = j / u.birds.length * 6.28 + 0.4, r = 0.6 + (j % 2) * 0.7; b.state = 'ground'; b.pos.set(x + Math.cos(a) * r, H(x + Math.cos(a) * r, z + Math.sin(a) * r), z + Math.sin(a) * r); b.vel.set(0, 0, 0); b.yaw = fy + (Math.random() - 0.5) * 2; b.fold = 0; b.flapAmt = 0; b.pitch = 0; b.roll = 0; });
+  } else {
+    u.state = 'wait'; u.root.visible = true; u.pos.set(x, 0, z); u.vel.set(0, 0, 0); u.yaw = fy + (Math.random() - 0.5) * 0.8; u.faceYaw = u.yaw; u.speed = 0; u.side = cl.side; u.lookAt = null;
+  }
+  cl.unit = u;
+}
+function resetWorld() {
+  G.stage = 0; G.call = 0; G.joined.length = 0; G.sg = 4; G.speed = 0; G.palT = G.palTT = 0; G.climaxT = 0; G.ringR = G.ringRT = 0; G.joining.length = 0;
+  G.afterOrb = false; G.ringOpened = false; G.target = null; colL.length = 0; colR.length = 0; G.bloomT = 0.28;
+  for (const a of [...ZEBRAS, ...ELEPHANTS]) { a.state = 'hidden'; a.root.visible = false; a.trunkRaiseT = 0; a.neckPT = a.S.neckRest; }
+  for (const f of FLOCKS) { f.state = 'hidden'; f.birds.forEach(b => { b.state = 'hidden'; }); }
+  ringGroup.visible = false; SKY.uRays.value = 0; SKY.uRingGlow.value = 0; SKY.uGoldSky.value = 0; SH.uGold.value = 0; TU.uSweep.value.set(0, 0, 0, 0);
+  GLOW.n = 0; DUST.n = 0;
+  pathAt(G.sg); giraffe.pos.set(PP.x, 0, PP.z); giraffe.yaw = Math.atan2(PP.tx, PP.tz); giraffe.root.visible = true; giraffe.state = 'lead'; giraffe.neckPT = 0;
+  spawnTarget(0);
+  setState('TITLE_IDLE');
+  showOrb(titleOrbPos(), 'title');
+}
+function setState(s) { G.state = s; G.st = 0; G.log.push([+(G.t.toFixed(1)), s, G.call]); if (AUTOTEST) console.log('[d03] ' + s + ' call=' + G.call + ' t=' + G.t.toFixed(1)); }
+function titleOrbPos(out = new V3()) { pathAt(G.sg); return out.set(giraffe.pos.x - PP.tx * 0.7 - PP.nx * 0.5, H(giraffe.pos.x, giraffe.pos.z) + 3.75, giraffe.pos.z - PP.tz * 0.7 - PP.nz * 0.5); }
+function showOrb(p, kind) { orb.base.copy(p); orb.g.position.copy(p); orb.alphaT = 1; orb.alpha = 0; orb.g.visible = true; G.orbKind = kind; G.idleT = 0; }
+function hideOrb() { orb.alphaT = 0; G.orbKind = ''; }
+function targetOrbPos(cl, out) {
+  if (cl.kind === 'birds') { const f = cl.unit; return out.set(f.cx, H(f.cx, f.cz) + 1.45, f.cz); }
+  const a = cl.unit; return out.set(a.pos.x, H(a.pos.x, a.pos.z) + a.S.orbH * a.sc, a.pos.z);
+}
+const stageSpeed = () => [1.5, 1.78, 2.05][clamp(G.stage, 0, 2)];
+
+// burst of light at a point
+function burst(p, n, spd, size) {
+  for (let i = 0; i < n; i++) {
+    const th = Math.random() * 6.28, ph = Math.acos(2 * Math.random() - 1), v = spd * (0.4 + Math.random() * 0.8);
+    spawn(GLOW, { x: p.x, y: p.y, z: p.z, vx: Math.sin(ph) * Math.cos(th) * v, vy: Math.cos(ph) * v + 0.6, vz: Math.sin(ph) * Math.sin(th) * v, life: 1.2 + Math.random() * 1.4, size: size * (0.6 + Math.random() * 0.8), drag: 1.6, grav: -0.15 });
+  }
+}
+function pollenRise(x, z, n, spread, high) {
+  const y = H(x, z);
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * 6.28, r = Math.random() * spread;
+    spawn(GLOW, { x: x + Math.cos(a) * r, y: y + 0.2, z: z + Math.sin(a) * r, vx: Math.cos(a) * 0.4, vy: 0.8 + Math.random() * (high ? 3.5 : 1.4), vz: Math.sin(a) * 0.4, life: 2 + Math.random() * (high ? 3 : 1.5), size: 0.09 + Math.random() * 0.1, drag: 0.35, grav: -0.08 });
+  }
+}
+function dustPuff(x, z, n, s) {
+  const y = H(x, z);
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * 6.28;
+    spawn(DUST, { x: x + Math.cos(a) * 0.3, y: y + 0.15, z: z + Math.sin(a) * 0.3, vx: Math.cos(a) * 0.8, vy: 0.35 + Math.random() * 0.4, vz: Math.sin(a) * 0.8, life: 1.4 + Math.random(), size: 0.5 * s, c: new THREE.Color(0.78, 0.66, 0.5), k: 1, a: 0.75, drag: 1.4, grav: 0.02 });
+  }
+}
+
+// ---------------------------------------------------------------- input
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let activePointer = null, activeTimer = 0;
+function screenOf(p, out = new V3()) { out.copy(p).project(camera); return { x: (out.x * 0.5 + 0.5) * innerWidth, y: (-out.y * 0.5 + 0.5) * innerHeight, z: out.z }; }
+function orbHit(px, py) {
+  if (!orb.g.visible || orb.alpha < 0.25) return false;
+  const s = screenOf(orb.base); if (s.z > 1) return false;
+  const d = Math.hypot(px - s.x, py - s.y);
+  const r = Math.max(62, (orb.halo.scale.x * 0.6) / camera.position.distanceTo(orb.base) / Math.tan(camera.fov * Math.PI / 360) * innerHeight * 0.5 * 1.7);
+  return d < r;
+}
+function rayHits(obj) { const hit = ray.intersectObject(obj, true); return hit.length > 0; }
+function handleTap(px, py) {
+  audioInit();
+  ndc.set(px / innerWidth * 2 - 1, -(py / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
+  if (G.state === 'TITLE_IDLE' && G.orbKind === 'title' && (orbHit(px, py) || rayHits(giraffe.root))) { startJourney(); return true; }
+  if (G.state === 'TARGET_READY' && G.orbKind === 'target') {
+    const cl = CALLS[G.call]; let hit = orbHit(px, py);
+    if (!hit) {
+      if (cl.kind === 'birds') { const c = _v0.set(cl.unit.cx, H(cl.unit.cx, cl.unit.cz) + 0.6, cl.unit.cz); hit = ray.ray.distanceSqToPoint(c) < 2.4 * 2.4; }
+      else hit = rayHits(cl.unit.root);
+    }
+    if (hit) { callSuccess(); return true; }
+  }
+  if (G.state === 'AFTERGLOW' && G.orbKind === 'again' && (orbHit(px, py) || rayHits(giraffe.root))) { beginReset(); return true; }
+  missTap(); return false;
+}
+function missTap() {
+  G.idleT = Math.min(G.idleT, 0.5);
+  // tiny sparkle where the finger landed (ground march)
+  const o = ray.ray.origin, d = ray.ray.direction;
+  for (let t = 1; t < 160; t += 1.5) { const x = o.x + d.x * t, y = o.y + d.y * t, z = o.z + d.z * t; if (y < H(x, z)) { for (let i = 0; i < 6; i++) spawn(GLOW, { x, y: y + 0.3, z, vx: (Math.random() - 0.5) * 1.2, vy: 0.6 + Math.random(), vz: (Math.random() - 0.5) * 1.2, life: 1.1, size: 0.12, drag: 1.5 }); SFX.sparkle(); break; } }
+}
+const cv = renderer.domElement;
+cv.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (activePointer !== null && performance.now() - activeTimer < 1500) return;
+  activePointer = e.pointerId; activeTimer = performance.now();
+  try { handleTap(e.clientX, e.clientY); } catch (err) { reportError(err); }
+}, { passive: false });
+const endP = e => { if (e.pointerId === activePointer) activePointer = null; };
+cv.addEventListener('pointerup', endP); cv.addEventListener('pointercancel', endP); cv.addEventListener('lostpointercapture', endP);
+for (const ev of ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend', 'dblclick', 'contextmenu', 'selectstart'])
+  document.addEventListener(ev, e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+
+// ---------------------------------------------------------------- flow actions
+function startJourney() {
+  hideOrb(); burst(orb.base, 30, 2.2, 0.14); SFX.start();
+  setState('TRAVEL'); G.stopS = CALLS[0].s - 12;
+  giraffe.neckPT = -0.1;
+}
+function callSuccess() {
+  const cl = CALLS[G.call], u = cl.unit;
+  hideOrb(); burst(orb.base, G.stage === 0 ? 34 : 46, 2.6 + G.stage * 0.4, 0.15);
+  SFX.success(G.stage);
+  if (cl.kind === 'birds') {
+    u.state = 'fly'; u.birds.forEach((b, j) => { b.state = 'takeoff'; b.t = -j * 0.12; }); wave(u.cx, u.cz, 6, 3.5, 0.9);
+    pollenRise(u.cx, u.cz, 16, 2, G.stage >= 1);
+  } else {
+    u.state = 'react'; u.reactT = 0; u.lookAt = giraffe.pos; wave(u.pos.x, u.pos.z, 6, 3.5, 0.9);
+  }
+  G.joining.push({ cl, t: 0, done: false });
+  G.joined.push(cl);
+  G.palTT = G.stage + Math.min(6, (G.call % 6) + 1) / 6 * 0.6;
+  SKY.uPulse.value = 1;
+  if (G.stage >= 2) { const p = orb.base; for (let k = 0; k < 2; k++) beam(p.x + (k - 0.5) * 2, p.y, p.z, (k - 0.5) * 0.3, 1, 0.1, 55, 2.2, 3.2, 0.35); }
+  G.call++;
+  spawnTarget(G.call);
+  setState('ANIMAL_JOIN');
+}
+function beginReset() {
+  hideOrb(); burst(orb.base, 30, 2, 0.14); SFX.start();
+  G.reset = 0.0001;
+}
+
+// ---------------------------------------------------------------- camera
+const camPos = new V3(0, 10, 200), lookP = new V3(), Cdes = new V3(), F = new V3(), Cb = new V3(), fitPts = [];
+let camInit = false;
+const tmp = [new V3(), new V3(), new V3(), new V3(), new V3(), new V3()];
+function headWorld(a, out) { return a.head.getWorldPosition(out); }
+function fitD(F, u, pts, D0, Dmax, m) {
+  const aspect = camera.aspect, tv = Math.tan(camera.fov * Math.PI / 360), th = tv * aspect;
+  const kV = tv * (1 - 2 * m), kH = th * (1 - 2 * m);
+  const r = _v1.crossVectors(u, _v2.set(0, 1, 0)).normalize(), up = _v0.crossVectors(r, u);
+  let D = D0;
+  for (const P of pts) {
+    const dx = P.x - F.x, dy = P.y - F.y, dz = P.z - F.z;
+    const x = dx * r.x + dy * r.y + dz * r.z, y = dx * up.x + dy * up.y + dz * up.z, z = dx * u.x + dy * u.y + dz * u.z;
+    const need = Math.max(Math.abs(x) / kH, Math.abs(y) / kV) - z;
+    if (need > D) D = need;
+  }
+  return Math.min(D, Dmax);
+}
+function cameraUpdate(dt) {
+  const portrait = camera.aspect < 1;
+  let back = 11, height = 8.2, lat = 4, Dmax = 42, tauP = 0.75, tauL = 0.55;
+  fitPts.length = 0;
+  const gy = H(giraffe.pos.x, giraffe.pos.z);
+  pathAt(G.sg); const P = { ...PP };
+  const head = headWorld(giraffe, tmp[0]);
+  const st = G.state;
+  if (st === 'TITLE_IDLE' || (st === 'INIT')) {
+    F.copy(orb.base); back = 7.5; height = 4.6; lat = 3.4; G.camSide = 1;
+    fitPts.push(head, tmp[1].set(giraffe.pos.x, gy + 0.2, giraffe.pos.z), tmp[2].set(giraffe.pos.x - P.tx * 1.3, gy + 2.4, giraffe.pos.z - P.tz * 1.3));
+  } else if (st === 'TARGET_READY') {
+    F.copy(orb.base); G.camSide = -CALLS[G.call].side;
+    const cl = CALLS[G.call]; fitPts.push(head, orb.base, cl.kind === 'birds' ? tmp[1].set(cl.unit.cx, H(cl.unit.cx, cl.unit.cz), cl.unit.cz) : tmp[1].copy(cl.unit.pos).setY(H(cl.unit.pos.x, cl.unit.pos.z)));
+  } else if (st === 'TRAVEL' || st === 'ANIMAL_JOIN' || st === 'STAGE_TRANSITION') {
+    const next = G.call < 18 ? CALLS[G.call] : null;
+    const aheadP = pathAt(G.sg + 15, tmp[3]);
+    F.set(aheadP.x + aheadP.nx * (next ? next.side * 2.5 : 0), gy + 2.6, aheadP.z + aheadP.nz * (next ? next.side * 2.5 : 0));
+    if (next) G.camSide = -next.side;
+    fitPts.push(head);
+    if (st === 'TRAVEL' && next && next.unit) {
+      const remain = G.stopS - G.sg; const k = 1 - smooth(1.0, 9, remain);
+      const op = targetOrbPos(next, tmp[4]); F.lerp(op, k);
+      if (k > 0.3) fitPts.push(op);
+    }
+    if (st === 'ANIMAL_JOIN') {
+      const j = G.joining[G.joining.length - 1];
+      if (j && j.cl.kind !== 'birds' && j.t < 4.5) { const a = j.cl.unit; const ap = tmp[5].copy(a.pos).setY(H(a.pos.x, a.pos.z) + 2.4 * a.sc); F.lerp(ap, 0.35); fitPts.push(ap); }
+      else if (j && j.cl.kind === 'birds' && j.t < 4) { F.y += 2.5; }
+    }
+    if (st === 'STAGE_TRANSITION') {
+      const k = smooth(0, 1.5, G.st) * (1 - smooth(4.2, 5.6, G.st));
+      back = lerp(11, 17, k); height = lerp(8.2, 12.5, k); Dmax = lerp(42, 60, k);
+      if (k > 0.2) for (const c of G.joined) if (c.kind !== 'birds') fitPts.push(c.unit.top);
+      F.lerp(tmp[4].set(giraffe.pos.x + P.tx * 5, gy + 2.4, giraffe.pos.z + P.tz * 5), k * 0.7);
+    }
+    if (G.call >= 18 && st === 'TRAVEL') { F.y += smooth(SEND - 30, SEND, G.sg) * 6; }
+  } else if (st === 'CLIMAX' || st === 'AFTERGLOW') {
+    pathAt(SEND); const fx = PP.tx, fz = PP.tz;
+    if (G.afterOrb) {
+      F.copy(orb.base); back = 10; height = 3.4; lat = 3.2; G.camSide = 1;
+      fitPts.push(head, orb.base);
+      tauP = 1.3; tauL = 1.0;
+    } else {
+      // dedicated climax framing: ring centre straight ahead and up
+      const D = 170;
+      Cb.set(giraffe.pos.x - fx * 20 + PP.nx * 2.5, gy + 7.5, giraffe.pos.z - fz * 20 + PP.nz * 2.5);
+      const el = 8 * Math.PI / 180;
+      const u = _v2.set(fx * Math.cos(el), Math.sin(el), fz * Math.cos(el)).normalize();
+      const uu = tmp[3].copy(u);
+      F.copy(Cb).addScaledVector(uu, D);
+      fitPts.push(head);
+      let Dd = fitD(F, uu, fitPts, D, D + 40, 0.08);
+      Cdes.copy(F).addScaledVector(uu, -Dd);
+      G.ringC.copy(F); G.ringDir.copy(uu);
+      tauP = 1.6; tauL = 1.3;
+      applyCam(dt, tauP, tauL); return;
+    }
+  }
+  G.camSideS += (G.camSide - G.camSideS) * damp(dt, 1.6);
+  const side = G.camSideS;
+  Cb.set(giraffe.pos.x - P.tx * back + P.nx * side * lat, gy + height, giraffe.pos.z - P.tz * back + P.nz * side * lat);
+  const u = tmp[3].copy(F).sub(Cb); const D0 = u.length(); u.normalize();
+  const D = fitD(F, u, fitPts, D0, Math.max(D0, Dmax), portrait ? 0.09 : 0.08);
+  Cdes.copy(F).addScaledVector(u, -D);
+  const gh = H(Cdes.x, Cdes.z) + 2; if (Cdes.y < gh) Cdes.y = gh;
+  applyCam(dt, tauP, tauL);
+}
+function applyCam(dt, tauP, tauL) {
+  if (!camInit) { camPos.copy(Cdes); lookP.copy(F); camInit = true; }
+  camPos.lerp(Cdes, damp(dt, tauP)); lookP.lerp(F, damp(dt, tauL));
+  camera.position.copy(camPos); camera.lookAt(lookP);
+}
+function camSettled() { return camPos.distanceTo(Cdes) < 0.7 && lookP.distanceTo(F) < 0.12 * Math.max(1, camPos.distanceTo(F) / 20); }
+
+// ---------------------------------------------------------------- animal update
+const _fw = new V3();
+function rig(a, dt, t) {
+  const S = a.S;
+  const sp = a.speed;
+  const ampT = sp < 0.06 ? 0 : Math.min(S.maxA, S.a0 + sp * S.aK);
+  a.amp += (ampT - a.amp) * Math.min(1, dt * 4);
+  const running = sp > S.runV;
+  const cyc = 4 * S.legLen * a.sc * Math.max(0.06, Math.sin(Math.max(a.amp, 0.05))) * (running ? S.runMul : 1);
+  a.phase += sp * dt / cyc;
+  const gait = running ? S.run : S.walk;
+  for (let i = 0; i < 4; i++) {
+    const L = a.legs[i], ph = (a.phase + gait[i]) * Math.PI * 2;
+    L.hip.rotation.x = -a.amp * Math.sin(ph);
+    L.knee.rotation.x = S.knee * a.amp * Math.pow(Math.max(0, Math.cos(ph)), 1.5) * (L.front ? 1 : 0.8);
+    const fr = Math.floor(a.phase + gait[i] + 0.25);
+    if (fr !== a.lastLegs[i]) { a.lastLegs[i] = fr; if (a.amp > 0.08) footstep(a, L); }
+  }
+  a.body.position.y = -S.bob * a.amp * (0.5 + 0.5 * Math.cos(a.phase * Math.PI * 4));
+  a.body.rotation.z = Math.sin(a.phase * Math.PI * 2) * a.amp * 0.05;
+  // neck/head
+  a.neckP += (a.neckPT - a.neckP) * damp(dt, 0.6);
+  a.headP += (a.headPT - a.headP) * damp(dt, 0.5);
+  a.neckY += (a.neckYT - a.neckY) * damp(dt, 0.7);
+  const nb = a.kind === 'giraffe' ? 0.07 * a.amp / 0.3 * Math.sin(a.phase * Math.PI * 4 + 0.6) : 0.04 * a.amp * Math.sin(a.phase * Math.PI * 4);
+  a.neck.rotation.x = a.neckP + nb + Math.sin(t * 0.5 + a.seed) * 0.02;
+  a.neck.rotation.y = a.neckY;
+  a.head.rotation.x = a.headP - nb * 0.7;
+  // ears, tail, blink
+  a.ear += (a.earT - a.ear) * damp(dt, 0.25);
+  const tw = Math.max(0, Math.sin(t * 1.3 + a.seed * 3)) ** 8;
+  for (let s = 0; s < 2; s++) {
+    const e = a.ears[s];
+    if (a.kind === 'elephant') { const fl = 0.18 + 0.12 * Math.sin(t * (1.1 + a.seed * 0.1) + s) + a.ear * 0.6; e.rotation.y = -fl; e.rotation.x = 0.05; }
+    else { e.rotation.z = (a.kind === 'giraffe' ? -0.25 : 0.25) + tw * 0.3 * (s ? 1 : -0.6) - a.ear * 0.25; e.rotation.x = -0.2 + a.ear * 0.4; }
+  }
+  a.tail.rotation.z = Math.sin(t * 1.4 + a.seed) * 0.25; a.tail.rotation.x = 0.12 + 0.08 * Math.sin(t * 0.9 + a.seed);
+  a.blinkT -= dt; if (a.blinkT < 0) { a.blink = 0.16; a.blinkT = 2.5 + Math.random() * 4; }
+  a.blink = Math.max(0, a.blink - dt); a.eyes.scale.y = a.blink > 0 ? 0.15 : 1;
+  if (a.trunk.length) {
+    a.trunkRaise += (a.trunkRaiseT - a.trunkRaise) * damp(dt, 0.6);
+    for (let i = 0; i < a.trunk.length; i++) a.trunk[i].rotation.x = 0.07 + i * 0.02 - a.trunkRaise * 0.38 + Math.sin(t * 0.8 + a.seed + i * 0.55) * 0.05 * (1 + a.amp * 3);
+  }
+}
+function footstep(a, L) {
+  if (!AU.ok || stepBudget <= 0) return;
+  const d = camera.position.distanceTo(a.pos); if (d > 40) return;
+  stepBudget--; const v = clamp(1.4 - d / 30, 0.15, 1);
+  if (a.kind === 'zebra') SFX.hoof(v); else if (a.kind === 'elephant') SFX.thump(v); else SFX.step(v);
+  if (Math.random() < 0.15) SFX.rustle();
+}
+function place(a, dt) {
+  const y = H(a.pos.x, a.pos.z);
+  a.root.position.set(a.pos.x, y, a.pos.z); a.root.rotation.y = a.yaw; a.top.set(a.pos.x, y + 2.2 * a.sc, a.pos.z);
+  const L = a.S.len * a.sc * 0.5, fx = Math.sin(a.yaw), fz = Math.cos(a.yaw);
+  const hf = H(a.pos.x + fx * L, a.pos.z + fz * L), hb = H(a.pos.x - fx * L, a.pos.z - fz * L);
+  a.root.rotation.x = -Math.atan2(hf - hb, 2 * L) * 0.9;
+  a.root.rotation.order = 'YXZ';
+}
+function steer(a, tx, tz, vmax, dt, arrive) {
+  _v0.set(tx - a.pos.x, 0, tz - a.pos.z); const d = _v0.length();
+  const vs = Math.min(vmax, d * (arrive || 1.1));
+  if (d > 1e-3) _v0.multiplyScalar(vs / d); else _v0.set(0, 0, 0);
+  // separation
+  for (const b of GROUND) {
+    if (b === a || !b.root.visible) continue;
+    const dx = a.pos.x - b.pos.x, dz = a.pos.z - b.pos.z, dd = Math.hypot(dx, dz), rr2 = (a.S.rad * a.sc + b.S.rad * b.sc) * 0.9;
+    if (dd < rr2 && dd > 1e-3) { const k = (rr2 - dd) / rr2 * 2.5; _v0.x += dx / dd * k; _v0.z += dz / dd * k; }
+  }
+  a.vel.lerp(_v0, Math.min(1, dt * 2.2));
+  a.pos.addScaledVector(a.vel, dt);
+  a.speed = a.vel.length();
+  return d;
+}
+function slotTarget(a, out) {
+  const col = a.side < 0 ? colL : colR; const i = Math.max(0, col.indexOf(a));
+  const portrait = camera.aspect < 1;
+  if (G.state === 'CLIMAX' || G.state === 'AFTERGLOW') {
+    pathAt(SEND); const back = 1.5 + i * 3.4, lat = (portrait ? 4.2 : 5.2) + i * (portrait ? 0.9 : 1.5);
+    return out.set(giraffe.pos.x - PP.tx * back + PP.nx * a.side * lat, 0, giraffe.pos.z - PP.tz * back + PP.nz * a.side * lat);
+  }
+  const back = 1.5 + i * 5.2, lat = (portrait ? 4.6 : 6.0) + i * 0.35;
+  pathAt(G.sg - back); return out.set(PP.x + PP.nx * a.side * lat, 0, PP.z + PP.nz * a.side * lat);
+}
+function updateGround(dt, t) {
+  // giraffe on the path
+  const g = giraffe;
+  let vmax = stageSpeed();
+  if (G.state === 'TITLE_IDLE' || G.state === 'TARGET_READY' || G.state === 'CLIMAX' || G.state === 'AFTERGLOW' || G.state === 'INIT') vmax = 0;
+  const joinHold = G.state === 'ANIMAL_JOIN' && G.st < 1.0;
+  if (joinHold) vmax = 0;
+  const remain = G.stopS - G.sg;
+  const vDes = Math.max(0, Math.min(vmax, Math.sqrt(Math.max(0, remain) * 2 * 0.45)));
+  G.speed += (vDes - G.speed) * Math.min(1, dt * 1.4);
+  if (remain <= 0.02 && G.speed < 0.05) G.speed = 0;
+  G.sg = Math.min(G.sg + G.speed * dt, Math.max(G.sg, G.stopS));
+  pathAt(G.sg); g.pos.set(PP.x, 0, PP.z);
+  g.yaw += angDiff(g.yaw, Math.atan2(PP.tx, PP.tz)) * damp(dt, 0.5);
+  g.speed = G.speed;
+  // look
+  if (G.state === 'TARGET_READY') { const cl = CALLS[G.call]; const p = cl.kind === 'birds' ? _v1.set(cl.unit.cx, 0, cl.unit.cz) : cl.unit.pos; const a = angDiff(g.yaw, Math.atan2(p.x - g.pos.x, p.z - g.pos.z)); g.neckYT = clamp(a, -0.5, 0.5) * 0.5; }
+  else g.neckYT = Math.sin(t * 0.21) * 0.12;
+  if (G.state === 'TITLE_IDLE') { g.neckPT = 0.03 + Math.sin(t * 0.4) * 0.06; g.headPT = 0.3 + Math.sin(t * 0.33) * 0.08; }
+  else if (G.state === 'AFTERGLOW' || (G.state === 'CLIMAX' && G.climaxT > 9)) { g.neckPT = -0.32; g.headPT = -0.05; }
+  else { g.neckPT = -0.05; g.headPT = 0.3; }
+  place(g, dt); rig(g, dt, t);
+  // others
+  for (const a of [...ZEBRAS, ...ELEPHANTS]) {
+    if (a.state === 'hidden') continue;
+    if (a.state === 'wait') {
+      a.vel.set(0, 0, 0); a.speed = 0;
+      const dG = Math.hypot(a.pos.x - g.pos.x, a.pos.z - g.pos.z);
+      const isT = G.state === 'TARGET_READY' && CALLS[G.call].unit === a;
+      const notice = dT => dT < 30;
+      if (notice(dG)) {
+        const yy = Math.atan2(g.pos.x - a.pos.x, g.pos.z - a.pos.z); a.neckYT = clamp(angDiff(a.yaw, yy), -0.7, 0.7) * 0.7;
+        a.neckPT = a.S.neckRest - (isT && G.idleT > 5 ? 0.25 : 0.08); a.headPT = a.S.headRest; a.earT = 0.6;
+        if (a.kind === 'elephant') a.trunkRaiseT = isT && G.idleT > 5 ? 0.5 : 0.1;
+      } else {
+        a.grazeT -= dt; if (a.grazeT < 0) a.grazeT = 5 + Math.random() * 5;
+        const grazing = a.kind === 'zebra' && a.grazeT > 2.5;
+        a.neckPT = grazing ? 1.25 : a.S.neckRest; a.headPT = grazing ? 0.8 : a.S.headRest; a.neckYT = 0; a.earT = 0;
+      }
+    } else if (a.state === 'react') {
+      a.reactT += dt; a.vel.set(0, 0, 0); a.speed = 0;
+      a.neckPT = a.S.neckRest - 0.3; a.earT = 1; if (a.kind === 'elephant') a.trunkRaiseT = 1.2;
+      if (a.reactT > (a.kind === 'elephant' ? 0.9 : 0.6)) { a.state = 'run'; a.joinT = 0; (a.side < 0 ? colL : colR).unshift(a); }
+    } else if (a.state === 'run' || a.state === 'follow') {
+      const tg = slotTarget(a, _v2);
+      const run = a.state === 'run';
+      const vm = run ? (a.kind === 'zebra' ? 5.2 : 3.0) : (a.kind === 'zebra' ? 2.8 : 2.4);
+      const d = steer(a, tg.x, tg.z, vm, dt, run ? 0.9 : 1.2);
+      a.neckYT *= 0.95; a.neckPT = a.S.neckRest - (run ? 0.05 : 0); a.earT = run ? 0.3 : 0;
+      if (a.kind === 'elephant') a.trunkRaiseT = run ? 0.5 : 0;
+      if (run) { a.joinT += dt; if (Math.random() < dt * a.speed * 1.6) dustPuff(a.pos.x, a.pos.z, 1, a.kind === 'elephant' ? 1.4 : 0.8); if (Math.random() < dt * 10) pollenRise(a.pos.x, a.pos.z, 1, 0.8, G.stage > 0); }
+      if (run && (d < 2.6 || a.joinT > 6)) {
+        a.state = 'follow'; dustPuff(a.pos.x, a.pos.z, 6, a.kind === 'elephant' ? 1.5 : 1);
+        pollenRise(a.pos.x, a.pos.z, 26, 2.5, true); wave(a.pos.x, a.pos.z, G.stage >= 1 ? 9 : 5, 3.2, G.stage >= 1 ? 1.0 : 0.7);
+        if (G.stage >= 2) beam(a.pos.x, H(a.pos.x, a.pos.z), a.pos.z, 0.1, 1, 0, 60, 2.6, 3.5, 0.32);
+        const j = G.joining.find(j => j.cl.unit === a); if (j) j.done = true;
+      }
+      if (a.speed > 0.2) a.faceYaw = Math.atan2(a.vel.x, a.vel.z);
+      else { pathAt(G.sg); a.faceYaw = Math.atan2(PP.tx, PP.tz); }
+      if (G.state === 'AFTERGLOW' || (G.state === 'CLIMAX' && G.climaxT > 9)) { if (a.kind === 'elephant') a.trunkRaiseT = 1.5 + 0.3 * Math.sin(t + a.seed); a.neckPT = a.S.neckRest - 0.2; }
+    }
+    if (a.speed > 0.2) a.yaw += clamp(angDiff(a.yaw, Math.atan2(a.vel.x, a.vel.z)), -a.S.turn * dt * 2, a.S.turn * dt * 2);
+    else a.yaw += clamp(angDiff(a.yaw, a.faceYaw), -a.S.turn * dt, a.S.turn * dt);
+    place(a, dt); rig(a, dt, t);
+  }
+  // blob shadows
+  let bi = 0;
+  for (const a of GROUND) {
+    if (!a.root.visible) { blobs.setMatrixAt(bi++, ZERO_M); continue; }
+    const s = a.S.len * a.sc * 1.25; _v0.set(a.pos.x, H(a.pos.x, a.pos.z) + 0.07, a.pos.z); _q0.setFromAxisAngle(_v1.set(0, 1, 0), a.yaw); _s1.set(s * 0.6, 1, s);
+    _m0.compose(_v0, _q0, _s1); blobs.setMatrixAt(bi++, _m0);
+  }
+  blobs.instanceMatrix.needsUpdate = true;
+}
+function updateBirds(dt, t) {
+  pathAt(G.sg); const P = PP; const climax = G.state === 'CLIMAX' || G.state === 'AFTERGLOW';
+  const cx = giraffe.pos.x + P.tx * (climax ? -2 : 3), cz = giraffe.pos.z + P.tz * (climax ? -2 : 3), cy = H(giraffe.pos.x, giraffe.pos.z) + (climax ? 13 : 9.5);
+  let flying = 0, ground = 0;
+  for (const b of BIRDS) {
+    if (b.state === 'hidden') { writeBird(b); continue; }
+    const oldYaw = b.yaw;
+    if (b.state === 'ground') {
+      ground++;
+      b.peck -= dt; if (b.peck < 0) b.peck = 1 + Math.random() * 3;
+      b.pitch = b.peck < 0.35 ? 0.6 * Math.sin(b.peck / 0.35 * Math.PI) : 0;
+      if (Math.random() < dt * 0.15) b.yaw += (Math.random() - 0.5) * 1.5;
+      b.fold = Math.max(0, b.fold - dt * 2); b.flapAmt = 0; b.roll = 0;
+      b.pos.y = H(b.pos.x, b.pos.z) + 0.29 * b.sc * 1.15;
+      const isT = G.state === 'TARGET_READY' && CALLS[G.call].unit === b.fl;
+      if (isT && G.idleT > 5) { b.pitch = -0.25; b.fold = 0.25 + 0.25 * Math.sin(t * 3 + b.i); }
+    } else if (b.state === 'takeoff') {
+      b.t += dt; b.fold = Math.min(1, b.fold + dt * 3);
+      if (b.t > 0) { b.flapAmt = 1; b.flap += dt * 26; b.vel.y = 3.2; b.vel.x += (cx - b.pos.x) * dt * 0.08; b.vel.z += (cz - b.pos.z) * dt * 0.08; b.pos.addScaledVector(b.vel, dt); b.pitch = -0.5; if (Math.random() < dt * 6) SFX.flap(); }
+      if (b.t > 1.4) b.state = 'fly';
+      flying++;
+    } else {
+      flying++;
+      const R = climax ? b.orR * 2.2 + 6 : b.orR * (camera.aspect < 1 ? 0.75 : 1.1), w = b.orW * (climax ? 0.6 : 1), a = t * w + b.orP;
+      const tx = cx + Math.cos(a) * R, tz = cz + Math.sin(a) * R, ty = cy + b.orH + Math.sin(t * 0.5 + b.orP) * 1.2;
+      _v0.set((tx - b.pos.x) * 1.1, (ty - b.pos.y) * 1.1, (tz - b.pos.z) * 1.1);
+      _v0.x += -Math.sin(a) * R * w; _v0.z += Math.cos(a) * R * w;
+      const mv = 11; if (_v0.length() > mv) _v0.setLength(mv);
+      b.vel.lerp(_v0, Math.min(1, dt * 1.5)); b.pos.addScaledVector(b.vel, dt);
+      const hs = Math.hypot(b.vel.x, b.vel.z);
+      if (hs > 0.3) b.yaw += angDiff(b.yaw, Math.atan2(b.vel.x, b.vel.z)) * Math.min(1, dt * 4);
+      b.pitch = clamp(-Math.atan2(b.vel.y, hs) * 0.6, -0.5, 0.5);
+      const yr = angDiff(oldYaw, b.yaw) / Math.max(dt, 1e-3); b.roll += (clamp(-yr * 0.35, -0.6, 0.6) - b.roll) * Math.min(1, dt * 3);
+      const wantFlap = b.vel.y > 0.6 || Math.sin(t * 0.6 + b.orP * 3) > 0.35 || hs < 3;
+      b.flapAmt += ((wantFlap ? 1 : 0.08) - b.flapAmt) * Math.min(1, dt * 3); b.flap += dt * (wantFlap ? 16 : 4); b.fold = 1;
+      b.sndT -= dt; if (b.sndT < 0) { b.sndT = 2 + Math.random() * 4; if (wantFlap && camera.position.distanceTo(b.pos) < 30) SFX.flap(); }
+    }
+    writeBird(b);
+  }
+  for (const m of [bBody, bLegs, bIn, bOut]) m.instanceMatrix.needsUpdate = true;
+  chirpT -= dt; if (chirpT < 0) { chirpT = 1.5 + Math.random() * 4.5; if (flying + ground > 0) SFX.chirp(); }
+}
+
+// ---------------------------------------------------------------- palette and lights
+const PAL = {
+  zen: ['#69BCE8', '#81B5E9', '#9CA4E9', '#B1A7F1'], hor: ['#FFE2A2', '#FFCE82', '#FFB7AD', '#FFF1B8'],
+  cloud: ['#FFF1CF', '#FFD39B', '#FFD0DB', '#FFF7E0'], haze: ['#D6D9BA', '#E6CCA2', '#E8B8B4', '#F6D9C4'],
+  grass: ['#829B45', '#8DA34B', '#98A650', '#ACB969'], K: [4800, 4100, 3400, 3800], el: [22, 16, 10, 7],
+};
+const PC = {}; for (const k of ['zen', 'hor', 'cloud', 'haze', 'grass']) PC[k] = PAL[k].map(h => new THREE.Color(h));
+function palC(key, t, out) { const a = PC[key], i = Math.min(2, Math.floor(t)), f = t - i; return out.copy(a[i]).lerp(a[i + 1], f); }
+function palN(key, t) { const a = PAL[key], i = Math.min(2, Math.floor(t)), f = t - i; return lerp(a[i], a[i + 1], f); }
+const sunCol = new THREE.Color(), tmpC = new THREE.Color(), tmpC2 = new THREE.Color();
+const SUN_AZ = 36 * Math.PI / 180;
+function updatePalette(dt) {
+  G.palT += (G.palTT - G.palT) * damp(dt, 1.6);
+  const p = clamp(G.palT, 0, 3);
+  palC('zen', p, SKY.uZen.value); palC('hor', p, SKY.uHor.value); palC('cloud', p, SKY.uCloud.value); palC('haze', p, SKY.uHaze.value);
+  palC('grass', p, TU.uGrass.value);
+  scene.fog.color.copy(SKY.uHaze.value).lerp(SKY.uHor.value, 0.25).multiplyScalar(0.6);
+  kelvin(palN('K', p), sunCol);
+  const el = palN('el', p) * Math.PI / 180;
+  const az = Math.atan2(0.08, -1) + SUN_AZ;
+  SKY.uSunDir.value.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).normalize();
+  SKY.uSunCol.value.copy(sunCol).multiplyScalar(1.0);
+  sun.color.copy(sunCol); sun.intensity = lerp(2.5, 2.9, p / 3) + SH.uGold.value * 0.5;
+  hemi.color.copy(SKY.uZen.value).lerp(SKY.uHor.value, 0.35); hemi.groundColor.copy(TU.uGrass.value).multiplyScalar(0.55);
+  hemi.intensity = 1.65 + p * 0.08 + SH.uGold.value * 0.3;
+  fill.color.copy(SKY.uZen.value).lerp(tmpC.set(0xffffff), 0.3); fill.intensity = 0.48;
+  SH.uRimCol.value.copy(sunCol).multiplyScalar(0.32 + p * 0.06 + SH.uGold.value * 0.4);
+  leafRim.value.copy(sunCol).multiplyScalar(0.18);
+  SH.uSunV.value.copy(SKY.uSunDir.value).transformDirection(camera.matrixWorldInverse);
+  const fx = camera.position.x, fz = camera.position.z;
+  sun.target.position.set(lookP.x * 0.5 + giraffe.pos.x * 0.5, H(giraffe.pos.x, giraffe.pos.z), lookP.z * 0.5 + giraffe.pos.z * 0.5);
+  sun.position.copy(sun.target.position).addScaledVector(SKY.uSunDir.value, 110);
+  fill.target.position.copy(sun.target.position); fill.position.copy(sun.target.position).add(_v0.set(-SKY.uSunDir.value.x * 60, 40, -SKY.uSunDir.value.z * 60));
+  scene.fog.near = lerp(62, 70, p / 3); scene.fog.far = lerp(250, 265, p / 3);
+  SKY.uPulse.value = Math.max(0, SKY.uPulse.value - dt * 0.45);
+  renderer.toneMappingExposure = 1.1 + SH.uGold.value * 0.06;
+  void fx; void fz;
+}
+
+// ---------------------------------------------------------------- state machine
+const _op = new V3();
+function updateGame(dt, t) {
+  G.st += dt;
+  if (orb.g.visible) {
+    orb.alpha += (orb.alphaT - orb.alpha) * damp(dt, orb.alphaT > orb.alpha ? 0.35 : 0.15);
+    if (orb.alphaT === 0 && orb.alpha < 0.02) orb.g.visible = false;
+  }
+  switch (G.state) {
+    case 'TITLE_IDLE': titleOrbPos(orb.base); break;
+    case 'TRAVEL': {
+      const finalLeg = G.call >= 18;
+      if (finalLeg) {
+        G.stopS = SEND; G.palTT = Math.max(G.palTT, 2.6 + 0.2 * smooth(SEND - 40, SEND, G.sg));
+        if (G.sg >= SEND - 0.05 && G.speed < 0.05) { setState('CLIMAX'); G.climaxT = 0; G.climaxReached = true; }
+      } else {
+        G.stopS = CALLS[G.call].s - 12;
+        const arrived = G.sg >= G.stopS - 0.05 && G.speed < 0.06;
+        if (arrived && camSettled()) { targetOrbPos(CALLS[G.call], _op); showOrb(_op, 'target'); setState('TARGET_READY'); }
+      }
+      break;
+    }
+    case 'TARGET_READY': {
+      G.idleT += dt; targetOrbPos(CALLS[G.call], orb.base);
+      if (G.idleT > 5.5 && Math.floor((G.idleT - 5.5) / 3) !== Math.floor((G.idleT - 5.5 - dt) / 3)) { const u = CALLS[G.call].unit; const x = u.cx ?? u.pos.x, z = u.cz ?? u.pos.z; wave(x, z, 3, 2.2, 0.45); }
+      if (AUTOTEST && G.st > 0.9 && orb.alpha > 0.85) {
+        const s = screenOf(orb.base); handleTap(s.x, s.y);
+      }
+      break;
+    }
+    case 'ANIMAL_JOIN': {
+      for (const j of G.joining) { j.t += dt; if (j.cl.kind === 'birds' && j.t > 3.2) j.done = true; }
+      const last = G.joining[G.joining.length - 1];
+      if (G.st > 1.0 && G.call < 18) G.stopS = CALLS[G.call].s - 12;
+      if (last && (last.done || last.t > 5.5) && G.st > 2.2) {
+        if (G.call % 6 === 0 && G.call < 18) { G.stage++; G.palTT = G.stage; setState('STAGE_TRANSITION'); pathAt(G.sg); wave(giraffe.pos.x, giraffe.pos.z, 14, 5, 1.0); pollenRise(giraffe.pos.x, giraffe.pos.z, 50, 12, true); SKY.uPulse.value = 1.2; }
+        else setState('TRAVEL');
+      }
+      break;
+    }
+    case 'STAGE_TRANSITION': {
+      if (G.call < 18) G.stopS = CALLS[G.call].s - 12;
+      if (G.st > 5.2) setState('TRAVEL');
+      break;
+    }
+    case 'CLIMAX': climax(dt, t); break;
+    case 'AFTERGLOW': {
+      climax(dt, t);
+      if (!G.afterOrb && G.st > 3.5) {
+        G.afterOrb = true; pathAt(SEND);
+        showOrb(new V3(giraffe.pos.x - PP.tx * 0.2, H(giraffe.pos.x, giraffe.pos.z) + 4.0, giraffe.pos.z - PP.tz * 0.2), 'again');
+      }
+      if (G.afterOrb && G.orbKind === 'again') {
+        pathAt(SEND); orb.base.set(giraffe.pos.x - PP.tx * 0.2, H(giraffe.pos.x, giraffe.pos.z) + 4.0 + Math.sin(t * 1.2) * 0.1, giraffe.pos.z - PP.tz * 0.2);
+        if (AUTOTEST && G.st > 8 && orb.alpha > 0.85 && camSettled()) { const s = screenOf(orb.base); handleTap(s.x, s.y); }
+      }
+      break;
+    }
+  }
+  // ring always reads from the current camera so it never leaves the frame
+  if (ringGroup.visible) {
+    const c = G.ringC; const s = screenOf(c, _v0);
+    const nx = Math.abs(_v0.x), ny = Math.abs(_v0.y);
+    const depth = _v1.copy(c).sub(camera.position).dot(camera.getWorldDirection(_v2));
+    const tv = Math.tan(camera.fov * Math.PI / 360), th = tv * camera.aspect;
+    const allow = depth > 0 && s.z < 1 ? depth * Math.min((0.84 - nx) * th, (0.84 - ny) * tv) : 0;
+    const R = Math.max(0, allow * G.ringR);
+    ringGroup.position.copy(c); ringGroup.quaternion.copy(camera.quaternion); ringGroup.scale.setScalar(Math.max(0.001, R));
+    ringLayers.forEach(m => { m.uniforms.uT.value = t; });
+  }
+  // orb visual
+  if (orb.g.visible) {
+    const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 / 1.5);
+    const idle = G.state === 'TARGET_READY' ? G.idleT : 0;
+    orb.boost += ((idle > 2.5 ? 1 : 0) - orb.boost) * damp(dt, 0.8);
+    orb.bob += ((idle > 5.5 ? 1 : 0) - orb.bob) * damp(dt, 1.0);
+    orb.g.position.copy(orb.base); orb.g.position.y += Math.sin(t * 1.6) * 0.28 * orb.bob;
+    const a = orb.alpha;
+    orb.core.material.opacity = a; orb.halo.material.opacity = a * (0.55 + 0.35 * pulse + 0.25 * orb.boost); orb.outer.material.opacity = a * (0.28 + 0.2 * pulse + 0.25 * orb.boost);
+    const sc = (0.9 + 0.12 * pulse) * (1 + 0.25 * orb.boost); orb.halo.scale.setScalar(1.5 * sc); orb.outer.scale.setScalar(3.4 * sc); orb.core.scale.setScalar(1 + 0.1 * pulse);
+    if (a > 0.5 && Math.random() < dt * (3 + orb.boost * 4)) { const th = Math.random() * 6.28; spawn(GLOW, { x: orb.g.position.x + Math.cos(th) * 0.5, y: orb.g.position.y + (Math.random() - 0.5) * 0.4, z: orb.g.position.z + Math.sin(th) * 0.5, vx: -Math.sin(th) * 0.4, vy: 0.3, vz: Math.cos(th) * 0.4, life: 1.2, size: 0.07, drag: 0.6 }); }
+  }
+  // reset fade
+  if (G.reset > 0) {
+    G.reset += dt; const el = document.getElementById('fade');
+    const u = G.reset; el.style.opacity = String(u < 1.3 ? smooth(0, 1.3, u) : 1 - smooth(1.6, 3.0, u));
+    if (u >= 1.3 && !G.didReset) { G.didReset = true; G.loops++; resetWorld(); camInit = false; }
+    if (u > 3.0) { G.reset = 0; G.didReset = false; el.style.opacity = '0'; }
+  }
+  if (AUTOTEST && G.state === 'TITLE_IDLE' && G.st > (G.loops ? 2.5 : 1.5) && G.reset === 0 && orb.alpha > 0.8 && camSettled()) {
+    if (G.loops >= 1 && !window.__autotestDone) { window.__autotestDone = true; window.__autotest = { done: true, climax: G.climaxReached, loops: G.loops, log: G.log.slice() }; console.log('[d03] autotest done'); }
+    else if (G.loops < 1) { const s = screenOf(orb.base); handleTap(s.x, s.y); }
+  }
+}
+function climax(dt, t) {
+  G.climaxT += dt; const c = G.climaxT;
+  if (c < dt * 1.5) { SFX.climaxSwell(); if (AU.pad) AU.pad.f.frequency.setTargetAtTime(1300, AU.ctx.currentTime, 3); }
+  G.palTT = 3;
+  if (!G.afterOrb) SKY.uRingDir.value.copy(G.ringDir);
+  // 3-6s: pollen streams to the sky centre
+  if (c > 3 && c < 6.3) {
+    const rate = 70 * dt;
+    for (let k = 0; k < rate; k++) {
+      const src = G.joined[Math.floor(Math.random() * G.joined.length)] || null;
+      let x = giraffe.pos.x, z = giraffe.pos.z;
+      if (src && src.kind !== 'birds') { x = src.unit.pos.x; z = src.unit.pos.z; }
+      const y = H(x, z) + 0.3, rc = G.ringC;
+      spawn(GLOW, { x, y, z, bez: [[x, y, z], [lerp(x, rc.x, 0.25) + (Math.random() - 0.5) * 20, y + 25 + Math.random() * 20, lerp(z, rc.z, 0.25) + (Math.random() - 0.5) * 20], [rc.x + (Math.random() - 0.5) * 6, rc.y + (Math.random() - 0.5) * 6, rc.z]], life: 2.4 + Math.random() * 1.2, size: 0.16, a: 0.9 });
+    }
+    SKY.uRingGlow.value = smooth(3.5, 6.2, c) * 0.8;
+    G.bloomT = lerp(0.3, 0.5, smooth(3, 6, c));
+  }
+  if (c > 6 && !G.ringOpened) {
+    G.ringOpened = true; ringGroup.visible = true; G.ringR = 0; SFX.climax();
+    for (let i = 0; i < 5; i++) { const a = (i / 5 - 0.5) * 1.2; beam(G.ringC.x + Math.sin(a) * 50, G.ringC.y - 10, G.ringC.z, -Math.sin(a) * 0.3, -1, 0.35, 140, 9, 9, 0.2); }
+  }
+  if (c > 6) {
+    const e = smooth(6, 10, c);
+    G.ringR = 1 - Math.pow(1 - e, 3);
+    // the visible radius is clamped to the frame in updateGame
+    const rA = smooth(6, 7.2, c);
+    ringLayers.forEach((m, i) => { m.uniforms.uA.value = rA * (i === 0 ? 1.0 : 0.6); });
+    SKY.uRays.value = smooth(6.5, 9.5, c) * (1 - 0.4 * smooth(14, 24, c));
+    SKY.uRingGlow.value = 0.8 * (1 - smooth(6, 9, c)) + 0.25;
+    SH.uGold.value = smooth(6.8, 9.5, c) * (1 - 0.55 * smooth(13, 24, c));
+    SKY.uGoldSky.value = smooth(6.5, 9.5, c) * 0.5 * (1 - 0.5 * smooth(14, 24, c));
+    G.bloomT = lerp(0.3, 0.8, smooth(6, 8, c) * (1 - 0.55 * smooth(12, 22, c)));
+    pathAt(SEND);
+    TU.uSweep.value.set(giraffe.pos.x, giraffe.pos.z, smooth(6.5, 12, c) * 160, (1 - smooth(14, 24, c)) * 0.9 * smooth(6.5, 7, c));
+    if (c > 9 && Math.random() < dt * 30) {
+      const cp = camera.position; spawn(GLOW, { x: cp.x + PP.tx * 28 + (Math.random() - 0.5) * 50, y: cp.y + 12 + Math.random() * 8, z: cp.z + PP.tz * 28 + (Math.random() - 0.5) * 50, vx: 0, vy: -0.9, vz: 0, life: 6, size: 0.14, drag: 0.1, a: 0.8 });
+    }
+  }
+  if (AU.ok && c > 12 && c < 12 + dt * 1.5) AU.pad.g.gain.setTargetAtTime(0.03, AU.ctx.currentTime, 4);
+  if (G.state === 'CLIMAX' && c > 24) setState('AFTERGLOW');
+}
+
+// ---------------------------------------------------------------- quality
+const Q = { level: QFIX || 'mid', fixed: !!QFIX, fps: 60, low: 0, high: 0, cool: 6, skip: 3 };
+let composer = null, bloomPass = null;
+function applyQuality(lv) {
+  Q.level = lv; const p = PRESET[lv];
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, p.pr));
+  const shadows = p.shadow > 0;
+  renderer.shadowMap.enabled = shadows; sun.castShadow = shadows;
+  if (shadows && sun.shadow.mapSize.x !== p.shadow) { sun.shadow.mapSize.set(p.shadow, p.shadow); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
+  blobs.material.opacity = shadows ? 0.22 : 0.36;
+  grass.count = Math.min(grass.userData.max, p.grass);
+  GLOW.cap = p.parts; DUST.cap = Math.min(DUST.N, Math.round(p.parts * 0.3) + 40);
+  waterMats.forEach(m => { m.uniforms.uDetail.value = p.water; });
+  if (p.bloom > 0) {
+    if (!composer) {
+      composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      bloomPass = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.28, 0.5, 0.9);
+      composer.addPass(bloomPass); composer.addPass(new OutputPass());
+    }
+  }
+  resize();
+}
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.fov = w < h ? 55 : 50; camera.updateProjectionMatrix();
+  if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); if (bloomPass) { const k = PRESET[Q.level].bloom || 0.5; bloomPass.setSize(Math.round(w * renderer.getPixelRatio() * k), Math.round(h * renderer.getPixelRatio() * k)); } }
+  const px = h * renderer.getPixelRatio() / (2 * Math.tan(camera.fov * Math.PI / 360));
+  GLOW.mat.uniforms.uPx.value = px; DUST.mat.uniforms.uPx.value = px;
+  Q.skip = 2;
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 120));
+document.addEventListener('visibilitychange', () => {
+  Q.skip = 2;
+  if (AU.ctx) { if (document.hidden) AU.ctx.suspend().catch(() => {}); else AU.ctx.resume().catch(() => {}); }
+});
+function qualityTick(rawDt) {
+  if (Q.fixed) return;
+  if (Q.skip > 0) { Q.skip -= rawDt; return; }
+  if (rawDt <= 0 || rawDt > 0.5) return;
+  Q.fps += (1 / rawDt - Q.fps) * 0.06;
+  Q.cool -= rawDt;
+  Q.low = Q.fps < 50 ? Q.low + rawDt : 0;
+  Q.high = Q.fps >= 58 ? Q.high + rawDt : 0;
+  if (Q.cool > 0) return;
+  const i = LEVELS.indexOf(Q.level);
+  if (Q.low > 3 && i > 0) { applyQuality(LEVELS[i - 1]); Q.cool = 12; Q.low = 0; Q.high = 0; Q.fps = 55; }
+  else if (Q.high > 10 && i < 2) { applyQuality(LEVELS[i + 1]); Q.cool = 12; Q.low = 0; Q.high = 0; }
+}
+
+// ---------------------------------------------------------------- main loop
+let last = performance.now(), frames = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  try {
+    const raw = Math.max(0, (now - last) / 1000); last = now;
+    const dt = Math.min(raw, AUTOTEST ? 0.25 : 0.1) * TS;
+    G.t += dt; const t = G.t;
+    TU.uTime.value = t; SKY.uTime.value = t; waterMats.forEach(m => { m.uniforms.uTime.value = t; });
+    stepBudget = Math.min(6, stepBudget + raw * 9);
+    updateGame(dt, t);
+    updateGround(dt, t);
+    updateBirds(dt, t);
+    updateWaves(dt);
+    updateParticles(GLOW, dt, t); updateParticles(DUST, dt, t);
+    cameraUpdate(dt);
+    updateBeams(dt);
+    updatePalette(dt);
+    sky.position.copy(camera.position);
+    if (AU.ok && AU.wind) { const k = 0.04 + 0.025 * Math.sin(t * 0.13) + 0.015 * Math.sin(t * 0.47); AU.wind.g.gain.setTargetAtTime(k, AU.ctx.currentTime, 0.5); AU.wind.f.frequency.setTargetAtTime(380 + 140 * Math.sin(t * 0.21), AU.ctx.currentTime, 0.8); }
+    const useBloom = composer && PRESET[Q.level].bloom > 0;
+    if (useBloom) { bloomPass.strength += (G.bloomT - bloomPass.strength) * damp(dt, 0.8); composer.render(); }
+    else renderer.render(scene, camera);
+    frames++;
+    if (frames === 3) { window.__ready = true; Q.skip = 3; }
+    qualityTick(raw);
+  } catch (e) { reportError(e); }
+}
+
+// ---------------------------------------------------------------- probe (devtools only)
+window.__game = {
+  get state() { return G.state; }, get call() { return G.call; }, get stage() { return G.stage; }, get joined() { return G.joined.length; },
+  get quality() { return Q.level; }, get climax() { return G.climaxReached; }, get log() { return G.log; },
+  probe() {
+    const out = { state: G.state, call: G.call, t: +G.t.toFixed(1) };
+    if (orb.g.visible && orb.alpha > 0.5) { const s = screenOf(orb.base); out.orb = [Math.round(s.x), Math.round(s.y), +(Math.abs(s.x / innerWidth - 0.5) * 100).toFixed(1), +(Math.abs(s.y / innerHeight - 0.5) * 100).toFixed(1)]; }
+    const h = screenOf(headWorld(giraffe, new V3())); out.head = [Math.round(h.x), Math.round(h.y), h.x >= 0 && h.x <= innerWidth && h.y >= 0 && h.y <= innerHeight];
+    if (ringGroup.visible) {
+      const c = screenOf(G.ringC); const R = ringGroup.scale.x;
+      const r = camera.position.distanceTo(G.ringC); const rp = R / r / Math.tan(camera.fov * Math.PI / 360) * innerHeight * 0.5;
+      out.ring = [Math.round(c.x), Math.round(c.y), Math.round(rp), c.x - rp >= 0 && c.x + rp <= innerWidth && c.y - rp >= 0 && c.y + rp <= innerHeight];
+    }
+    return out;
+  },
+};
+
+try {
+  applyQuality(Q.level);
+  resetWorld();
+  cameraUpdate(0.016); camInit = false; cameraUpdate(0.016);
+  updatePalette(1);
+  requestAnimationFrame(frame);
+} catch (e) { reportError(e); }
+</script>
+<script src="../../gf-playlog.js" defer></script>
+</body>
+</html>
