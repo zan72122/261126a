@@ -29,3 +29,5 @@
 - 18:10 box の claude --cloud（同じ設定）も試したが「Cloud session create failed: 403」（box の認証はクラウドセッション作成に使えない）。セッションは作られていない。
 - 停止: D09〜D15 は未起動。ユーザーが Mac で `claude auth login`（claude.ai アカウント）をすれば、同じ手順（ai-dispatch claude-cloud 261126a + cloudprompts/DNN.txt）で再開できる。
 - 公開確認 18:12: index と D01〜D08 は全て 200、noindex あり、禁止語なし。
+- 21:04 ユーザーが Mac で Claude に再ログイン（auth status: loggedIn=true, claude.ai）を確認。
+- 21:05 クラウド起動 D09: session_017tygc4agk3VkYNb7i7Gpfd / D10: session_017tygc4B6B21naar9jcYu9C。
