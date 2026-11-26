@@ -15,3 +15,5 @@
 - 13:49 クラウド起動 D03: session_017tygc3Wq3jGmTV5ooaaUxW（job claude-cloud-20261126-134855-11419）
 - 13:50 D01 完了（約52分）。claude/game-d01-implementation-najf3p → main マージ・公開。8つの画面設定で自動テスト通過（iPad 実機は未確認）。
 - 13:51 クラウド起動 D04: session_017tygc1qfpAfKnuTUd1xw84（job claude-cloud-20261126-135051-11775）。実行中: D03, D04
+- 14:46 D03（約57分）・D04（約55分）完了 → main マージ・公開（自動チェック ok）。クラウド側確認: 横縦とも PASS、目標中央、禁止語なし。
+- 14:47 クラウド起動 D05: session_017tygc5pZxCVZ6Ng5nLLz9J / D06: session_017tygc2kiSKzEQsGJXuBaQh。実行中: D05, D06（終わるのは 15:45 頃の見込み → D07/D08 を 16:50 までに起動予定）
