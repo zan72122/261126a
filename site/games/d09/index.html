@@ -1448,11 +1448,11 @@ const trail = new THREE.Mesh(trailGeo, new THREE.ShaderMaterial({
   vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
   fragmentShader: `uniform float uLen[7]; uniform vec3 uBandCol[7]; uniform float uA; uniform float uTime; varying vec2 vUv;
     void main(){ float x = vUv.x, y = vUv.y; vec3 c = vec3(0.0);
-      for(int i=0;i<7;i++){ float yc = (float(i)+0.5)/7.0; float w = exp(-pow((y - yc)*9.0, 2.0)); float L = uLen[i];
+      for(int i=0;i<7;i++){ float yc = (float(i)+0.5)/7.0; float w = exp(-pow((y - yc)*15.0, 2.0)); float L = uLen[i];
         float a = smoothstep(L, L - 0.18, x); c += uBandCol[i]*w*a; }
       float edge = smoothstep(0.0, 0.12, y)*smoothstep(1.0, 0.88, y);
       float sh = 0.8 + 0.2*sin(x*60.0 - uTime*5.0);
-      gl_FragColor = vec4(c*edge*uA*sh*smoothstep(0.0, 0.03, x)*1.25, 1.0);
+      gl_FragColor = vec4(c*edge*uA*sh*smoothstep(0.0, 0.03, x)*0.95, 1.0);
       #include <tonemapping_fragment>
       #include <colorspace_fragment>
     }`,
@@ -2066,7 +2066,7 @@ function chooseDest() {
     if (isl.s <= S_STRAIGHT) d = isl.s - B.s;
     else if (B.s <= S_STRAIGHT) d = isl.s - B.s;
     else d = ((isl.s - B.s) % LOOP_LEN + LOOP_LEN) % LOOP_LEN;
-    if (d > 28 && d < bd) { bd = d; best = i; }
+    if (d > 75 && d < bd) { bd = d; best = i; }
   });
   G.destIdx = best;
 }
