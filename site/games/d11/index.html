@@ -91,9 +91,9 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, Q0.dpr));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.12;
+renderer.toneMappingExposure = .96;
 renderer.shadowMap.enabled = Q0.shadow > 0;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap;
 document.body.appendChild(renderer.domElement);
 renderer.domElement.addEventListener('webglcontextlost', e => { e.preventDefault(); }, false);
 
@@ -147,7 +147,7 @@ uniform float uAurI, uBurst, uTime;
 vec3 skyColor(vec3 d, bool detail){
   float h = d.y;
   float hh = clamp(h, 0., 1.);
-  vec3 c = mix(uHor, uZen, pow(smoothstep(0., .62, hh), .62));
+  vec3 c = mix(uHor * .78, uZen * .82, pow(smoothstep(0., .6, hh), .55));
   c = mix(c, uHor * .82, clamp(-h * 5., 0., 1.));
   // aurora glow near the horizon in front
   vec3 fh = normalize(vec3(d.x, 0.0001, d.z));
@@ -158,7 +158,7 @@ vec3 skyColor(vec3 d, bool detail){
     float sw = .5 + .5 * sin(d.x * 3.1 + d.z * 2.3 + uTime * .2);
     vec3 bc = mix(mix(uBurstA, uBurstB, sw), uBurstC, smoothstep(.35, .95, hh));
     float curt = .55 + .45 * sin(atan(d.z, d.x) * 9. + uTime * .25 + h * 4.);
-    c += bc * uBurst * (.18 + .22 * curt) * smoothstep(-.05, .2, h) * (1. - .5 * hh);
+    c += bc * uBurst * (.16 + .24 * curt) * smoothstep(-.05, .2, h) * (1. - .5 * hh);
   }
   float m = dot(d, uMoonDir);
   c += uMoonCol * (pow(max(m, 0.), 36.) * .16 + pow(max(m, 0.), 600.) * .45);
@@ -170,7 +170,7 @@ vec3 skyColor(vec3 d, bool detail){
     float mask = smoothstep(.56, .8, cl) * smoothstep(.03, .22, h) * (1. - smoothstep(.55, .9, h));
     float lit = pow(max(m, 0.), 3.);
     vec3 cc = mix(uHor * .95, uMoonCol * 1.05, .25 + .6 * lit) + uAurCol * uAurI * .25 * fw;
-    c = mix(c, cc, mask * .26);
+    c = mix(c, cc, mask * .18);
   }
   // moon disc
   float R = .0335;
@@ -189,7 +189,7 @@ vec3 skyColor(vec3 d, bool detail){
     vec2 ci = floor(cq); vec2 cf = fract(cq) - .5 - (hash22(ci) - .5) * .5;
     float cr = length(cf);
     tone *= 1. - .18 * smoothstep(.25, .18, cr) * step(.55, hash12(ci + 7.)) + .08 * smoothstep(.3, .26, cr) * smoothstep(.2, .26, cr);
-    vec3 disc = uMoonCol * (2.6 * (.32 + .68 * lam) * tone + .3);
+    vec3 disc = uMoonCol * (1.9 * (.32 + .68 * lam) * tone + .25);
     float edge = smoothstep(1., .965, r);
     c = mix(c, disc, edge);
   }
@@ -402,14 +402,12 @@ function renderMirror() {
   cpl.multiplyScalar(2 / cpl.dot(q));
   pm.elements[2] = cpl.x; pm.elements[6] = cpl.y; pm.elements[10] = cpl.z + 1 - .003; pm.elements[14] = cpl.w;
   mirrorCam.projectionMatrixInverse.copy(pm).invert();
-  const sa = renderer.shadowMap.autoUpdate; renderer.shadowMap.autoUpdate = false;
   const prev = renderer.getRenderTarget();
   renderer.setRenderTarget(reflRT);
   renderer.state.buffers.depth.setMask(true);
   renderer.clear();
   renderer.render(scene, mirrorCam);
   renderer.setRenderTarget(prev);
-  renderer.shadowMap.autoUpdate = sa;
 }
 
 // ============================================================ water
@@ -455,7 +453,7 @@ const waterMat = new THREE.ShaderMaterial({
       vec3 V = normalize(cameraPosition - vWP);
       float ndv = max(dot(N, V), 0.);
       float F = .02 + .98 * pow(1. - ndv, 5.);
-      float Fm = .3 + .7 * F;
+      float Fm = .2 + .8 * F;
       vec4 tc = vTC; tc.xy += N.xz * tc.w * (.012 + .03 * att);
       vec3 refl = texture2DProj(uRefl, tc).rgb;
       vec3 deep = uLake * (.42 + .2 * N.y) + uAurCol * uAurI * .05;
@@ -568,7 +566,7 @@ scene.add(ice);
 const auroraFrame = new THREE.Group();
 scene.add(auroraFrame);
 const BANDS = [
-  { depth: 120, len: 300, H: 56,  base: 0,  xo: 0,   amp: 15, ph: 0.0, appear: 0,  hue: 'g' },
+  { depth: 120, len: 300, H: 64,  base: 0,  xo: 0,   amp: 15, ph: 0.0, appear: 0,  hue: 'g' },
   { depth: 152, len: 300, H: 72,  base: 6,  xo: -38, amp: 19, ph: 1.7, appear: 6,  hue: 'b' },
   { depth: 215, len: 400, H: 96,  base: 30, xo: 25,  amp: 24, ph: 3.1, appear: 12, hue: 'p', sweep: true },
   { depth: 98,  len: 220, H: 44,  base: -3, xo: 36,  amp: 12, ph: 4.2, appear: 14, hue: 'c' },
@@ -613,23 +611,23 @@ const auroraFS = GLSL_NOISE + `
     float v = vV, x = vX, t = uTime;
     float xr = x + sin(v * 2. + t * .2) * 3. * v;
     float r = n1(xr * .21 + t * .13) * .55 + n1(xr * .83 - t * .31 + 7.) * .3 + n1(xr * 2.9 + t * .7 + 3.) * .15;
-    float rays = .28 + 1.15 * r * r;
+    float rays = .18 + 1.25 * r * r;
     float lower = exp(-v * 2.3);
     float bottom = smoothstep(0., .035, v);
-    float rim = exp(-pow((v - .045) / .03, 2.)) * .4;
+    float rim = exp(-pow((v - .045) / .03, 2.)) * .25;
     float topf = 1. - smoothstep(.45, 1., v);
     float ends = smoothstep(0., .1, vU) * smoothstep(1., .9, vU);
     float pulse = .8 + .2 * sin(x * .045 - t * .55) + .1 * sin(x * .011 + t * .23);
     vec3 V = normalize(cameraPosition - vWP);
     float fd = abs(dot(vWN, V));
     float fold = clamp(.5 / max(fd, .17), .65, 2.6);
-    float I = (lower + rim) * bottom * topf * rays * pulse * ends * pow(fold, .8) * (1. + vWave * 1.7);
+    float I = (lower + rim) * bottom * topf * rays * pulse * ends * pow(fold, .7) * (1. + vWave * .8);
     vec3 c = mix(uC0, uC1, smoothstep(.1, .55, v));
     c = mix(c, uC2, smoothstep(.5, .95, v));
     c = mix(c, uPinkC, (1. - smoothstep(0., .07, v)) * uPink);
     for (int i = 0; i < 6; i++) { float age = t - uStrX[i].y; if (age > 0.) { float g = exp(-pow((x - uStrX[i].x) / 8., 2.)) * smoothstep(0., 1.6, age); c = mix(c, uStrC[i], g * .6); I *= 1. + g * .45; } }
     float ap = uSweep > .5 ? smoothstep(vU - .12, vU, uAppear * 1.15) * smoothstep(0., .2, uAppear) : uAppear;
-    I *= ap * uGain * .3;
+    I *= ap * uGain * .62;
     gl_FragColor = vec4(c * I, 1.);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -730,8 +728,8 @@ const ribbonFS = (curtain) => GLSL_NOISE + `
     float streak = n1(vW * 7. + 3.) * .5 + n1(vW * 19. - 2.) * .3;
     float ph = fract((vS - t * uFlow) / 11.);
     float pulse = exp(-pow((ph - .5) * 5., 2.));
-    float core = .3 + .7 * pow(1. - e, 1.4);
-    float rim = exp(-pow((e - .9) / .07, 2.)) * .9;
+    float core = .12 + .4 * pow(1. - e, 1.6);
+    float rim = exp(-pow((e - .9) / .07, 2.)) * 1.1;
     float I = (core * (.45 + streak * .6) + rim + pulse * .4 * (1. - e * .5) + wv * 1.3);
     I += uUnder * exp(-d * d / 18.) * 1.2;
     float h = smoothstep(-20., 160., d);
@@ -739,7 +737,7 @@ const ribbonFS = (curtain) => GLSL_NOISE + `
     c = mix(c, uCc, smoothstep(.35, 1., h) * .6);
     c = mix(c, uCd, smoothstep(.6, 1., e) * h * .5);
     `}
-    I *= vis * uGain * .22;
+    I *= vis * uGain * .16;
     gl_FragColor = vec4(c * I, 1.);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -972,7 +970,7 @@ function buildComposer() {
   const rt = new THREE.WebGLRenderTarget(16, 16, { type: THREE.HalfFloatType, samples: qName === 'mid' ? 2 : 0 });
   composer = new EffectComposer(renderer, rt);
   composer.addPass(new RenderPass(scene, camera));
-  bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), .55, .45, .92);
+  bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), .4, .42, 1.2);
   const os = bloom.setSize.bind(bloom); bloom.setSize = (w, h) => os(Math.max(64, Math.round(w * bloomScale)), Math.max(64, Math.round(h * bloomScale)));
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
@@ -1127,7 +1125,7 @@ function orbWorldPos(phi, eps, out) {
   out.set(camNom.x + dx * ce * d, camNom.y + Math.sin(eps) * d, camNom.z + dz * ce * d);
   return out;
 }
-function orbEps() { const st = G.state; const pc = G.pitchS * .45; if (st === ST.CLIMAX) return 7.5 * DEG + pc; if (st === ST.AFTER || st === ST.FREE) return 5 * DEG + pc; return 7 * DEG + pc; }
+function orbEps() { const st = G.state; const pc = G.pitchS * .3; if (st === ST.CLIMAX) return 7.5 * DEG + pc; if (st === ST.AFTER || st === ST.FREE) return 5 * DEG + pc; return 7 * DEG + pc; }
 
 function spawnOrb() {
   orbS.state = 'forming'; orbS.t0 = G.t; orbS.idle = 0; orbS.ready = false; orbS.guideRingT = 0; orbS.attractT = 0;
@@ -1160,7 +1158,7 @@ function success() {
   // ice and lake shimmer
   at(.6, () => { const w = WU.uIceW.value; w.x = w.y; w.y = w.z; w.z = G.t; w.w = G.liftY > 2 ? 0 : 1; addRipple(boatPos.x, boatPos.z, G.t, k >= 12 ? .9 : .5); });
   // the curtain comes a little closer to the lake
-  at(1.0, () => { G.baseTarget = baseFor(k); G.Ptarget = clamp(k / 24, 0, 1); G.glowTarget = lerp(.78, 1.08, clamp(k / 24, 0, 1)); });
+  at(1.0, () => { G.baseTarget = baseFor(k); G.Ptarget = clamp(k / 24, 0, 1); G.glowTarget = lerp(.8, 1.0, clamp(k / 24, 0, 1)); });
   if (k === 6) at(.4, () => { revealBand(1); pad([NOTE.C4, NOTE.G4, NOTE.D5], .1, 4, .1, .8); });
   if (k === 12) at(.4, () => { revealBand(2); pad([NOTE.C4, NOTE.E4, NOTE.G4, NOTE.A4], .1, 5, .12, 1); whoosh(.3, 3, 400, 1800, .025); });
   if (k === 14 && bands[3]) at(.5, () => revealBand(3));
@@ -1274,7 +1272,7 @@ function updateCamera(dt) {
   const fx = Math.sin(th), fz = -Math.cos(th);
   const dist = cb.dist * CAM.distMul, h = cb.h * CAM.hMul;
   const cp = Math.cos(pitch), sp = Math.sin(pitch);
-  camNom.set(boatPos.x - fx * dist * cp, G.boatYs - dist * sp + h * cp, boatPos.z - fz * dist * cp);
+  camNom.set(boatPos.x - fx * dist * cp, G.boatYs - dist * sp * .35 + h * cp, boatPos.z - fz * dist * cp);
   if (!CAM.init) { CAM.pos.copy(camNom); }
   CAM.pos.x = damp(CAM.pos.x, camNom.x, .45, dt); CAM.pos.y = damp(CAM.pos.y, camNom.y, .45, dt); CAM.pos.z = damp(CAM.pos.z, camNom.z, .45, dt);
   camera.position.copy(CAM.pos);
@@ -1338,14 +1336,14 @@ function updateWorld(dt) {
     tmpC.set('#d8f4ff'); spawn(tmpV.x, tmpV.y, tmpV.z, (Math.random() - .5) * .3, -.2, (Math.random() - .5) * .3, 2.2, .07, tmpC, 2);
   }
   // ---- aurora frame
-  frameOrigin.set(boatPos.x, boatPos.y * .75, boatPos.z);
+  frameOrigin.set(boatPos.x, boatPos.y * .88, boatPos.z);
   auroraFrame.position.copy(frameOrigin); auroraFrame.rotation.y = -G.headingS;
   U.uAurDir.value.set(Math.sin(G.headingS), 0, -Math.cos(G.headingS));
   G.base = damp(G.base, G.baseTarget, 1.3, dt);
   G.P = damp(G.P, st === ST.CLIMAX || st === ST.AFTER || st === ST.FREE ? 1 : G.Ptarget, 2.2, dt);
   let gl = G.glowTarget;
-  if (G.state === ST.CLIMAX) { const ct = t - G.climaxT; gl = 1.08 + .32 * sstep(.5, 3, ct) * (1 - .45 * sstep(10, 17, ct)); }
-  else if (G.state === ST.AFTER || G.state === ST.FREE) gl = 1.18;
+  if (G.state === ST.CLIMAX) { const ct = t - G.climaxT; gl = 1.0 + .4 * sstep(.5, 3, ct) * (1 - .45 * sstep(10, 17, ct)); }
+  else if (G.state === ST.AFTER || G.state === ST.FREE) gl = 1.05;
   G.glow = damp(G.glow, gl, 1.2, dt);
   const P = G.P;
   // palette
@@ -1363,7 +1361,7 @@ function updateWorld(dt) {
     B.appear = damp(B.appear, B.appearT, hue === 'p' ? 2.2 : 1.4, dt);
     u.uAppear.value = B.appear;
     u.uBase.value = G.base + B.B.base * (G.base > 20 ? 1 : lerp(.35, 1, G.base / 20));
-    u.uGain.value = G.glow * (i === 0 ? 1 : .82);
+    u.uGain.value = G.glow * (i === 0 ? 1 : i < 3 ? .7 : .38);
     u.uPink.value = pinkAmt * .8; u.uPinkC.value.copy(kk);
     const C0 = u.uC0.value, C1 = u.uC1.value, C2 = u.uC2.value;
     if (hue === 'g') { C0.copy(g); C1.copy(g).lerp(b, blueAmt * .8); C2.copy(g).lerp(b, .3).lerp(p, purpAmt); }
@@ -1412,7 +1410,7 @@ function updateWorld(dt) {
   aurLight.color.copy(U.uAurCol.value); aurLight.intensity = lerp(.2, 1.3, P) * G.glow * (G.state === ST.CLIMAX ? 1.1 : 1);
   aurLight.position.copy(boatPos).addScaledVector(U.uAurDir.value, 60).setY(boatPos.y + 40); aurLight.target.position.copy(boatPos);
   hemi.intensity = 1.05 + P * .25;
-  scene.fog.density = lerp(.0013, .0012, P);
+  scene.fog.density = lerp(.00115, .001, P);
   const lan = boat.userData.lantern; lan.getWorldPosition(WU.uLantern.value);
   const fl = 1 + .06 * Math.sin(t * 13) + .04 * Math.sin(t * 7.3);
   lanternLight.intensity = 2.4 * fl; flameMat.color.setRGB(4 * fl, 2.9 * fl, 1.4 * fl); lanternGlow.material.uniforms.uA.value = fl;
@@ -1459,7 +1457,7 @@ function updateOrb(dt) {
     release.visible = true;
     release.position.copy(orbS.P); release.quaternion.copy(camera.quaternion);
     release.scale.setScalar(shortWorld * lerp(.12, .62, grow));
-    relMat.uniforms.uA.value = grow * fade * .95;
+    relMat.uniforms.uA.value = grow * fade * (curQ.bloom ? .4 : .7);
     if (ct < 6 && Math.random() < dt * 20) { const an = Math.random() * 6.283, sp = 8 + Math.random() * 16; tmpC.copy(Math.random() < .5 ? U.uBurstA.value : U.uBurstC.value); spawn(orbS.P.x, orbS.P.y, orbS.P.z, Math.cos(an) * sp, Math.sin(an) * sp * .7, (Math.random() - .5) * 6, 3, 1.6, tmpC, 0); }
   } else release.visible = false;
 }
@@ -1513,13 +1511,14 @@ const hooks = window.__d11 = {
   get boatS() { return G.boatS; }, get boatY() { return G.liftY; }, get speed() { return G.speed; }, get base() { return G.base; }, get lift() { return G.lift; },
   release() { if (!release.visible) return null; projV.copy(release.position).project(camera); return { x: (projV.x * .5 + .5) * W, y: (-projV.y * .5 + .5) * H, r: release.scale.x * .5 / (2 * release.position.distanceTo(camera.position) * Math.tan(camera.fov * DEG / 2)) * H }; }
 };
-if (QS.has('dbg')) window.__dbg = { ribbon, ribCurtain, parts, release, bands, orb, G, U, ribbonU, THREE, camera };
+if (QS.has('dbg')) window.__dbg = { ribbon, ribCurtain, parts, release, bands, orb, G, U, ribbonU, THREE, camera, get orbState() { return orbS.state; } };
 function frame() {
   requestAnimationFrame(frame);
   try {
     const now = performance.now(); let rdt = (now - lastT) / 1000; lastT = now;
     if (rdt > .1) rdt = .1; if (rdt < 0) rdt = 0;
-    const dt = rdt * SPEED;
+    if (window.__dbg && window.__dbg.pauseOn && window.__dbg.pauseOn()) { window.__dbg.pause = true; window.__dbg.pauseOn = null; }
+    const dt = (window.__dbg && window.__dbg.pause) ? 0 : rdt * SPEED;
     G.t += dt;
     qualityTick(rdt);
     updateWorld(dt);
@@ -1534,7 +1533,7 @@ function frame() {
       const ct = G.state === ST.CLIMAX ? G.t - G.climaxT : -1;
       const boost = ct >= 0 ? sstep(.3, 2.5, ct) * (1 - sstep(7, 13, ct)) : 0;
       G.bloomBoost = damp(G.bloomBoost, boost, .6, dt);
-      bloom.strength = lerp(.5, .72, G.P) + G.bloomBoost * .45;
+      bloom.strength = lerp(.42, .55, G.P) + G.bloomBoost * .2;
     }
     water.visible = false; ice.visible = false;
     renderMirror();
@@ -1552,7 +1551,7 @@ if (AUTOTEST) {
   setInterval(() => {
     if (!window.__ready) return;
     const tt = G.t;
-    if (orbS.ready && (orbS.state === 'ready' || orbS.state === 'forming') && orbS.state !== 'pop') {
+    if (orbS.state === 'ready') {
       if (tt < nextTap) return;
       const s = orbScreen();
       if (missDone < 3 && G.k % 7 === 2) { missDone++; fire(W * .12, H * .85); nextTap = tt + .4; return; }
