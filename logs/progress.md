@@ -17,3 +17,6 @@
 - 13:51 クラウド起動 D04: session_017tygc1qfpAfKnuTUd1xw84（job claude-cloud-20261126-135051-11775）。実行中: D03, D04
 - 14:46 D03（約57分）・D04（約55分）完了 → main マージ・公開（自動チェック ok）。クラウド側確認: 横縦とも PASS、目標中央、禁止語なし。
 - 14:47 クラウド起動 D05: session_017tygc5pZxCVZ6Ng5nLLz9J / D06: session_017tygc2kiSKzEQsGJXuBaQh。実行中: D05, D06（終わるのは 15:45 頃の見込み → D07/D08 を 16:50 までに起動予定）
+- 15:45 D05/D06 まだ push なし（約58分経過）。ai-dispatch result の表示「Interrupted」は teleport 読み取り時の表示の可能性が高く（D01 でも同様の表示のあと完了）、再送はせず待機。
+- 15:51 D06 完了（約64分）→ main マージ・公開（自動チェック ok）。
+- 15:52 クラウド起動 D07: session_017tygc1tEc3bsinsqHtgB6s（job claude-cloud-20261126-155234-38526）。実行中: D05, D07
