@@ -20,3 +20,6 @@
 - 15:45 D05/D06 まだ push なし（約58分経過）。ai-dispatch result の表示「Interrupted」は teleport 読み取り時の表示の可能性が高く（D01 でも同様の表示のあと完了）、再送はせず待機。
 - 15:51 D06 完了（約64分）→ main マージ・公開（自動チェック ok）。
 - 15:52 クラウド起動 D07: session_017tygc1tEc3bsinsqHtgB6s（job claude-cloud-20261126-155234-38526）。実行中: D05, D07
+- 16:23 D05 完了（約91分。SwiftShader での自動テストが長かった）→ main マージ・公開（自動チェック ok）。
+- 16:23 クラウド起動 D08: session_017tygc4SbKddQh2kSYavq3d（job claude-cloud-20261126-162339-46140）。実行中: D07, D08。
+- 次の起動（D09〜）は Mac オフライン（17:00〜18:00）明けの 18:00 以降。D07/D08 はクラウドで進み続ける。
