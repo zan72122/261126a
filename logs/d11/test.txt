@@ -1,0 +1,103 @@
+# D11 test log (2026-11-26T14:11:48Z) — headless Chromium (Playwright) + SwiftShader (--use-angle=swiftshader --enable-unsafe-swiftshader), python3 -m http.server (root site/), autotest speed x2
+== 1024x768 http://localhost:8131/games/d11/index.html?autotest&q=low
+__ready=true after 2388ms
+t=2.5s state=STAGE_1 k=1 q=low fps=60.0 orbReady=false orb=(50.0%,49.6%) diam/short=10.0% boatS=0.0 boatY=0.03 speed=0.00 auroraBase=52.0 errors=0
+t=3.8s state=STAGE_1 k=2 q=low fps=14.7 orbReady=false orb=(50.1%,50.0%) diam/short=10.0% boatS=0.0 boatY=-0.02 speed=0.00 auroraBase=50.5 errors=0
+t=5.6s state=STAGE_1 k=2 q=low fps=13.7 orbReady=true orb=(50.0%,50.0%) diam/short=10.0% boatS=0.0 boatY=0.00 speed=0.00 auroraBase=48.3 errors=0
+t=6.5s state=STAGE_1 k=3 q=low fps=13.0 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=0.0 boatY=-0.01 speed=0.00 auroraBase=48.1 errors=0
+t=7.8s state=STAGE_1 k=4 q=low fps=13.8 orbReady=false orb=(50.4%,50.0%) diam/short=10.0% boatS=0.0 boatY=0.02 speed=0.00 auroraBase=46.4 errors=0
+t=9.1s state=STAGE_1 k=4 q=low fps=13.5 orbReady=true orb=(46.4%,50.0%) diam/short=10.0% boatS=0.0 boatY=-0.02 speed=0.00 auroraBase=44.6 errors=0
+  shot early
+t=10.1s state=STAGE_1 k=5 q=low fps=13.8 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=0.0 boatY=0.02 speed=0.00 auroraBase=43.4 errors=0
+t=11.0s state=STAGE_2 k=6 q=low fps=14.4 orbReady=false orb=(50.1%,50.0%) diam/short=10.0% boatS=0.0 boatY=-0.01 speed=0.06 auroraBase=42.4 errors=0
+t=12.3s state=STAGE_2 k=7 q=low fps=13.2 orbReady=false orb=(49.9%,50.0%) diam/short=10.0% boatS=0.6 boatY=0.04 speed=0.30 auroraBase=40.4 errors=0
+t=13.2s state=STAGE_2 k=7 q=low fps=13.4 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=1.2 boatY=-0.04 speed=0.33 auroraBase=39.0 errors=0
+t=14.2s state=STAGE_2 k=8 q=low fps=11.3 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=1.8 boatY=0.02 speed=0.34 auroraBase=38.1 errors=0
+t=15.4s state=STAGE_2 k=9 q=low fps=14.0 orbReady=false orb=(49.9%,50.0%) diam/short=10.0% boatS=2.7 boatY=0.00 speed=0.35 auroraBase=36.0 errors=0
+t=16.8s state=STAGE_2 k=10 q=low fps=12.3 orbReady=false orb=(50.1%,50.0%) diam/short=10.0% boatS=3.7 boatY=0.02 speed=0.35 auroraBase=33.9 errors=0
+t=18.5s state=STAGE_2 k=11 q=low fps=12.6 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=4.9 boatY=-0.01 speed=0.35 auroraBase=31.6 errors=0
+t=19.9s state=STAGE_3 k=12 q=low fps=11.7 orbReady=false orb=(50.1%,50.0%) diam/short=10.0% boatS=5.8 boatY=0.03 speed=0.35 auroraBase=29.6 errors=0
+t=20.3s state=STAGE_3 k=12 q=low fps=11.9 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=6.2 boatY=0.00 speed=0.46 auroraBase=29.4 errors=0
+t=21.7s state=STAGE_3 k=13 q=low fps=11.6 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=7.5 boatY=0.03 speed=0.57 auroraBase=27.3 errors=0
+t=23.1s state=STAGE_3 k=14 q=low fps=11.3 orbReady=false orb=(49.9%,50.0%) diam/short=10.0% boatS=9.2 boatY=-0.01 speed=0.59 auroraBase=23.4 errors=0
+t=23.9s state=STAGE_3 k=14 q=low fps=11.0 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=10.2 boatY=-0.02 speed=0.60 auroraBase=20.6 errors=0
+t=24.9s state=STAGE_3 k=15 q=low fps=10.8 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=11.3 boatY=0.03 speed=0.60 auroraBase=18.9 errors=0
+t=26.3s state=STAGE_3 k=16 q=low fps=10.3 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=13.0 boatY=0.02 speed=0.60 auroraBase=14.6 errors=0
+  shot mid
+t=28.4s state=STAGE_3 k=17 q=low fps=10.0 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=15.4 boatY=-0.04 speed=0.60 auroraBase=8.8 errors=0
+t=29.3s state=STAGE_4 k=18 q=low fps=10.0 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=16.4 boatY=0.04 speed=0.60 auroraBase=6.2 errors=0
+t=31.1s state=STAGE_4 k=19 q=low fps=10.0 orbReady=false orb=(50.0%,50.1%) diam/short=10.0% boatS=19.2 boatY=0.34 speed=1.83 auroraBase=1.6 errors=0
+t=32.0s state=STAGE_4 k=19 q=low fps=10.0 orbReady=true orb=(51.1%,50.1%) diam/short=10.0% boatS=23.7 boatY=0.35 speed=2.77 auroraBase=1.1 errors=0
+t=32.5s state=STAGE_4 k=20 q=low fps=10.0 orbReady=false orb=(50.0%,50.1%) diam/short=10.0% boatS=26.1 boatY=0.31 speed=3.31 auroraBase=1.1 errors=0
+t=33.8s state=STAGE_4 k=21 q=low fps=10.0 orbReady=false orb=(49.9%,50.1%) diam/short=10.0% boatS=35.1 boatY=0.31 speed=4.09 auroraBase=1.0 errors=0
+t=35.6s state=STAGE_4 k=22 q=low fps=10.0 orbReady=false orb=(50.0%,49.9%) diam/short=10.0% boatS=50.4 boatY=0.44 speed=5.26 auroraBase=1.0 errors=0
+t=37.4s state=STAGE_4 k=23 q=low fps=10.0 orbReady=false orb=(50.0%,49.4%) diam/short=10.0% boatS=69.1 boatY=2.71 speed=6.47 auroraBase=1.0 errors=0
+t=38.8s state=CLIMAX k=24 q=low fps=10.0 orbReady=false orb=(50.0%,48.3%) diam/short=10.0% boatS=85.8 boatY=7.92 speed=8.16 auroraBase=1.0 release=(50.0%,48.3%) r/H=7.1% errors=0
+t=39.3s state=CLIMAX k=24 q=low fps=10.0 orbReady=false orb=(50.0%,48.7%) diam/short=10.0% boatS=93.2 boatY=11.03 speed=9.63 auroraBase=1.0 release=(50.0%,48.7%) r/H=13.9% errors=0
+t=43.0s state=CLIMAX k=24 q=low fps=10.4 orbReady=false orb=(50.0%,49.6%) diam/short=10.0% boatS=167.8 boatY=49.10 speed=11.00 auroraBase=1.0 release=(50.0%,49.6%) r/H=31.0% errors=0
+  shot climax
+t=47.3s state=CLIMAX k=24 q=low fps=10.3 orbReady=false orb=(50.0%,49.6%) diam/short=10.0% boatS=256.3 boatY=94.72 speed=11.00 auroraBase=1.0 release=(50.0%,49.6%) r/H=31.0% errors=0
+t=50.8s state=AFTERGLOW k=24 q=low fps=10.1 orbReady=false orb=(50.0%,49.9%) diam/short=10.0% boatS=295.8 boatY=115.00 speed=2.60 auroraBase=1.0 errors=0
+reached FREEPLAY with orb ready
+states seen: STAGE_1,STAGE_2,STAGE_3,STAGE_4,CLIMAX,AFTERGLOW,FREEPLAY
+orb off-centre max=3.6% samples>8%=0/111
+climax release max extent from centre (vertical, % of H)=31.8%
+__errors=[]
+console errors/warnings=5
+  error: Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED
+external requests=1 https://gf-playlog.zan72122.workers.dev/log
+console errors from the game=0 (the only other entries are gf-playlog.js beacons to its worker, blocked by this sandbox's network)
+RESULT: PASS
+
+== 768x1024 http://localhost:8131/games/d11/index.html?autotest&q=low
+__ready=true after 2444ms
+t=2.6s state=STAGE_1 k=1 q=low fps=60.0 orbReady=false orb=(50.0%,49.8%) diam/short=10.0% boatS=0.0 boatY=0.03 speed=0.00 auroraBase=52.0 errors=0
+t=4.4s state=STAGE_1 k=2 q=low fps=12.5 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=0.0 boatY=-0.03 speed=0.00 auroraBase=50.2 errors=0
+t=5.8s state=STAGE_1 k=2 q=low fps=13.0 orbReady=true orb=(49.9%,50.0%) diam/short=10.0% boatS=0.0 boatY=-0.02 speed=0.00 auroraBase=48.3 errors=0
+t=6.7s state=STAGE_1 k=3 q=low fps=13.3 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=0.0 boatY=-0.00 speed=0.00 auroraBase=48.1 errors=0
+  shot early
+t=8.6s state=STAGE_1 k=4 q=low fps=13.8 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=0.0 boatY=-0.03 speed=0.00 auroraBase=45.3 errors=0
+t=9.4s state=STAGE_1 k=5 q=low fps=12.2 orbReady=false orb=(49.8%,50.0%) diam/short=10.0% boatS=0.0 boatY=0.01 speed=0.00 auroraBase=44.4 errors=0
+t=9.9s state=STAGE_1 k=5 q=low fps=12.3 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=0.0 boatY=0.04 speed=0.00 auroraBase=43.8 errors=0
+t=10.8s state=STAGE_2 k=6 q=low fps=11.7 orbReady=false orb=(50.3%,50.0%) diam/short=10.0% boatS=0.0 boatY=-0.02 speed=0.03 auroraBase=42.5 errors=0
+t=12.6s state=STAGE_2 k=7 q=low fps=11.5 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=0.8 boatY=0.04 speed=0.32 auroraBase=40.2 errors=0
+t=13.5s state=STAGE_2 k=7 q=low fps=13.0 orbReady=true orb=(53.8%,50.0%) diam/short=10.0% boatS=1.4 boatY=-0.05 speed=0.34 auroraBase=38.5 errors=0
+t=13.9s state=STAGE_2 k=8 q=low fps=13.0 orbReady=false orb=(50.1%,50.0%) diam/short=10.0% boatS=1.7 boatY=-0.02 speed=0.34 auroraBase=38.2 errors=0
+t=15.3s state=STAGE_2 k=9 q=low fps=13.3 orbReady=false orb=(49.9%,50.0%) diam/short=10.0% boatS=2.7 boatY=0.01 speed=0.35 auroraBase=36.1 errors=0
+t=16.8s state=STAGE_2 k=10 q=low fps=12.6 orbReady=false orb=(50.1%,50.0%) diam/short=10.0% boatS=3.7 boatY=-0.00 speed=0.35 auroraBase=33.9 errors=0
+t=17.2s state=STAGE_2 k=10 q=low fps=12.6 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=4.0 boatY=0.05 speed=0.35 auroraBase=33.4 errors=0
+t=18.5s state=STAGE_2 k=11 q=low fps=10.9 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=4.9 boatY=-0.03 speed=0.35 auroraBase=31.6 errors=0
+t=19.8s state=STAGE_3 k=12 q=low fps=12.3 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=5.8 boatY=0.02 speed=0.37 auroraBase=29.6 errors=0
+t=20.8s state=STAGE_3 k=12 q=low fps=11.5 orbReady=false orb=(58.6%,50.0%) diam/short=10.0% boatS=6.7 boatY=-0.04 speed=0.53 auroraBase=28.0 errors=0
+t=21.7s state=STAGE_3 k=13 q=low fps=11.7 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=7.5 boatY=0.01 speed=0.57 auroraBase=27.3 errors=0
+t=23.2s state=STAGE_3 k=14 q=low fps=10.3 orbReady=false orb=(49.8%,50.0%) diam/short=10.0% boatS=9.1 boatY=-0.01 speed=0.59 auroraBase=23.5 errors=0
+t=24.5s state=STAGE_3 k=14 q=low fps=10.0 orbReady=true orb=(51.4%,50.0%) diam/short=10.0% boatS=10.5 boatY=-0.01 speed=0.60 auroraBase=19.7 errors=0
+t=25.0s state=STAGE_3 k=15 q=low fps=10.0 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=11.0 boatY=0.03 speed=0.60 auroraBase=19.1 errors=0
+t=26.5s state=STAGE_3 k=16 q=low fps=10.3 orbReady=false orb=(49.8%,50.0%) diam/short=10.0% boatS=12.5 boatY=-0.04 speed=0.60 auroraBase=15.1 errors=0
+  shot mid
+t=28.8s state=STAGE_3 k=17 q=low fps=10.4 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=15.2 boatY=-0.01 speed=0.60 auroraBase=8.9 errors=0
+t=29.8s state=STAGE_4 k=18 q=low fps=10.3 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=16.4 boatY=0.01 speed=0.60 auroraBase=6.1 errors=0
+t=31.6s state=STAGE_4 k=19 q=low fps=10.5 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=19.3 boatY=0.31 speed=2.00 auroraBase=1.5 errors=0
+t=32.5s state=STAGE_4 k=19 q=low fps=10.4 orbReady=true orb=(50.6%,50.0%) diam/short=10.0% boatS=23.8 boatY=0.37 speed=2.79 auroraBase=1.1 errors=0
+t=33.0s state=STAGE_4 k=20 q=low fps=10.1 orbReady=false orb=(50.0%,50.1%) diam/short=10.0% boatS=26.7 boatY=0.34 speed=3.32 auroraBase=1.1 errors=0
+t=34.4s state=STAGE_4 k=21 q=low fps=10.2 orbReady=false orb=(50.0%,50.1%) diam/short=10.0% boatS=37.1 boatY=0.30 speed=4.11 auroraBase=1.0 errors=0
+t=36.2s state=STAGE_4 k=22 q=low fps=10.2 orbReady=false orb=(50.0%,49.9%) diam/short=10.0% boatS=53.9 boatY=0.61 speed=5.48 auroraBase=1.0 errors=0
+t=37.6s state=STAGE_4 k=23 q=low fps=10.2 orbReady=false orb=(50.0%,49.6%) diam/short=10.0% boatS=68.8 boatY=2.61 speed=6.25 auroraBase=1.0 errors=0
+t=39.1s state=CLIMAX k=24 q=low fps=10.3 orbReady=false orb=(50.0%,48.5%) diam/short=10.0% boatS=87.4 boatY=8.57 speed=7.59 auroraBase=1.0 release=(50.0%,48.5%) r/H=4.7% errors=0
+t=39.9s state=CLIMAX k=24 q=low fps=10.1 orbReady=false orb=(50.0%,49.2%) diam/short=10.0% boatS=102.3 boatY=15.43 speed=10.20 auroraBase=1.0 release=(50.0%,49.2%) r/H=15.5% errors=0
+  shot climax
+t=44.2s state=CLIMAX k=24 q=low fps=10.8 orbReady=false orb=(50.0%,49.7%) diam/short=10.0% boatS=191.8 boatY=61.53 speed=11.00 auroraBase=1.0 release=(50.0%,49.7%) r/H=23.3% errors=0
+t=48.0s state=CLIMAX k=24 q=low fps=10.4 orbReady=false orb=(50.0%,49.7%) diam/short=10.0% boatS=267.3 boatY=100.34 speed=11.00 auroraBase=1.0 release=(50.0%,49.7%) r/H=23.3% errors=0
+t=51.6s state=AFTERGLOW k=24 q=low fps=11.0 orbReady=false orb=(50.0%,49.9%) diam/short=10.0% boatS=301.2 boatY=117.73 speed=2.54 auroraBase=1.0 errors=0
+t=54.5s state=FREEPLAY k=25 q=low fps=11.0 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=315.1 boatY=124.80 speed=2.73 auroraBase=1.0 errors=0
+t=55.5s state=FREEPLAY k=25 q=low fps=10.6 orbReady=false orb=(50.0%,50.0%) diam/short=10.0% boatS=321.4 boatY=127.88 speed=3.55 auroraBase=1.0 errors=0
+reached FREEPLAY with orb ready
+states seen: STAGE_1,STAGE_2,STAGE_3,STAGE_4,CLIMAX,AFTERGLOW,FREEPLAY
+orb off-centre max=7.4% samples>8%=0/113
+climax release max extent from centre (vertical, % of H)=23.7%
+__errors=[]
+console errors/warnings=5
+  error: Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED
+external requests=1 https://gf-playlog.zan72122.workers.dev/log
+console errors from the game=0 (the only other entries are gf-playlog.js beacons to its worker, blocked by this sandbox's network)
+RESULT: PASS
