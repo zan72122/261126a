@@ -1660,7 +1660,7 @@ function updateGame(dt, t) {
     case 'TARGET_READY': {
       G.idleT += dt; targetOrbPos(CALLS[G.call], orb.base);
       if (G.idleT > 5.5 && Math.floor((G.idleT - 5.5) / 3) !== Math.floor((G.idleT - 5.5 - dt) / 3)) { const u = CALLS[G.call].unit; const x = u.cx ?? u.pos.x, z = u.cz ?? u.pos.z; wave(x, z, 3, 2.2, 0.45); }
-      if (AUTOTEST && G.st > 0.9 && orb.alpha > 0.85) {
+      if (AUTOTEST && G.st > 1.6 && orb.alpha > 0.85) {
         const s = screenOf(orb.base); handleTap(s.x, s.y);
       }
       break;
